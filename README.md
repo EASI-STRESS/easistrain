@@ -1,3 +1,3 @@
 # EasiStrain
 
-Strain analysis
+Strain/Stress analysis
