@@ -8,6 +8,7 @@ class Integrate2D(
         "root_data",
         "h5file",
         "scan",
+        "numScan",
         "detector_name",
         "poni_file",
         "npt_rad",
@@ -16,7 +17,18 @@ class Integrate2D(
         "im_dark",
         "im_mask",
     ],
-    optional_input_names=[],
+    optional_input_names=[
+        "rad_range",
+        "azim_range",
+        "errorModel",
+        "imFlat",
+        "gon1",
+        "gon2",
+        "gon3",
+        "chiGon1",
+        "omegaGon2",
+        "phiGon3",
+    ],
     output_names=["result"],
 ):
     def run(self):

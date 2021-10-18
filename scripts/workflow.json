@@ -1,0 +1,12 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "class": "easistrain.task_integration_2D.Integrate2D",
+      "id": "Integrate2D"
+    }
+  ],
+  "links": []
+}

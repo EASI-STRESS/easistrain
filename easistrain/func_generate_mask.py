@@ -12,13 +12,15 @@ from func_save_edf_image import *
 ### mask_name: The name of the mask
 ### extension: The format of the mask image (edf, tif, ...)
 
-def mask(root, image, int_min, int_max, root_save, mask_name, extension):
-	image_matrix = fabio.open(root + '/' + image + '.' + extension).data
-	mask_matrix = np.zeros_like(image_matrix)
-	for i in range (np.shape(image_matrix)[0]):
-		for j in range (np.shape(image_matrix)[1]):
-			if (image_matrix[i,j] < np.float64(int_min) or image_matrix[i,j] > np.float64(int_max)):
-				mask_matrix[i,j] = 1
-	save_edf_image(root_save, mask_name, extension, mask_matrix)
-	return
 
+def mask(root, image, int_min, int_max, root_save, mask_name, extension):
+    image_matrix = fabio.open(root + "/" + image + "." + extension).data
+    mask_matrix = np.zeros_like(image_matrix)
+    for i in range(np.shape(image_matrix)[0]):
+        for j in range(np.shape(image_matrix)[1]):
+            if image_matrix[i, j] < np.float64(int_min) or image_matrix[
+                i, j
+            ] > np.float64(int_max):
+                mask_matrix[i, j] = 1
+    save_edf_image(root_save, mask_name, extension, mask_matrix)
+    return
