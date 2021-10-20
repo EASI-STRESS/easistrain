@@ -1097,33 +1097,44 @@ def fitEDD(
                     data=f"{positioners}, delta, thetha, position in channel, Intenstity, FWHM, shape factor, goodness factor",
                 )  ## create info about dataset saved for each peak in tthPositionGroup
                 # print(positionAngles)
-        if not "global" in h5Save.keys():
-            globalGroup = h5Save.create_group(
-                "global",
-            )  ## Creation of the global group in which all peaks positions of all the points will be put
-        else:
-            globalGroup = h5Save["global"]
-        for peakNumber in range(np.sum(nbPeaksInBoxes)):
-            updateGlobalMat = scanGroup[
-                f"tthPositionsGroup/peak_{str(peakNumber).zfill(4)}"
-            ][()]
-            if not f"peak_{str(peakNumber).zfill(4)}" in globalGroup.keys():
-                globalPeak = globalGroup.create_dataset(
-                    f"peak_{str(peakNumber).zfill(4)}",
-                    dtype="float64",
-                    data=updateGlobalMat,
-                )
-            else:
-                globalPeak = globalGroup[f"peak_{str(peakNumber).zfill(4)}"][()]
+                
+                
+##################################################################################  
+
+#put in another task              
+        # if not "global" in h5Save.keys():
+            # globalGroup = h5Save.create_group(
+                # "global",
+            # )  ## Creation of the global group in which all peaks positions of all the points will be put
+        # else:
+            # globalGroup = h5Save["global"]
+        # for peakNumber in range(np.sum(nbPeaksInBoxes)):
+            # updateGlobalMat = scanGroup[
+                # f"tthPositionsGroup/peak_{str(peakNumber).zfill(4)}"
+            # ][()]
+            # if not f"peak_{str(peakNumber).zfill(4)}" in globalGroup.keys():
+                # globalPeak = globalGroup.create_dataset(
+                    # f"peak_{str(peakNumber).zfill(4)}",
+                    # dtype="float64",
+                    # data=updateGlobalMat,
+                    # maxshape = (None, 13)
+                # )
+            # else:
+                # updateGlobalMat = scanGroup[
+			    # f"tthPositionsGroup/peak_{str(peakNumber).zfill(4)}"
+			    # ][()]
+                # globalPeak = globalGroup[f"peak_{str(peakNumber).zfill(4)}"][()]
+                # #globalPeak.resize(
+                # #(len(globalPeak[()]) + len(updateGlobalMat),13),
+                # #)
+                # print(updateGlobalMat)
+                # print((np.shape(globalPeak[()])[0], np.shape(globalPeak[()])[1]))
                 # globalPeak.resize(
                 # (len(globalPeak[()]) + len(updateGlobalMat),13),
-                # axis = None)
-                print((np.shape(globalPeak[()])[0], np.shape(globalPeak[()])[1]))
-                globalPeak[
-                    len(globalPeak[()]) : np.shape(globalPeak[()])[0], :
-                ] = updateGlobalMat[:, :]
+                # )[()] = np.append(globalPeak, updateGlobalMat, axis = 0)
 
         # faire une boucle (peut rtre pas besoin de faire une boucle) qui rentre dans le scan et prend ce qui se trouve dans peak000? et le regrouper dans untric global qui contient tous les points
+#############################################################################################
 
         infoGroup = scanGroup.create_group("infos")  ## infos group creation
         infoGroup.create_dataset(

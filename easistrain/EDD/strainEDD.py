@@ -78,7 +78,8 @@ def strainEDD(
 					matCheck = np.reshape(matCheck, (int(len(matCheck)/3),3))
 				else :
 					pointsCounter = pointsCounter
-	## Do the same with uncertainty as i did wit peaks and verify for the peaks				
+	## Do the same with uncertainty as i did wit peaks and verify for the peaks
+	## modif				
 					
 					
 			
