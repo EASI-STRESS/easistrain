@@ -79,7 +79,7 @@ def strainEDD(
 				else :
 					pointsCounter = pointsCounter
 	## Do the same with uncertainty as i did wit peaks and verify for the peaks
-	## modifications				
+	## modifications after mod				
 					
 					
 			
