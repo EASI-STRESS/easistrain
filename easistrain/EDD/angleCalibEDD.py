@@ -5,6 +5,7 @@ import silx.math.fit.peaks
 import scipy.optimize
 import sympy
 
+# Test modif
 # fileRead = '/home/esrf/slim/data/ihme10/id15/Cr2O3_calib/ihme10_Cr2O3_calib.h5'
 # filesave = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_Cr2O3_calib.h5'
 # sample = 'Cr2O3_calib'
