@@ -72,14 +72,16 @@ def strainEDD(
 					f'point_{str(pointsCounter).zfill(5)}',
 					dtype = 'float64',
 					data = matThirdFilter
-					)
+					) ## 
 					pointsCounter = pointsCounter + 1
 					matCheck = np.append(matCheck, matThirdFilter[0,:3])
 					matCheck = np.reshape(matCheck, (int(len(matCheck)/3),3))
 				else :
 					pointsCounter = pointsCounter
 	## Do the same with uncertainty as i did wit peaks and verify for the peaks
-	## modifications after mod				
+	## modifications after mod	
+	
+	## I create an organization			
 					
 					
 			
