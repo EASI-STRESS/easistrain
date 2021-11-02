@@ -134,11 +134,13 @@ def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
         p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 2] = fwhmGuess
+    #print(p0Guess)
     firstGuess, covGuess = scipy.optimize.curve_fit(
         gaussEstimation,
         xData,
         yData,
         p0Guess,
+        maxfev = 10000
     )
     # print(firstGuess)
     # print(peaksGuess)
@@ -356,6 +358,7 @@ def fitEDD(
                         ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
                         p0=initialGuessHD,
                         sigma=None,
+                        maxfev = 10000
                     )  ## fit of the peak of the Horizontal detector
                     pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
                         "fitHorizontalDetector",
@@ -405,7 +408,7 @@ def fitEDD(
                                 )
                                 / np.sum(peakHorizontalDetector[:, 1]),
                             ),
-                            axis=0,
+                            axis=0
                         )  ##
                         uncertaintyFitParamsHD = np.append(
                             uncertaintyFitParamsHD,
@@ -451,6 +454,7 @@ def fitEDD(
                         ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
                         p0=initialGuessVD,
                         sigma=None,
+                        maxfev = 10000
                     )  ## fit of the peak of the Vertical detector
                     pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
                         "fitVerticalDetector",
@@ -564,13 +568,13 @@ def fitEDD(
                     ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
                     uncertaintyPeakDataset[
                         2 * k, 0:6
-                    ] = 0  ## uncertainty on the coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (for the moment I set it to zero)
+                    ] = positionAngles[k, 0:6]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (for the moment I set it to zero) in the uncertainty dataset
                     peakDataset[
                         2 * k, 6
-                    ] = 90  ## delta angle of the horizontal detector (debye scherer ring angle)
+                    ] = - 90  ## delta angle of the horizontal detector (debye scherer ring angle)
                     uncertaintyPeakDataset[
                         2 * k, 6
-                    ] = 0  ## uncertainty on the delta angle of the horizontal detector (debye scherer ring angle) (I set the uncertainty to zero for the moment)
+                    ] = - 90  ## delta angle of the horizontal detector (debye scherer ring angle) (I set the uncertainty to zero for the moment)
                     peakDataset[
                         2 * k, 7
                     ] = 0  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
@@ -622,7 +626,7 @@ def fitEDD(
                     ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
                     uncertaintyPeakDataset[
                         2 * k + 1, 0:6
-                    ] = 0  ## uncertaiinty on the coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I set it to zero for the moment)
+                    ] = positionAngles[k, 0:6]  ## uncertaiinty on the coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I set it to zero for the moment)
                     peakDataset[
                         2 * k + 1, 6
                     ] = 0  ## delta angle of the vertical detector (debye scherer ring angle)
@@ -631,10 +635,10 @@ def fitEDD(
                     ] = 0  ## uncertainty of the delta angle of the vertical detector (debye scherer ring angle) (I set the uncertainty to zero for the moment)
                     peakDataset[
                         2 * k + 1, 7
-                    ] = 0  ## theta angle (diffraction fixed angle) of the vertical detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
+                    ] = 0  ## theta angle (diffraction fixed angle) of the vertical detector (I suppose that it is zero as we work a small angle fixed to 2.5 deg)
                     uncertaintyPeakDataset[
                         2 * k + 1, 7
-                    ] = 0  ## uncertainty of the theta angle (diffraction fixed angle) of the vertical detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
+                    ] = 0  ## uncertainty of the theta angle (diffraction fixed angle) of the vertical detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
                     peakDataset[2 * k + 1, 8] = pointInScan["fitParams/fitParamsVD"][
                         (peakNumber, 1)
                     ]  ## peak position of VD
@@ -786,6 +790,7 @@ def fitEDD(
                     ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
                     p0=initialGuessHD,
                     sigma=None,
+                    maxfev = 10000
                 )  ## fit of the peak of the Horizontal detector
                 pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
                     "fitHorizontalDetector",
@@ -880,6 +885,7 @@ def fitEDD(
                     ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
                     p0=initialGuessVD,
                     sigma=None,
+                    maxfev = 10000
                 )  ## fit of the peak of the Vertical detector
                 pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
                     "fitVerticalDetector",
@@ -983,19 +989,19 @@ def fitEDD(
                 ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
                 uncertaintyPeakDataset[
                     0, 0:6
-                ] = 0  ## uncertainty of the coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I set it to zero for the moment)
+                ] = positionAngles[0, 0:6]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
                 peakDataset[
                     0, 6
-                ] = 90  ## delta angle of the horizontal detector (debye scherer angle)
+                ] = - 90  ## delta angle of the horizontal detector (debye scherer angle)
                 uncertaintyPeakDataset[
                     0, 6
-                ] = 0  ## uncertainty of the delta angle of the horizontal detector (debye scherer angle) (I set it to zero for the moment)
+                ] = - 90  ## uncertainty of the delta angle of the horizontal detector (debye scherer angle) (I put the angle for the moment)
                 peakDataset[
                     0, 7
-                ] = 0  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
+                ] = 0  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
                 uncertaintyPeakDataset[
                     0, 7
-                ] = 0  ## uncertainty of the theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
+                ] = 0  ## uncertainty of the theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
                 peakDataset[0, 8] = pointInScan["fitParams/fitParamsHD"][
                     (peakNumber, 1)
                 ]  ## peak position of HD
@@ -1039,7 +1045,7 @@ def fitEDD(
                 ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
                 uncertaintyPeakDataset[
                     1, 0:6
-                ] = 0  ## uncertainty of the coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I set it to zero for the moment)
+                ] = positionAngles[0, 0:6]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
                 peakDataset[
                     1, 6
                 ] = 0  ## delta angle of the horizontal detector (debye scherer angle)
@@ -1150,7 +1156,7 @@ def fitEDD(
             "dataset", dtype=h5py.string_dtype(encoding="utf-8"), data=dataset
         )  ## save the name of dataset in infos group
         infoGroup.create_dataset(
-            "scanNumber", dtype=h5py.string_dtype(encoding="utf-8"), data=scanNumber
+            "scanNumber", dtype='int', data=scanNumber
         )  ## save of the number of the scan in infos group
         infoGroup.create_dataset(
             "nameHorizontalDetector",
