@@ -3,6 +3,8 @@ import numpy as np
 import h5py
 
 
+
+########### Example of the arguments of the main function #############
 def V1D(root_data, h5file, dataset):
     r_h5file = h5py.File(
         root_data + "/" + "Results" + "_" + h5file, "r"
