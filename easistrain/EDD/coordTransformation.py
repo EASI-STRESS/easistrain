@@ -2,7 +2,7 @@
 import h5py
 import numpy as np
 
-
+########### Example of the arguments of the main function #############
 #fileRead = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_test_TiC.h5'
 #fileSave = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_test_TiC.h5'
 #numberOfPeaks = 5
@@ -24,7 +24,7 @@ def transformationMatrix(rx,ry,rz,tx,ty,tz):
 	transfMat[1,3] = ty
 	transfMat[2,3] = tz
 	transfMat[3,3] = 1 
-	return transfMat # Attention: when the motor go in positive ---> the sample go to negatif (to put 180 in z or multiply by -1 the result if the positive sense in the sample and the motor are the same)
+	return transfMat
 	
 
 	
@@ -87,9 +87,3 @@ def coordTransformation(
 		uncertaintyGlobalPeakInSample[:,0:3] = globalPeakInSample[:,0:3]
 	h5Save.close()		
 	return
-
-
-#peakInfo = h5Read[
-#f'{scan}/tthPositionsGroup/peak_{str(peak).zfill(4)}'][()] ## info of the peak (I,pos,FWHM,shape factor), coordinates of the point and angles
-#uncertaintyPeakInfo = h5Read[
-#f'{scan}/tthPositionsGroup/uncertaintyPeak_{str(peak).zfill(4)}'][()] ## uncertainty
