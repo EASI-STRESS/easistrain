@@ -4,6 +4,7 @@ import silx.math.fit
 import silx.math.fit.peaks
 import scipy.optimize
 
+########### Example of the arguments of the main function #############
 # fileRead = '/home/esrf/slim/data/ihme10/id15/align/ihme10_align.h5'
 # fielSave = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_align.h5'
 # sample = 'align'
