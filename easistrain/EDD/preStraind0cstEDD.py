@@ -167,7 +167,7 @@ def preStraind0cstEDD(
 				pts[:,0:8] = allPtsInPeak[:,0:8] ## Coordinates of the point, goniometrtic angles and beam direction
 				uncertaintyPts[:,0:8] = uallPtsInPeak[:,0:8] ## Coordinates of the point, goniometrtic angles and beam direction
 				for j in range(shapeallPtsInPeak):
-					if allPtsInPeak[j, 6] == - 90: ## it is the horizontal detector
+					if allPtsInPeak[j, 6] == - 90 and np.polyval(calibCoeffsHD, allPtsInPeak[j, 8]) > 0: ## it is the horizontal detector
 						pts[j, 8] = np.log(
 						((pCstInkeVS * speedLightInAPerS)/(2 * d0[peakNumber] * np.sin(np.deg2rad(0.5 * AngleHD))))/
 						np.polyval(calibCoeffsHD, allPtsInPeak[j, 8])
@@ -194,7 +194,7 @@ def preStraind0cstEDD(
 						uncertaintyCalibCoeffsHD[2],
 						uallPtsInPeak[j, 8])
 						) ## uncertainty on the strain of the HD
-					if allPtsInPeak[j, 6] == 0: ## it is the vertical detector
+					if allPtsInPeak[j, 6] == 0 and np.polyval(calibCoeffsVD, allPtsInPeak[j, 8]) > 0: ## it is the vertical detector
 						pts[j, 8] = np.log(
 						((pCstInkeVS * speedLightInAPerS)/(2 * d0[peakNumber] * np.sin(np.deg2rad(0.5 * AngleVD))))/
 						np.polyval(calibCoeffsVD, allPtsInPeak[j, 8])

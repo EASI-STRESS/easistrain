@@ -95,6 +95,7 @@ def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
         relevance_info=False,
     )  ## index of the peak with peak relevance
     # (f'first evaluation of peak guess{peaksGuess}')
+    #print(peaksGuess)
     if (
         np.size(peaksGuess) > nbPeaksInBoxes[counterOfBoxes]
     ):  ## case if more peaks than expected are detected
@@ -130,20 +131,27 @@ def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
         ]
         peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
     # print(peaksGuess)
+    minBounds = np.array(())
+    maxBounds = np.array(())
     for ipar in range(nbPeaksInBoxes[counterOfBoxes]):
         p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 2] = fwhmGuess
+        appendMinBounds = np.array(([np.amin(yData),p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2],0])) # minimum bounds of the parametrs solution (H, C, FWHM) to apend
+        appendMaxBounds = np.array(([np.amax(yData), p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2],2 * p0Guess[3 * ipar + 2]])) # maximum bounds of the parametrs solution (H, C, FWHM)to append
+        minBounds = np.append(minBounds, appendMinBounds) # minimum bounds of the parametrs solution (H, C, FWHM)
+        maxBounds = np.append(maxBounds, appendMaxBounds) # maximum bounds of the parametrs solution (H, C, FWHM)to append
     #print(p0Guess)
     firstGuess, covGuess = scipy.optimize.curve_fit(
         gaussEstimation,
         xData,
         yData,
         p0Guess,
+        bounds = (minBounds,maxBounds),
         maxfev = 10000
     )
-    # print(firstGuess)
-    # print(peaksGuess)
+    #print(firstGuess)
+    #print(peaksGuess)
     return firstGuess, peaksGuess
 
 
@@ -346,18 +354,31 @@ def fitEDD(
                         ),
                     )  ## create dataset for HD raw data after subst of background
                     initialGuessHD = np.zeros(5 * nbPeaksInBoxes[i])
+                    minBoundsHD = np.array(())
+                    maxBoundsHD = np.array(())
                     for n in range(nbPeaksInBoxes[i]):
                         initialGuessHD[5 * n] = peaksGuessHD[3 * n]
                         initialGuessHD[5 * n + 1] = peaksGuessHD[3 * n + 1]
                         initialGuessHD[5 * n + 2] = peaksGuessHD[3 * n + 2]
                         initialGuessHD[5 * n + 3] = peaksGuessHD[3 * n + 2]
                         initialGuessHD[5 * n + 4] = 0.5
+                        appendMinBoundsHD = np.array(([np.amin(peakHorizontalDetector[:, 1]),
+                        initialGuessHD[5 * n + 1] - 3 * initialGuessHD[5 * n + 2],
+                        0, 0, 0])) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
+                        appendMaxBoundsHD = np.array(([np.amax(peakHorizontalDetector[:, 1]), 
+                        initialGuessHD[5 * n + 1] + 3 * initialGuessHD[5 * n + 2],
+                        len(peakHorizontalDetector[:, 0])/2,
+                        len(peakHorizontalDetector[:, 0])/2,
+                        1])) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the horizontal detector
+                        minBoundsHD = np.append(minBoundsHD, appendMinBoundsHD) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
+                        maxBoundsHD = np.append(maxBoundsHD, appendMaxBoundsHD) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
                     optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
                         f=splitPseudoVoigt,
                         xdata=peakHorizontalDetector[:, 0],
                         ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
                         p0=initialGuessHD,
                         sigma=None,
+                        bounds = (minBoundsHD, maxBoundsHD),
                         maxfev = 10000
                     )  ## fit of the peak of the Horizontal detector
                     pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
@@ -442,18 +463,31 @@ def fitEDD(
                         ),
                     )  ## create dataset for VD raw data after subst of background
                     initialGuessVD = np.zeros(5 * nbPeaksInBoxes[i])
+                    minBoundsVD = np.array(())
+                    maxBoundsVD = np.array(())
                     for n in range(nbPeaksInBoxes[i]):
                         initialGuessVD[5 * n] = peaksGuessVD[3 * n]
                         initialGuessVD[5 * n + 1] = peaksGuessVD[3 * n + 1]
                         initialGuessVD[5 * n + 2] = peaksGuessVD[3 * n + 2]
                         initialGuessVD[5 * n + 3] = peaksGuessVD[3 * n + 2]
                         initialGuessVD[5 * n + 4] = 0.5
+                        appendMinBoundsVD = np.array(([np.amin(peakVerticalDetector[:, 1]),
+                        initialGuessVD[5 * n + 1] - 3 * initialGuessVD[5 * n + 2],
+                        0, 0, 0])) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the vertical detector
+                        appendMaxBoundsVD = np.array(([np.amax(peakVerticalDetector[:, 1]), 
+                        initialGuessVD[5 * n + 1] + 3 * initialGuessVD[5 * n + 2],
+                        len(peakVerticalDetector[:, 0])/2,
+                        len(peakVerticalDetector[:, 0])/2,
+                        1])) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the vertical detector
+                        minBoundsVD = np.append(minBoundsVD, appendMinBoundsVD) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
+                        maxBoundsVD = np.append(maxBoundsVD, appendMaxBoundsVD) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
                     optimal_parametersVD, covarianceVD = scipy.optimize.curve_fit(
                         f=splitPseudoVoigt,
                         xdata=peakVerticalDetector[:, 0],
                         ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
                         p0=initialGuessVD,
                         sigma=None,
+                        bounds = (minBoundsVD, maxBoundsVD),
                         maxfev = 10000
                     )  ## fit of the peak of the Vertical detector
                     pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
@@ -778,18 +812,31 @@ def fitEDD(
                     ),
                 )  ## create dataset for HD raw data after subst of background
                 initialGuessHD = np.zeros(5 * nbPeaksInBoxes[i])
+                minBoundsHD = np.array(())
+                maxBoundsHD = np.array(())
                 for n in range(nbPeaksInBoxes[i]):
                     initialGuessHD[5 * n] = peaksGuessHD[3 * n]
                     initialGuessHD[5 * n + 1] = peaksGuessHD[3 * n + 1]
                     initialGuessHD[5 * n + 2] = peaksGuessHD[3 * n + 2]
                     initialGuessHD[5 * n + 3] = peaksGuessHD[3 * n + 2]
                     initialGuessHD[5 * n + 4] = 0.5
+                    appendMinBoundsHD = np.array(([np.amin(peakHorizontalDetector[:, 1]),
+                    initialGuessHD[5 * n + 1] - 3 * initialGuessHD[5 * n + 2],
+                    0, 0, 0])) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
+                    appendMaxBoundsHD = np.array(([np.amax(peakHorizontalDetector[:, 1]), 
+                    initialGuessHD[5 * n + 1] + 3 * initialGuessHD[5 * n + 2],
+                    len(peakHorizontalDetector[:, 0])/2,
+                    len(peakHorizontalDetector[:, 0])/2,
+                    1])) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
+                    minBoundsHD = np.append(minBoundsHD, appendMinBoundsHD) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
+                    maxBoundsHD = np.append(maxBoundsHD, appendMaxBoundsHD) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
                 optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
                     f=splitPseudoVoigt,
                     xdata=peakHorizontalDetector[:, 0],
                     ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
                     p0=initialGuessHD,
                     sigma=None,
+                    bounds = (minBoundsHD, maxBoundsHD),
                     maxfev = 10000
                 )  ## fit of the peak of the Horizontal detector
                 pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
@@ -873,18 +920,31 @@ def fitEDD(
                     ),
                 )  ## create dataset for VD raw data after subst of background
                 initialGuessVD = np.zeros(5 * nbPeaksInBoxes[i])
+                minBoundsVD = np.array(())
+                maxBoundsVD = np.array(())
                 for n in range(nbPeaksInBoxes[i]):
                     initialGuessVD[5 * n] = peaksGuessVD[3 * n]
                     initialGuessVD[5 * n + 1] = peaksGuessVD[3 * n + 1]
                     initialGuessVD[5 * n + 2] = peaksGuessVD[3 * n + 2]
                     initialGuessVD[5 * n + 3] = peaksGuessVD[3 * n + 2]
                     initialGuessVD[5 * n + 4] = 0.5
+                    appendMinBoundsVD = np.array(([np.amin(peakVerticalDetector[:, 1]),
+                    initialGuessVD[5 * n + 1] - 3 * initialGuessVD[5 * n + 2],
+                    0, 0, 0])) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the vertical detector
+                    appendMaxBoundsVD = np.array(([np.amax(peakVerticalDetector[:, 1]), 
+                    initialGuessVD[5 * n + 1] + 3 * initialGuessVD[5 * n + 2],
+                    len(peakVerticalDetector[:, 0])/2,
+                    len(peakVerticalDetector[:, 0])/2,
+                    1])) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the vertical detector
+                    minBoundsVD = np.append(minBoundsVD, appendMinBoundsVD) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
+                    maxBoundsVD = np.append(maxBoundsVD, appendMaxBoundsVD) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
                 optimal_parametersVD, covarianceVD = scipy.optimize.curve_fit(
                     f=splitPseudoVoigt,
                     xdata=peakVerticalDetector[:, 0],
                     ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
                     p0=initialGuessVD,
                     sigma=None,
+                    bounds = (minBoundsVD, maxBoundsVD),
                     maxfev = 10000
                 )  ## fit of the peak of the Vertical detector
                 pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(

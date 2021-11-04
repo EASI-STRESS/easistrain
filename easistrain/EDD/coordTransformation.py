@@ -80,7 +80,7 @@ def coordTransformation(
 				uncertaintyGlobalPeakInSample[rowsCounter:rowsCounter + shapeDsetPeak,:] = h5Read[f'{scan}/tthPositionsGroup/uncertaintyPeak_{str(peakNumber).zfill(4)}'][()] ## same as above, then belwo convert the coordinate from gonio to sample
 				rowsCounter = rowsCounter + shapeDsetPeak
 		for icount in range(len(globalPeakInSample)):
-			coordInSample = np.dot(transfMat,[globalPeakInSample[icount,0],globalPeakInSample[icount,1],globalPeakInSample[icount,2],1])
+			coordInSample = np.dot(transfMat,[-globalPeakInSample[icount,0],-globalPeakInSample[icount,1],-globalPeakInSample[icount,2],1])
 			globalPeakInSample[icount,0] = coordInSample[0]
 			globalPeakInSample[icount,1] = coordInSample[1]
 			globalPeakInSample[icount,2] = coordInSample[2]

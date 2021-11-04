@@ -106,7 +106,7 @@ def deforDirMeasStress(anglesAndXEC, s11, s22, s33, s23, s13, s12):
     return defDirMeasStress
 
 
-def strainTensor(
+def strainStressTensor(
 	fileRead,
 	fileSave,
 	numberOfPeaks,
