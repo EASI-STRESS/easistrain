@@ -4,7 +4,7 @@ import h5py
 import matplotlib.pyplot as plt
 import matplotlib
 
-
+########### Example of the arguments of the main function #############
 #fileRead = '/home/esrf/slim/data/ihme10/id15/BAIII_AB_4_1/ihme10_BAIII_4_1.h5'
 # sample = 'BAIII_AB_4_1'
 # dataset = '0001'
