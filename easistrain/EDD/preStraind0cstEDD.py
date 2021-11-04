@@ -3,7 +3,7 @@ import numpy as np
 import h5py
 import scipy.constants
 
-
+########### Example of the arguments of the main function #############
 # fileRead = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_glob_TiC.h5'
 # fileSave = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_globstrain_TiC.h5'
 # pathFileDetectorCalibration = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_align.h5'
