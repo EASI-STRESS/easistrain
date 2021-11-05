@@ -4,8 +4,9 @@ import silx.math.fit
 import silx.math.fit.peaks
 import scipy.optimize
 import sympy
+import scipy.constants
 
-# Test modif
+########### Example of the arguments of the main function #############
 # fileRead = '/home/esrf/slim/data/ihme10/id15/Cr2O3_calib/ihme10_Cr2O3_calib.h5'
 # filesave = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_Cr2O3_calib.h5'
 # sample = 'Cr2O3_calib'
@@ -178,7 +179,10 @@ def angleCalibrationEDD(
     pathFileDetectorCalibration,
     scanDetectorCalibration,
     sampleCalibrantFile,
-):
+    ):
+    pCstInkeVS = 0.001 * scipy.constants.physical_constants['Planck constant in eV s'][0] ## Planck Constant in keV s
+    speedLightInAPerS = (10**10) * scipy.constants.physical_constants['speed of light in vacuum'][0] ## speed of light in Ang/second
+    
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
         patternHorizontalDetector = h5Read[
             sample
@@ -609,12 +613,12 @@ def angleCalibrationEDD(
     fitLevel1_2["calibratedAngle"].create_dataset(
         "calibratedAngleHD",
         dtype="float64",
-        data=np.rad2deg(2 * np.arcsin(12.398 / (2 * calibratedAngleHD))),
+        data=np.rad2deg(2 * np.arcsin((pCstInkeVS * speedLightInAPerS) / (2 * calibratedAngleHD))),
     )  ## save the calibrated diffraction angle in degree of the horizontal detector
     fitLevel1_2["calibratedAngle"].create_dataset(
         "calibratedAngleVD",
         dtype="float64",
-        data=np.rad2deg(2 * np.arcsin(12.398 / (2 * calibratedAngleVD))),
+        data=np.rad2deg(2 * np.arcsin((pCstInkeVS * speedLightInAPerS) / (2 * calibratedAngleVD))),
     )  ## save the calibrated diffraction angle in degree of the vertical detector
     fitLevel1_2["calibratedAngle"].create_dataset(
         "uncertaintyCalibratedAngleHD",
