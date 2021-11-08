@@ -1,22 +1,12 @@
+import argparse
 import h5py
 import numpy as np
 import silx.math.fit
 import silx.math.fit.peaks
 import scipy.optimize
+from typing import Sequence, Union
 
-########### Example of the arguments of the main function #############
-# fileRead = '/home/esrf/slim/data/ihme10/id15/align/ihme10_align.h5'
-# fielSave = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_align.h5'
-# sample = 'align'
-# dataset = '0001'
-# scanNumberHorizontalDetector = '66'
-# scanNumberVerticalDetector = '65'
-# nameHorizontalDetector = 'mca2_det0'
-# nameVerticalDetector = 'mca2_det1'
-# numberOfBoxes = 4
-# nbPeaksInBoxes = [1,2,1,1]
-# rangeFit = [620,780,1020,1120,3500,3800,3850,4090]
-# sourceCalibrantFile = '/home/esrf/slim/easistrain/easistrain/EDD/BaSource'
+from easistrain.EDD.utils import read_config_file
 
 
 def splitPseudoVoigt(xData, *params):
@@ -144,21 +134,22 @@ def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
     return firstGuess, peaksGuess
 
 
-### calibEdd is the main function
 def calibEdd(
-    fileRead,
-    fileSave,
-    sample,
-    dataset,
-    scanNumberHorizontalDetector,
-    scanNumberVerticalDetector,
-    nameHorizontalDetector,
-    nameVerticalDetector,
-    numberOfBoxes,
-    nbPeaksInBoxes,
-    rangeFit,
-    sourceCalibrantFile,
+    fileRead: str,
+    fileSave: str,
+    sample: str,
+    dataset: Union[str, int],
+    scanNumberHorizontalDetector: Union[str, int],
+    scanNumberVerticalDetector: Union[str, int],
+    nameHorizontalDetector: str,
+    nameVerticalDetector: str,
+    numberOfBoxes: int,
+    nbPeaksInBoxes: Sequence[int],
+    rangeFit: Sequence[int],
+    sourceCalibrantFile: str,
 ):
+    """Main function."""
+
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
         patternHorizontalDetector = h5Read[
             sample
@@ -184,7 +175,7 @@ def calibEdd(
         ]  ## calibration pattern of vertical detector
 
     h5Save = h5py.File(fileSave, "a")  ## create h5 file to save in
-    if not "detectorCalibration" in h5Save.keys():
+    if "detectorCalibration" not in h5Save.keys():
         calibrationLevel1 = h5Save.create_group(
             "detectorCalibration"
         )  ## calibration group
@@ -634,3 +625,13 @@ def calibEdd(
 
     h5Save.close()
     return
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("config_file", type=str, help="Path to the config file")
+    args = parser.parse_args()
+
+    config = read_config_file(args.config_file)
+    calibEdd(**config)
+    print("Program finished !")
