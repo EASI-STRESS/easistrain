@@ -6,3 +6,5 @@ __pycache__/
 .eggs/ 
 
 *.h5
+
+.vscode

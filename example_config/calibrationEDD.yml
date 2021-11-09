@@ -1,0 +1,13 @@
+########### Example of the arguments of the main function #############
+fileRead: '/home/esrf/slim/data/ihme10/id15/align/ihme10_align.h5'
+fileSave: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_align.h5'
+sample: 'align'
+dataset: '0001'
+scanNumberHorizontalDetector: '66'
+scanNumberVerticalDetector: '65'
+nameHorizontalDetector: 'mca2_det0'
+nameVerticalDetector: 'mca2_det1'
+numberOfBoxes: 4
+nbPeaksInBoxes: [1, 2, 1, 1]
+rangeFit: [620, 780, 1020, 1120, 3500, 3800, 3850, 4090]
+sourceCalibrantFile: '/home/esrf/slim/easistrain/easistrain/EDD/BaSource'
