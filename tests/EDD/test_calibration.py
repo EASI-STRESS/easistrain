@@ -39,12 +39,12 @@ def _calib_edd_data(cfg: dict, test_data_path: Union[Path, str]):
         cfg["scanNumberVerticalDetector"],
         cfg["nameVerticalDetector"],
     )
-    with h5py.File(test_data_path, "r") as testFile:
+    with h5py.File(test_data_path, "r") as test_file:
         with h5py.File(cfg["fileRead"], "w") as h5file:
-            h5file[f"{sample}_{dataset}_{n_scan_h}.1/measurement/{name_h}"] = testFile[
+            h5file[f"{sample}_{dataset}_{n_scan_h}.1/measurement/{name_h}"] = test_file[
                 "horizontal/data"
             ][()]
-            h5file[f"{sample}_{dataset}_{n_scan_v}.1/measurement/{name_v}"] = testFile[
+            h5file[f"{sample}_{dataset}_{n_scan_v}.1/measurement/{name_v}"] = test_file[
                 "vertical/data"
             ][()]
 
