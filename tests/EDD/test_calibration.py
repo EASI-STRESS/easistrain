@@ -52,6 +52,8 @@ def test_calibEdd(tmp_path: Path):
     with h5py.File(test_data_path, "r") as h5file:
         ref_vertical_coeffs = h5file["vertical/coeffs"][()]
         ref_horizontal_coeffs = h5file["horizontal/coeffs"][()]
+        vertical_coeffs_errors = h5file["vertical/errors"][()]
+        horizontal_coeffs_errors = h5file["horizontal/errors"][()]
     generate_input_file(config, test_data_path)
 
     # Act
@@ -60,12 +62,16 @@ def test_calibEdd(tmp_path: Path):
     # Assert
     with h5py.File(config["fileSave"], "r") as h5file:
         grp_name = f'fit_{config["dataset"]}_{config["scanNumberHorizontalDetector"]}_{config["scanNumberVerticalDetector"]}'
-        computed_vertical_coeffs = h5file[
+        vertical_coeffs = h5file[
             f"detectorCalibration/{grp_name}/calibCoeffs/calibCoeffsVD"
         ][()]
-        computed_horizontal_coeffs = h5file[
+        horizontal_coeffs = h5file[
             f"detectorCalibration/{grp_name}/calibCoeffs/calibCoeffsHD"
         ][()]
 
-    np.testing.assert_allclose(computed_vertical_coeffs, ref_vertical_coeffs)
-    np.testing.assert_allclose(computed_horizontal_coeffs, ref_horizontal_coeffs)
+    assert np.all(
+        np.abs(vertical_coeffs - ref_vertical_coeffs) <= vertical_coeffs_errors
+    )
+    assert np.all(
+        np.abs(horizontal_coeffs - ref_horizontal_coeffs) <= horizontal_coeffs_errors
+    )
