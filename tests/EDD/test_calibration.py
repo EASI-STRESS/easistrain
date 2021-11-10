@@ -2,17 +2,21 @@ from pathlib import Path
 from typing import Union
 import numpy
 import h5py
-from easistrain.EDD.calibrationEDD import calibEdd
+from easistrain.EDD.calibrationEDD import calibEdd as calib_edd
 
 
 def test_calib_edd(tmp_path: Path):
     test_data_path, config = calib_edd_init(tmp_path)
-    calibEdd(**config)
+    calib_edd(**config)
     calib_edd_assert(test_data_path, config)
 
 
-def _calib_edd_config(tmp_path: Path) -> dict:
+def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
     HERE = Path(__file__).parent.resolve()
+
+    with h5py.File(test_data_path, "r") as test_file:
+        nb_peaks_in_boxes = test_file["infos/nbPeaksInBoxes"][()]
+        fit_ranges = test_file["infos/rangeFit"][()]
     return {
         "fileRead": str(tmp_path / "input_file.h5"),
         "fileSave": str(tmp_path / "output_file.h5"),
@@ -22,14 +26,16 @@ def _calib_edd_config(tmp_path: Path) -> dict:
         "scanNumberVerticalDetector": 1,
         "nameHorizontalDetector": "horz_detector",
         "nameVerticalDetector": "vert_detector",
-        "numberOfBoxes": 4,
-        "nbPeaksInBoxes": [1, 2, 1, 1],
-        "rangeFit": [620, 780, 1020, 1120, 3500, 3800, 3850, 4090],
+        "numberOfBoxes": len(nb_peaks_in_boxes),
+        "nbPeaksInBoxes": nb_peaks_in_boxes,
+        "rangeFit": fit_ranges,
         "sourceCalibrantFile": str(HERE.parent.parent / "Calibrants" / "BaSource"),
     }
 
 
-def _calib_edd_data(cfg: dict, test_data_path: Union[Path, str]):
+def generate_input_files(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
+    cfg = generate_config(tmp_path, test_data_path)
+
     sample, dataset = cfg["sample"], cfg["dataset"]
     n_scan_h, name_h = (
         cfg["scanNumberHorizontalDetector"],
@@ -48,13 +54,14 @@ def _calib_edd_data(cfg: dict, test_data_path: Union[Path, str]):
                 "vertical/data"
             ][()]
 
+    return cfg
+
 
 def calib_edd_init(tmp_path: Path):
-    config = _calib_edd_config(tmp_path)
     test_data_path = (
         Path(__file__).parent.parent.resolve() / "data" / "Ba_calibration_data.hdf5"
     )
-    _calib_edd_data(config, test_data_path)
+    config = generate_input_files(tmp_path, test_data_path)
     return test_data_path, config
 
 

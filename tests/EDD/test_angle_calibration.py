@@ -4,8 +4,13 @@ import h5py
 from easistrain.EDD.angleCalibEDD import angleCalibrationEDD
 
 
-def generate_config(tmp_path: Path) -> dict:
+def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
     HERE = Path(__file__).parent.resolve()
+
+    with h5py.File(test_data_path, "r") as test_file:
+        nb_peaks_in_boxes = test_file["infos/nbPeaksInBoxes"][()]
+        fit_ranges_h = test_file["infos/rangeFitHD"][()]
+        fit_ranges_v = test_file["infos/rangeFitVD"][()]
     return {
         "fileRead": str(tmp_path / "input_file.h5"),
         "fileSave": str(tmp_path / "output_file.h5"),
@@ -14,40 +19,10 @@ def generate_config(tmp_path: Path) -> dict:
         "scanNumber": 2,
         "nameHorizontalDetector": "horz_detector",
         "nameVerticalDetector": "vert_detector",
-        "numberOfBoxes": 7,
-        "nbPeaksInBoxes": [1, 1, 1, 2, 1, 2, 1],
-        "rangeFitHD": [
-            670,
-            820,
-            800,
-            950,
-            1100,
-            1350,
-            1350,
-            1650,
-            1620,
-            1820,
-            1800,
-            2100,
-            2025,
-            2200,
-        ],
-        "rangeFitVD": [
-            670,
-            840,
-            820,
-            980,
-            1100,
-            1400,
-            1350,
-            1700,
-            1650,
-            1870,
-            1850,
-            2120,
-            2070,
-            2270,
-        ],
+        "numberOfBoxes": len(nb_peaks_in_boxes),
+        "nbPeaksInBoxes": nb_peaks_in_boxes,
+        "rangeFitHD": fit_ranges_h,
+        "rangeFitVD": fit_ranges_v,
         "pathFileDetectorCalibration": str(tmp_path / "calib.h5"),
         "scanDetectorCalibration": 5,
         "sampleCalibrantFile": str(HERE.parent.parent / "Calibrants" / "TiC.d"),
@@ -55,10 +30,11 @@ def generate_config(tmp_path: Path) -> dict:
 
 
 def generate_input_files(
-    cfg: dict,
+    tmp_path: Path,
     angle_calib_data_path: Union[Path, str],
     energy_calib_data_path: Union[Path, str],
-):
+) -> dict:
+    cfg = generate_config(tmp_path, angle_calib_data_path)
     sample, dataset = cfg["sample"], cfg["dataset"]
     n_scan = cfg["scanNumber"]
     name_h, name_v = (
@@ -92,10 +68,11 @@ def generate_input_files(
                 f"detectorCalibration/{calib_scan_name}/calibCoeffs/uncertaintyCalibCoeffsVD"
             ] = data_file["vertical/errors"][()]
 
+    return cfg
+
 
 def test_angleCalibrationEDD(tmp_path: Path):
     # Arrange
-    config = generate_config(tmp_path)
     energy_calib_data_path = (
         Path(__file__).parent.parent.resolve() / "data" / "Ba_calibration_data.hdf5"
     )
@@ -107,7 +84,9 @@ def test_angleCalibrationEDD(tmp_path: Path):
         ref_horizontal_angle = h5file["horizontal/angle"][()]
         vertical_angle_error = h5file["vertical/error"][()]
         horizontal_angle_error = h5file["horizontal/error"][()]
-    generate_input_files(config, angle_calib_data_path, energy_calib_data_path)
+    config = generate_input_files(
+        tmp_path, angle_calib_data_path, energy_calib_data_path
+    )
 
     # Act
     angleCalibrationEDD(**config)

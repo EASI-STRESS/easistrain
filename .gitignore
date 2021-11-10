@@ -8,3 +8,4 @@ __pycache__/
 *.h5
 
 .vscode
+.pytest_cache
