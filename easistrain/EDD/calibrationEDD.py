@@ -223,12 +223,12 @@ def calibEdd(
     infoGroup.create_dataset(
         "scanNumberHorizontalDetector",
         dtype=h5py.string_dtype(encoding="utf-8"),
-        data=scanNumberHorizontalDetector,
+        data=str(scanNumberHorizontalDetector),
     )  ## save of the number of the scan containing the calibration pattern of the horizontal detector in infos group
     infoGroup.create_dataset(
         "scanNumberVerticalDetector",
         dtype=h5py.string_dtype(encoding="utf-8"),
-        data=scanNumberVerticalDetector,
+        data=str(scanNumberVerticalDetector),
     )  ## save of the number of the scan containing the calibration pattern of the vertical detector in info group
     infoGroup.create_dataset(
         "nameHorizontalDetector",
