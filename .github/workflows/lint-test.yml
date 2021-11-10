@@ -2,9 +2,11 @@ name: Lint & Test
 
 on:
   push:
-    branches: main
+    branches:
+      - main
   pull_request:
-    branches: '*'
+    branches:
+      - '*'
 
 jobs:
   lint_test:
@@ -25,15 +27,10 @@ jobs:
           pip install .[dev]
 
       - name: black ◼️
-        run: |
-          black --check easistrain/*.py
-          black --check easistrain/EDD/calibrationEDD.py
-          black --check tests
+        run: black --check easistrain/*.py easistrain/EDD/angleCalibEDD.py easistrain/EDD/calibrationEDD.py tests
 
       - name: flake8 ❄️
-        run: |
-          flake8 easistrain/EDD/calibrationEDD.py
-          flake8 tests
+        run: flake8 easistrain/EDD/angleCalibEDD.py easistrain/EDD/calibrationEDD.py tests
 
       - name: pytest tests 👓
         run: pytest

@@ -1,0 +1,16 @@
+fileRead: '/home/esrf/slim/data/ihme10/id15/Cr2O3_calib/ihme10_Cr2O3_calib.h5'
+fileSave: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_Cr2O3_calib.h5'
+sample: 'Cr2O3_calib'
+dataset: '0001'
+scanNumber: '5'
+nameHorizontalDetector: 'mca2_det0'
+nameVerticalDetector: 'mca2_det1'
+numberOfBoxes: 7
+nbPeaksInBoxes: [1, 2, 3, 1, 2, 2, 1]
+rangeFitHD:
+  [425, 560, 640, 810, 790, 980, 950, 1100, 1070, 1250, 1220, 1420, 1370, 1500]
+rangeFitVD:
+  [425, 580, 660, 830, 810, 1040, 975, 1110, 1090, 1280, 1250, 1450, 1400, 1535]
+pathFileDetectorCalibration: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_align.h5'
+scanDetectorCalibration: 'fit_0001_2_1'
+sampleCalibrantFile: '/home/esrf/slim/easistrain/easistrain/EDD/Cr2O3.d'
