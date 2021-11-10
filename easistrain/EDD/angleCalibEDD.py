@@ -1,103 +1,31 @@
+from typing import Sequence, Union
 import h5py
 import numpy as np
-import silx.math.fit
 import silx.math.fit.peaks
 import scipy.optimize
-import sympy
 import scipy.constants
 
-########### Example of the arguments of the main function #############
-# fileRead = '/home/esrf/slim/data/ihme10/id15/Cr2O3_calib/ihme10_Cr2O3_calib.h5'
-# filesave = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_Cr2O3_calib.h5'
-# sample = 'Cr2O3_calib'
-# dataset = '0001'
-# scanNumber = '5'
-# nameHorizontalDetector = 'mca2_det0'
-# nameVerticalDetector = 'mca2_det1'
-# numberOfBoxes  = 7
-# nbPeaksInBoxes = [1,2,3,1,2,2,1]
-# rangeFitHD = [425,560,640,810,790,980,950,1100,1070,1250,1220,1420,1370,1500]
-# rangeFitVD = [425,580,660,830,810,1040,975,1110,1090,1280,1250,1450,1400,1535]
-# pathFileDetectorCalibration = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_align.h5'
-# scanDetectorCalibration = 'fit_0001_2_1'
-# sampleCalibrantFile = '/home/esrf/slim/easistrain/easistrain/EDD/Cr2O3.d'
-
-
-def linefunc(a, xData):
-    return a * xData
-
-
-def splitPseudoVoigt(xData, *params):
-    return silx.math.fit.sum_splitpvoigt(xData, *params)
-
-
-def gaussEstimation(xData, *params):
-    return silx.math.fit.sum_gauss(xData, *params)
+from easistrain.EDD.utils import (
+    calcBackground,
+    gaussEstimation,
+    linefunc,
+    run_from_cli,
+    splitPseudoVoigt,
+)
 
 
 def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
+    """
+    Calculates the uncertainty on the energy coming from the conversion from channel to energy.
+
+    It includes the uncertainty on the calibration of the coefficients and the peak position
+    """
     return np.sqrt(
         ((ua ** 2) * (ch ** 4))
         + ((uch ** 2)) * (((2 * a * ch) + b) ** 2)
         + ((ub ** 2) * ch ** 2)
         + (uc ** 2)
-    )  ## calculates the uncertainty on the energy coming from the conversion from channel to energy. It includes the uncertainty on the calibration of the coefficients and the peak position
-
-
-def calcBackground(
-    xData, yData, fwhmRight, fwhmLeft, counterOfBoxes, nbPeaksInBoxes, guessedPeaksIndex
-):
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) <= len(
-        xData
-    ):  ## case of not enough of points at left
-        # print('## case of not enough of points at left')
-        xBackground = xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-        yBackground = yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-    if (
-        int(guessedPeaksIndex[-1] + 3 * fwhmRight) > len(xData)
-        and int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0
-    ):  ## case of not enough of points at right
-        # print('## case of not enough of points at right')
-        xBackground = xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-        yBackground = yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) > len(
-        xData
-    ):  ## case of not enough of points at left and right
-        # print('## case of not enough of points at left and right')
-        xBackground = np.append(xData[0:5], xData[-5:])
-        yBackground = np.append(yData[0:5], yData[-5:])
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) <= len(
-        xData
-    ):  ## case of enough of points at left and right
-        # print('## case of enough of points at left and right')
-        xBackground = np.append(
-            xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
-            xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
-        )
-        yBackground = np.append(
-            yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
-            yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
-        )
-    # print(xData[0:int(guessedPeaksIndex[0] - 3 * fwhmLeft)])
-    # print(xData[-int(guessedPeaksIndex[-1] + 3 * fwhmRight):])
-    # print(int(guessedPeaksIndex[-1] + 3 * fwhmRight))
-    # print(int(guessedPeaksIndex[0] - 3 * fwhmLeft))
-    # print(fwhmRight)
-    # print(xBackground)
-    # print(yBackground)
-    backgroundCoefficient = np.polyfit(
-        x=xBackground, y=yBackground, deg=1
-    )  ## fit of background with 1d polynom function
-    yCalculatedBackground = np.poly1d(backgroundCoefficient)(
-        xData
-    )  ## yBackground calcuated with the 1d polynom fitted coefficient
-    return yCalculatedBackground, backgroundCoefficient
+    )
 
 
 def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
@@ -163,26 +91,32 @@ def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
     return firstGuess, peaksGuess
 
 
-### angleCalibrationEDD is the main function
 def angleCalibrationEDD(
-    fileRead,
-    fileSave,
-    sample,
-    dataset,
-    scanNumber,
-    nameHorizontalDetector,
-    nameVerticalDetector,
-    numberOfBoxes,
-    nbPeaksInBoxes,
-    rangeFitHD,
-    rangeFitVD,
-    pathFileDetectorCalibration,
-    scanDetectorCalibration,
-    sampleCalibrantFile,
-    ):
-    pCstInkeVS = 0.001 * scipy.constants.physical_constants['Planck constant in eV s'][0] ## Planck Constant in keV s
-    speedLightInAPerS = (10**10) * scipy.constants.physical_constants['speed of light in vacuum'][0] ## speed of light in Ang/second
-    
+    fileRead: str,
+    fileSave: str,
+    sample: str,
+    dataset: str,
+    scanNumber: Union[str, int],
+    nameHorizontalDetector: str,
+    nameVerticalDetector: str,
+    numberOfBoxes: int,
+    nbPeaksInBoxes: Sequence[int],
+    rangeFitHD: Sequence[int],
+    rangeFitVD: Sequence[int],
+    pathFileDetectorCalibration: str,
+    scanDetectorCalibration: str,
+    sampleCalibrantFile: str,
+):
+    """Main function."""
+    pCstInkeVS = (
+        0.001 * scipy.constants.physical_constants["Planck constant in eV s"][0]
+    )  ## Planck Constant in keV s
+    speedLightInAPerS = (10 ** 10) * scipy.constants.physical_constants[
+        "speed of light in vacuum"
+    ][
+        0
+    ]  ## speed of light in Ang/second
+
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
         patternHorizontalDetector = h5Read[
             sample
@@ -208,7 +142,7 @@ def angleCalibrationEDD(
         ]  ## pattern of vertical detector
 
     h5Save = h5py.File(fileSave, "a")  ## create/append h5 file to save in
-    if not "angleCalibration" in h5Save.keys():
+    if "angleCalibration" not in h5Save.keys():
         angleCalibrationLevel1 = h5Save.create_group(
             "angleCalibration"
         )  ## angleCalibration group
@@ -242,7 +176,7 @@ def angleCalibrationEDD(
         "dataset", dtype=h5py.string_dtype(encoding="utf-8"), data=dataset
     )  ## save the name of dataset in infos group
     infoGroup.create_dataset(
-        "scanNumber", dtype=h5py.string_dtype(encoding="utf-8"), data=scanNumber
+        "scanNumber", dtype=h5py.string_dtype(encoding="utf-8"), data=str(scanNumber)
     )  ## save of the number of the scan in infos group
     infoGroup.create_dataset(
         "nameHorizontalDetector",
@@ -613,12 +547,16 @@ def angleCalibrationEDD(
     fitLevel1_2["calibratedAngle"].create_dataset(
         "calibratedAngleHD",
         dtype="float64",
-        data=np.rad2deg(2 * np.arcsin((pCstInkeVS * speedLightInAPerS) / (2 * calibratedAngleHD))),
+        data=np.rad2deg(
+            2 * np.arcsin((pCstInkeVS * speedLightInAPerS) / (2 * calibratedAngleHD))
+        ),
     )  ## save the calibrated diffraction angle in degree of the horizontal detector
     fitLevel1_2["calibratedAngle"].create_dataset(
         "calibratedAngleVD",
         dtype="float64",
-        data=np.rad2deg(2 * np.arcsin((pCstInkeVS * speedLightInAPerS) / (2 * calibratedAngleVD))),
+        data=np.rad2deg(
+            2 * np.arcsin((pCstInkeVS * speedLightInAPerS) / (2 * calibratedAngleVD))
+        ),
     )  ## save the calibrated diffraction angle in degree of the vertical detector
     fitLevel1_2["calibratedAngle"].create_dataset(
         "uncertaintyCalibratedAngleHD",
@@ -687,3 +625,7 @@ def angleCalibrationEDD(
 
     h5Save.close()
     return
+
+
+if __name__ == "__main__":
+    run_from_cli(angleCalibrationEDD)
