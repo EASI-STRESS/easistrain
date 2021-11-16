@@ -1,85 +1,14 @@
+from typing import Sequence
 import numpy as np
 import h5py
 import silx.math.fit
 import scipy.optimize
-
-########### Example of the arguments of the main function #############
-# fileRead = '/home/esrf/slim/data/ihme10/id15/BAIII_AB_4_1/ihme10_BAIII_AB_4_1.h5'
-# fileSave = '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_BAIII_AB_4_1.h5'
-# sample = 'BAIII_AB_4_1'
-# dataset = '0001'
-# scanNumber = '50'
-# nameHorizontalDetector = 'mca2_det0'
-# nameVerticalDetector = 'mca2_det1'
-# positioners = ['ex', 'ey', 'ez', 'ephi', 'echi','sry']
-# numberOfBoxes  = 2
-# nbPeaksInBoxes = [1, 2]
-# rangeFitHD = [1320,1620,1600,2000]
-# rangeFitVD = [1300,1650,1620,2000]
-
-
-def gaussEstimation(xData, *params):
-    return silx.math.fit.sum_gauss(xData, *params)
-
-
-def splitPseudoVoigt(xData, *params):
-    return silx.math.fit.sum_splitpvoigt(xData, *params)
-
-
-def calcBackground(
-    xData, yData, fwhmRight, fwhmLeft, counterOfBoxes, nbPeaksInBoxes, guessedPeaksIndex
-):
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) <= len(
-        xData
-    ):  ## case of not enough of points at left
-        # print('## case of not enough of points at left')
-        xBackground = xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-        yBackground = yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-    if (
-        int(guessedPeaksIndex[-1] + 3 * fwhmRight) > len(xData)
-        and int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0
-    ):  ## case of not enough of points at right
-        # print('## case of not enough of points at right')
-        xBackground = xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-        yBackground = yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) > len(
-        xData
-    ):  ## case of not enough of points at left and right
-        # print('## case of not enough of points at left and right')
-        xBackground = np.append(xData[0:5], xData[-5:])
-        yBackground = np.append(yData[0:5], yData[-5:])
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) <= len(
-        xData
-    ):  ## case of enough of points at left and right
-        # print('## case of enough of points at left and right')
-        xBackground = np.append(
-            xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
-            xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
-        )
-        yBackground = np.append(
-            yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
-            yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
-        )
-    # print(xData[0:int(guessedPeaksIndex[0] - 3 * fwhmLeft)])
-    # print(xData[-int(guessedPeaksIndex[-1] + 3 * fwhmRight):])
-    # print(int(guessedPeaksIndex[-1] + 3 * fwhmRight))
-    # print(int(guessedPeaksIndex[0] - 3 * fwhmLeft))
-    # print(fwhmRight)
-    # print(xBackground)
-    # print(yBackground)
-    backgroundCoefficient = np.polyfit(
-        x=xBackground, y=yBackground, deg=1
-    )  ## fit of background with 1d polynom function
-    yCalculatedBackground = np.poly1d(backgroundCoefficient)(
-        xData
-    )  ## yBackground calcuated with the 1d polynom fitted coefficient
-    return yCalculatedBackground, backgroundCoefficient
+from easistrain.EDD.utils import (
+    gaussEstimation,
+    run_from_cli,
+    splitPseudoVoigt,
+    calcBackground,
+)
 
 
 def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
@@ -95,7 +24,7 @@ def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
         relevance_info=False,
     )  ## index of the peak with peak relevance
     # (f'first evaluation of peak guess{peaksGuess}')
-    #print(peaksGuess)
+    # print(peaksGuess)
     if (
         np.size(peaksGuess) > nbPeaksInBoxes[counterOfBoxes]
     ):  ## case if more peaks than expected are detected
@@ -137,38 +66,53 @@ def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
         p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 2] = fwhmGuess
-        appendMinBounds = np.array(([np.amin(yData),p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2],0])) # minimum bounds of the parametrs solution (H, C, FWHM) to apend
-        appendMaxBounds = np.array(([np.amax(yData), p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2],2 * p0Guess[3 * ipar + 2]])) # maximum bounds of the parametrs solution (H, C, FWHM)to append
-        minBounds = np.append(minBounds, appendMinBounds) # minimum bounds of the parametrs solution (H, C, FWHM)
-        maxBounds = np.append(maxBounds, appendMaxBounds) # maximum bounds of the parametrs solution (H, C, FWHM)to append
-    #print(p0Guess)
+        appendMinBounds = np.array(
+            ([np.amin(yData), p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2], 0])
+        )  # minimum bounds of the parametrs solution (H, C, FWHM) to apend
+        appendMaxBounds = np.array(
+            (
+                [
+                    np.amax(yData),
+                    p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2],
+                    2 * p0Guess[3 * ipar + 2],
+                ]
+            )
+        )  # maximum bounds of the parametrs solution (H, C, FWHM)to append
+        minBounds = np.append(
+            minBounds, appendMinBounds
+        )  # minimum bounds of the parametrs solution (H, C, FWHM)
+        maxBounds = np.append(
+            maxBounds, appendMaxBounds
+        )  # maximum bounds of the parametrs solution (H, C, FWHM)to append
+    # print(p0Guess)
     firstGuess, covGuess = scipy.optimize.curve_fit(
         gaussEstimation,
         xData,
         yData,
         p0Guess,
-        bounds = (minBounds,maxBounds),
-        maxfev = 10000
+        bounds=(minBounds, maxBounds),
+        maxfev=10000,
     )
-    #print(firstGuess)
-    #print(peaksGuess)
+    # print(firstGuess)
+    # print(peaksGuess)
     return firstGuess, peaksGuess
 
 
 def fitEDD(
-    fileRead,
-    fileSave,
-    sample,
-    dataset,
-    scanNumber,
-    nameHorizontalDetector,
-    nameVerticalDetector,
-    positioners,
-    numberOfBoxes,
-    nbPeaksInBoxes,
-    rangeFitHD,
-    rangeFitVD,
+    fileRead: str,
+    fileSave: str,
+    sample: str,
+    dataset: str,
+    scanNumber: int,
+    nameHorizontalDetector: str,
+    nameVerticalDetector: str,
+    positioners: Sequence[str],
+    numberOfBoxes: int,
+    nbPeaksInBoxes: Sequence[int],
+    rangeFitHD: Sequence[int],
+    rangeFitVD: Sequence[int],
 ):
+    print(f"Fitting scan n.{scanNumber}")
 
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
         if (
@@ -362,24 +306,44 @@ def fitEDD(
                         initialGuessHD[5 * n + 2] = peaksGuessHD[3 * n + 2]
                         initialGuessHD[5 * n + 3] = peaksGuessHD[3 * n + 2]
                         initialGuessHD[5 * n + 4] = 0.5
-                        appendMinBoundsHD = np.array(([np.amin(peakHorizontalDetector[:, 1]),
-                        initialGuessHD[5 * n + 1] - 3 * initialGuessHD[5 * n + 2],
-                        0, 0, 0])) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
-                        appendMaxBoundsHD = np.array(([np.amax(peakHorizontalDetector[:, 1]), 
-                        initialGuessHD[5 * n + 1] + 3 * initialGuessHD[5 * n + 2],
-                        len(peakHorizontalDetector[:, 0])/2,
-                        len(peakHorizontalDetector[:, 0])/2,
-                        1])) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the horizontal detector
-                        minBoundsHD = np.append(minBoundsHD, appendMinBoundsHD) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
-                        maxBoundsHD = np.append(maxBoundsHD, appendMaxBoundsHD) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
+                        appendMinBoundsHD = np.array(
+                            (
+                                [
+                                    np.amin(peakHorizontalDetector[:, 1]),
+                                    initialGuessHD[5 * n + 1]
+                                    - 3 * initialGuessHD[5 * n + 2],
+                                    0,
+                                    0,
+                                    0,
+                                ]
+                            )
+                        )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
+                        appendMaxBoundsHD = np.array(
+                            (
+                                [
+                                    np.amax(peakHorizontalDetector[:, 1]),
+                                    initialGuessHD[5 * n + 1]
+                                    + 3 * initialGuessHD[5 * n + 2],
+                                    len(peakHorizontalDetector[:, 0]) / 2,
+                                    len(peakHorizontalDetector[:, 0]) / 2,
+                                    1,
+                                ]
+                            )
+                        )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the horizontal detector
+                        minBoundsHD = np.append(
+                            minBoundsHD, appendMinBoundsHD
+                        )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
+                        maxBoundsHD = np.append(
+                            maxBoundsHD, appendMaxBoundsHD
+                        )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
                     optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
                         f=splitPseudoVoigt,
                         xdata=peakHorizontalDetector[:, 0],
                         ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
                         p0=initialGuessHD,
                         sigma=None,
-                        bounds = (minBoundsHD, maxBoundsHD),
-                        maxfev = 10000
+                        bounds=(minBoundsHD, maxBoundsHD),
+                        maxfev=10000,
                     )  ## fit of the peak of the Horizontal detector
                     pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
                         "fitHorizontalDetector",
@@ -429,7 +393,7 @@ def fitEDD(
                                 )
                                 / np.sum(peakHorizontalDetector[:, 1]),
                             ),
-                            axis=0
+                            axis=0,
                         )  ##
                         uncertaintyFitParamsHD = np.append(
                             uncertaintyFitParamsHD,
@@ -471,24 +435,44 @@ def fitEDD(
                         initialGuessVD[5 * n + 2] = peaksGuessVD[3 * n + 2]
                         initialGuessVD[5 * n + 3] = peaksGuessVD[3 * n + 2]
                         initialGuessVD[5 * n + 4] = 0.5
-                        appendMinBoundsVD = np.array(([np.amin(peakVerticalDetector[:, 1]),
-                        initialGuessVD[5 * n + 1] - 3 * initialGuessVD[5 * n + 2],
-                        0, 0, 0])) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the vertical detector
-                        appendMaxBoundsVD = np.array(([np.amax(peakVerticalDetector[:, 1]), 
-                        initialGuessVD[5 * n + 1] + 3 * initialGuessVD[5 * n + 2],
-                        len(peakVerticalDetector[:, 0])/2,
-                        len(peakVerticalDetector[:, 0])/2,
-                        1])) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the vertical detector
-                        minBoundsVD = np.append(minBoundsVD, appendMinBoundsVD) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
-                        maxBoundsVD = np.append(maxBoundsVD, appendMaxBoundsVD) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
+                        appendMinBoundsVD = np.array(
+                            (
+                                [
+                                    np.amin(peakVerticalDetector[:, 1]),
+                                    initialGuessVD[5 * n + 1]
+                                    - 3 * initialGuessVD[5 * n + 2],
+                                    0,
+                                    0,
+                                    0,
+                                ]
+                            )
+                        )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the vertical detector
+                        appendMaxBoundsVD = np.array(
+                            (
+                                [
+                                    np.amax(peakVerticalDetector[:, 1]),
+                                    initialGuessVD[5 * n + 1]
+                                    + 3 * initialGuessVD[5 * n + 2],
+                                    len(peakVerticalDetector[:, 0]) / 2,
+                                    len(peakVerticalDetector[:, 0]) / 2,
+                                    1,
+                                ]
+                            )
+                        )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the vertical detector
+                        minBoundsVD = np.append(
+                            minBoundsVD, appendMinBoundsVD
+                        )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
+                        maxBoundsVD = np.append(
+                            maxBoundsVD, appendMaxBoundsVD
+                        )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
                     optimal_parametersVD, covarianceVD = scipy.optimize.curve_fit(
                         f=splitPseudoVoigt,
                         xdata=peakVerticalDetector[:, 0],
                         ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
                         p0=initialGuessVD,
                         sigma=None,
-                        bounds = (minBoundsVD, maxBoundsVD),
-                        maxfev = 10000
+                        bounds=(minBoundsVD, maxBoundsVD),
+                        maxfev=10000,
                     )  ## fit of the peak of the Vertical detector
                     pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
                         "fitVerticalDetector",
@@ -573,8 +557,8 @@ def fitEDD(
                 )  ## save uncertainty on the parameters of the fit of VD
                 for peakNumber in range(np.sum(nbPeaksInBoxes)):
                     if (
-                        not f"peak_{str(peakNumber).zfill(4)}"
-                        in tthPositionsGroup.keys()
+                        f"peak_{str(peakNumber).zfill(4)}"
+                        not in tthPositionsGroup.keys()
                     ):
                         peakDataset = tthPositionsGroup.create_dataset(
                             f"peak_{str(peakNumber).zfill(4)}",
@@ -600,15 +584,19 @@ def fitEDD(
                     peakDataset[2 * k, 0:6] = positionAngles[
                         k, 0:6
                     ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
-                    uncertaintyPeakDataset[
-                        2 * k, 0:6
-                    ] = positionAngles[k, 0:6]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (for the moment I set it to zero) in the uncertainty dataset
+                    uncertaintyPeakDataset[2 * k, 0:6] = positionAngles[
+                        k, 0:6
+                    ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (for the moment I set it to zero) in the uncertainty dataset
                     peakDataset[
                         2 * k, 6
-                    ] = - 90  ## delta angle of the horizontal detector (debye scherer ring angle)
+                    ] = (
+                        -90
+                    )  ## delta angle of the horizontal detector (debye scherer ring angle)
                     uncertaintyPeakDataset[
                         2 * k, 6
-                    ] = - 90  ## delta angle of the horizontal detector (debye scherer ring angle) (I set the uncertainty to zero for the moment)
+                    ] = (
+                        -90
+                    )  ## delta angle of the horizontal detector (debye scherer ring angle) (I set the uncertainty to zero for the moment)
                     peakDataset[
                         2 * k, 7
                     ] = 0  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
@@ -658,9 +646,9 @@ def fitEDD(
                     peakDataset[2 * k + 1, 0:6] = positionAngles[
                         k, 0:6
                     ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
-                    uncertaintyPeakDataset[
-                        2 * k + 1, 0:6
-                    ] = positionAngles[k, 0:6]  ## uncertaiinty on the coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I set it to zero for the moment)
+                    uncertaintyPeakDataset[2 * k + 1, 0:6] = positionAngles[
+                        k, 0:6
+                    ]  ## uncertaiinty on the coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I set it to zero for the moment)
                     peakDataset[
                         2 * k + 1, 6
                     ] = 0  ## delta angle of the vertical detector (debye scherer ring angle)
@@ -713,9 +701,9 @@ def fitEDD(
                     uncertaintyPeakDataset[
                         2 * k + 1, 12
                     ] = 0  ## No utility of this thing, I set it to zero/ uncertainty of the Rw factor of VD (goodness of the fit)
-                if not f"infoPeak" in tthPositionsGroup.keys():
-                    infoPeakDataset = tthPositionsGroup.create_dataset(
-                        f"infoPeak",
+                if "infoPeak" not in tthPositionsGroup.keys():
+                    tthPositionsGroup.create_dataset(
+                        "infoPeak",
                         dtype=h5py.string_dtype(encoding="utf-8"),
                         data=f"{positioners}, delta, thetha, position in channel, Intenstity, FWHM, shape factor, goodness factor",
                     )  ## create info about dataset saved for each peak in tthPositionGroup
@@ -765,12 +753,12 @@ def fitEDD(
                 fitLine = pointInScan.create_group(
                     f"fitLine_{str(i).zfill(4)}"
                 )  ## create group for each range of peak(s)
-                pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+                fitLine.create_dataset(
                     "rawHorizontalDetector",
                     dtype="float64",
                     data=peakHorizontalDetector,
                 )  ## create dataset for raw data of each calibration peak
-                pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+                fitLine.create_dataset(
                     "rawVerticalDetector", dtype="f", data=peakVerticalDetector
                 )  ## create dataset for raw data of each calibration peak
                 peaksGuessHD, peaksIndexHD = guessParameters(
@@ -820,24 +808,44 @@ def fitEDD(
                     initialGuessHD[5 * n + 2] = peaksGuessHD[3 * n + 2]
                     initialGuessHD[5 * n + 3] = peaksGuessHD[3 * n + 2]
                     initialGuessHD[5 * n + 4] = 0.5
-                    appendMinBoundsHD = np.array(([np.amin(peakHorizontalDetector[:, 1]),
-                    initialGuessHD[5 * n + 1] - 3 * initialGuessHD[5 * n + 2],
-                    0, 0, 0])) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
-                    appendMaxBoundsHD = np.array(([np.amax(peakHorizontalDetector[:, 1]), 
-                    initialGuessHD[5 * n + 1] + 3 * initialGuessHD[5 * n + 2],
-                    len(peakHorizontalDetector[:, 0])/2,
-                    len(peakHorizontalDetector[:, 0])/2,
-                    1])) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
-                    minBoundsHD = np.append(minBoundsHD, appendMinBoundsHD) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
-                    maxBoundsHD = np.append(maxBoundsHD, appendMaxBoundsHD) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
+                    appendMinBoundsHD = np.array(
+                        (
+                            [
+                                np.amin(peakHorizontalDetector[:, 1]),
+                                initialGuessHD[5 * n + 1]
+                                - 3 * initialGuessHD[5 * n + 2],
+                                0,
+                                0,
+                                0,
+                            ]
+                        )
+                    )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
+                    appendMaxBoundsHD = np.array(
+                        (
+                            [
+                                np.amax(peakHorizontalDetector[:, 1]),
+                                initialGuessHD[5 * n + 1]
+                                + 3 * initialGuessHD[5 * n + 2],
+                                len(peakHorizontalDetector[:, 0]) / 2,
+                                len(peakHorizontalDetector[:, 0]) / 2,
+                                1,
+                            ]
+                        )
+                    )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
+                    minBoundsHD = np.append(
+                        minBoundsHD, appendMinBoundsHD
+                    )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
+                    maxBoundsHD = np.append(
+                        maxBoundsHD, appendMaxBoundsHD
+                    )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
                 optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
                     f=splitPseudoVoigt,
                     xdata=peakHorizontalDetector[:, 0],
                     ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
                     p0=initialGuessHD,
                     sigma=None,
-                    bounds = (minBoundsHD, maxBoundsHD),
-                    maxfev = 10000
+                    bounds=(minBoundsHD, maxBoundsHD),
+                    maxfev=10000,
                 )  ## fit of the peak of the Horizontal detector
                 pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
                     "fitHorizontalDetector",
@@ -928,24 +936,44 @@ def fitEDD(
                     initialGuessVD[5 * n + 2] = peaksGuessVD[3 * n + 2]
                     initialGuessVD[5 * n + 3] = peaksGuessVD[3 * n + 2]
                     initialGuessVD[5 * n + 4] = 0.5
-                    appendMinBoundsVD = np.array(([np.amin(peakVerticalDetector[:, 1]),
-                    initialGuessVD[5 * n + 1] - 3 * initialGuessVD[5 * n + 2],
-                    0, 0, 0])) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the vertical detector
-                    appendMaxBoundsVD = np.array(([np.amax(peakVerticalDetector[:, 1]), 
-                    initialGuessVD[5 * n + 1] + 3 * initialGuessVD[5 * n + 2],
-                    len(peakVerticalDetector[:, 0])/2,
-                    len(peakVerticalDetector[:, 0])/2,
-                    1])) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the vertical detector
-                    minBoundsVD = np.append(minBoundsVD, appendMinBoundsVD) # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
-                    maxBoundsVD = np.append(maxBoundsVD, appendMaxBoundsVD) # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
+                    appendMinBoundsVD = np.array(
+                        (
+                            [
+                                np.amin(peakVerticalDetector[:, 1]),
+                                initialGuessVD[5 * n + 1]
+                                - 3 * initialGuessVD[5 * n + 2],
+                                0,
+                                0,
+                                0,
+                            ]
+                        )
+                    )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the vertical detector
+                    appendMaxBoundsVD = np.array(
+                        (
+                            [
+                                np.amax(peakVerticalDetector[:, 1]),
+                                initialGuessVD[5 * n + 1]
+                                + 3 * initialGuessVD[5 * n + 2],
+                                len(peakVerticalDetector[:, 0]) / 2,
+                                len(peakVerticalDetector[:, 0]) / 2,
+                                1,
+                            ]
+                        )
+                    )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the vertical detector
+                    minBoundsVD = np.append(
+                        minBoundsVD, appendMinBoundsVD
+                    )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
+                    maxBoundsVD = np.append(
+                        maxBoundsVD, appendMaxBoundsVD
+                    )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
                 optimal_parametersVD, covarianceVD = scipy.optimize.curve_fit(
                     f=splitPseudoVoigt,
                     xdata=peakVerticalDetector[:, 0],
                     ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
                     p0=initialGuessVD,
                     sigma=None,
-                    bounds = (minBoundsVD, maxBoundsVD),
-                    maxfev = 10000
+                    bounds=(minBoundsVD, maxBoundsVD),
+                    maxfev=10000,
                 )  ## fit of the peak of the Vertical detector
                 pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
                     "fitVerticalDetector",
@@ -1028,7 +1056,7 @@ def fitEDD(
                 ),
             )  ## save uncertainty on the parameters of the fit of VD
             for peakNumber in range(np.sum(nbPeaksInBoxes)):
-                if not f"peak_{str(peakNumber).zfill(4)}" in tthPositionsGroup.keys():
+                if f"peak_{str(peakNumber).zfill(4)}" not in tthPositionsGroup.keys():
                     peakDataset = tthPositionsGroup.create_dataset(
                         f"peak_{str(peakNumber).zfill(4)}",
                         dtype="float64",
@@ -1047,15 +1075,17 @@ def fitEDD(
                 peakDataset[0, 0:6] = positionAngles[
                     0, 0:6
                 ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
-                uncertaintyPeakDataset[
+                uncertaintyPeakDataset[0, 0:6] = positionAngles[
                     0, 0:6
-                ] = positionAngles[0, 0:6]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
+                ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
                 peakDataset[
                     0, 6
-                ] = - 90  ## delta angle of the horizontal detector (debye scherer angle)
+                ] = -90  ## delta angle of the horizontal detector (debye scherer angle)
                 uncertaintyPeakDataset[
                     0, 6
-                ] = - 90  ## uncertainty of the delta angle of the horizontal detector (debye scherer angle) (I put the angle for the moment)
+                ] = (
+                    -90
+                )  ## uncertainty of the delta angle of the horizontal detector (debye scherer angle) (I put the angle for the moment)
                 peakDataset[
                     0, 7
                 ] = 0  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
@@ -1103,9 +1133,9 @@ def fitEDD(
                 peakDataset[1, 0:6] = positionAngles[
                     0, 0:6
                 ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
-                uncertaintyPeakDataset[
-                    1, 0:6
-                ] = positionAngles[0, 0:6]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
+                uncertaintyPeakDataset[1, 0:6] = positionAngles[
+                    0, 0:6
+                ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
                 peakDataset[
                     1, 6
                 ] = 0  ## delta angle of the horizontal detector (debye scherer angle)
@@ -1156,9 +1186,9 @@ def fitEDD(
                 uncertaintyPeakDataset[
                     1, 12
                 ] = 0  ## No utility of this thing I set it to zero / Rw factor of VD (goodness of the fit)
-            if not f"infoPeak" in tthPositionsGroup.keys():
-                infoPeakDataset = tthPositionsGroup.create_dataset(
-                    f"infoPeak",
+            if "infoPeak" not in tthPositionsGroup.keys():
+                tthPositionsGroup.create_dataset(
+                    "infoPeak",
                     dtype=h5py.string_dtype(encoding="utf-8"),
                     data=f"{positioners}, delta, thetha, position in channel, Intenstity, FWHM, shape factor, goodness factor",
                 )  ## create info about dataset saved for each peak in tthPositionGroup
@@ -1178,7 +1208,7 @@ def fitEDD(
             "dataset", dtype=h5py.string_dtype(encoding="utf-8"), data=dataset
         )  ## save the name of dataset in infos group
         infoGroup.create_dataset(
-            "scanNumber", dtype='int', data=scanNumber
+            "scanNumber", dtype="int", data=scanNumber
         )  ## save of the number of the scan in infos group
         infoGroup.create_dataset(
             "nameHorizontalDetector",
@@ -1211,3 +1241,25 @@ def fitEDD(
         print("No pattern was saved in this scan")
 
     return
+
+
+def fitEDD_with_scan_number_parse(**config):
+    n_scan_arg = config.pop("scanNumber")
+    if isinstance(n_scan_arg, int):
+        fitEDD(**config, scanNumber=n_scan_arg)
+    elif isinstance(n_scan_arg, list):
+        for i in n_scan_arg:
+            fitEDD_with_scan_number_parse(**config, scanNumber=i)
+    elif isinstance(n_scan_arg, str):
+        if ":" in n_scan_arg:
+            min_scan, max_scan = n_scan_arg.split(":")
+            for i in range(int(min_scan), int(max_scan)):
+                fitEDD(**config, scanNumber=i)
+        else:
+            fitEDD(**config, scanNumber=int(n_scan_arg))
+    else:
+        raise ValueError(f"Unrecognized value for scanNumber: {n_scan_arg}")
+
+
+if __name__ == "__main__":
+    run_from_cli(fitEDD_with_scan_number_parse)
