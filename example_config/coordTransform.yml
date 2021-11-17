@@ -1,0 +1,5 @@
+########### Example of the arguments of the main function #############
+fileRead: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_test_TiC.h5'
+fileSave: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_test_TiC.h5'
+numberOfPeaks: 5
+gonioToSample: [0, 0, 0, 0, 0, 9] # represent the angles and translation to transform coordinates from gonio refrence to sample reference (the last is always 1)
