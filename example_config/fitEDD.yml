@@ -1,0 +1,13 @@
+########### Example of the arguments of the main function #############
+fileRead: '/home/esrf/slim/data/ihme10/id15/BAIII_AB_4_1/ihme10_BAIII_AB_4_1.h5'
+fileSave: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_BAIII_AB_4_1.h5'
+sample: 'BAIII_AB_4_1'
+dataset: '0001'
+scanNumber: '50'
+nameHorizontalDetector: 'mca2_det0'
+nameVerticalDetector: 'mca2_det1'
+positioners: ['ex', 'ey', 'ez', 'ephi', 'echi', 'sry']
+numberOfBoxes: 2
+nbPeaksInBoxes: [1, 2]
+rangeFitHD: [1320, 1620, 1600, 2000]
+rangeFitVD: [1300, 1650, 1620, 2000]
