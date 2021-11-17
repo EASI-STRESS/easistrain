@@ -759,7 +759,7 @@ def fitEDD(
                     data=peakHorizontalDetector,
                 )  ## create dataset for raw data of each calibration peak
                 fitLine.create_dataset(
-                    "rawVerticalDetector", dtype="f", data=peakVerticalDetector
+                    "rawVerticalDetector", dtype="float64", data=peakVerticalDetector
                 )  ## create dataset for raw data of each calibration peak
                 peaksGuessHD, peaksIndexHD = guessParameters(
                     peakHorizontalDetector[:, 0],
