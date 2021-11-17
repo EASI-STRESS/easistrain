@@ -2,6 +2,7 @@ import numpy as np
 import pyFAI
 import h5py
 import fabio
+import hdf5plugin  # noqa
 
 ### This function integrates a 2D image using integrate2D pyfai's function and save the results in a h5file named Results_name of the h5 file containing the image
 ### 1) It looks on the image on the h5 file
