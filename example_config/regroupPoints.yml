@@ -1,0 +1,8 @@
+########### Example of the arguments of the main function #############
+fileRead:
+  [
+    '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_OR1_TiC.h5',
+    '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_OR2_TiC.h5',
+  ]
+fileSave: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_glob_TiC.h5'
+numberOfPeaks: 5

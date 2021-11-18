@@ -4,11 +4,13 @@ import h5py
 import numpy
 from easistrain.EDD.coordTransformation import coordTransformation
 
+ORIENTATION = "OR1"
+
 
 def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
     with h5py.File(test_data_path, "r") as test_file:
-        n_peaks = test_file["infos/nPeaks"][()]
-        gonioToSample = test_file["infos/gonioToSample"][()]
+        n_peaks = test_file[f"{ORIENTATION}/infos/nPeaks"][()]
+        gonioToSample = test_file[f"{ORIENTATION}/infos/gonioToSample"][()]
 
     return {
         "fileRead": str(tmp_path / "input_file.h5"),
@@ -30,10 +32,9 @@ def generate_input_files(
             pos_group = h5file.create_group("scan/tthPositionsGroup")
             for i in range(n_peaks):
                 peak_name = f"peak_{str(i).zfill(4)}"
-                print(test_data_path, list(data_file.keys()))
-                pos_group[peak_name] = data_file[f"{peak_name}/value"][()]
+                pos_group[peak_name] = data_file[f"{ORIENTATION}/{peak_name}/value"][()]
                 pos_group[f"uncertainty{peak_name.capitalize()}"] = data_file[
-                    f"{peak_name}/errors"
+                    f"{ORIENTATION}/{peak_name}/errors"
                 ][()]
 
     return cfg
@@ -56,7 +57,7 @@ def test_coordTransform(tmp_path: Path):
             peak_data = h5file[f"global/inSample_{peak_name}"][()]
 
         with h5py.File(test_data_path, "r") as h5file:
-            ref_data = h5file[f"ref_{peak_name}/value"][()]
-            ref_errors = h5file[f"ref_{peak_name}/errors"][()]
+            ref_data = h5file[f"{ORIENTATION}/ref_{peak_name}/value"][()]
+            ref_errors = h5file[f"{ORIENTATION}/ref_{peak_name}/errors"][()]
 
         assert numpy.all(numpy.abs(peak_data - ref_data) <= numpy.abs(ref_errors))
