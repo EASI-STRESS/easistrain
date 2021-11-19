@@ -4,13 +4,15 @@ import h5py
 import numpy
 from easistrain.EDD.fitEDD import fitEDD
 
+ORIENTATION = "OR1"
+
 
 def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
     with h5py.File(test_data_path, "r") as test_file:
-        nb_peaks_in_boxes = test_file["infos/nbPeaksInBoxes"][()]
-        fit_ranges_h = test_file["infos/rangeFitHD"][()]
-        fit_ranges_v = test_file["infos/rangeFitVD"][()]
-        positioners = list(test_file["positioners"].keys())
+        nb_peaks_in_boxes = test_file[f"{ORIENTATION}/infos/nbPeaksInBoxes"][()]
+        fit_ranges_h = test_file[f"{ORIENTATION}/infos/rangeFitHD"][()]
+        fit_ranges_v = test_file[f"{ORIENTATION}/infos/rangeFitVD"][()]
+        positioners = list(test_file[f"{ORIENTATION}/positioners"].keys())
 
     return {
         "fileRead": str(tmp_path / "input_file.h5"),
@@ -42,11 +44,13 @@ def generate_input_files(
     with h5py.File(test_data_path, "r") as data_file:
         with h5py.File(cfg["fileRead"], "w") as h5file:
             scan_grp = f"{sample}_{dataset}_{n_scan}.1"
-            h5file[f"{scan_grp}/measurement/{name_h}"] = data_file["horizontal/data"][
-                ()
-            ]
-            h5file[f"{scan_grp}/measurement/{name_v}"] = data_file["vertical/data"][()]
-            for pos_name, pos_data in data_file["positioners"].items():
+            h5file[f"{scan_grp}/measurement/{name_h}"] = data_file[
+                f"{ORIENTATION}/horizontal/data"
+            ][()]
+            h5file[f"{scan_grp}/measurement/{name_v}"] = data_file[
+                f"{ORIENTATION}/vertical/data"
+            ][()]
+            for pos_name, pos_data in data_file[f"{ORIENTATION}/positioners"].items():
                 h5file[f"{scan_grp}/instrument/positioners/{pos_name}"] = pos_data[()]
 
     return cfg
@@ -58,10 +62,10 @@ def test_fitEDD(tmp_path: Path):
         Path(__file__).parent.parent.resolve() / "data" / "BAIII_fit_data.hdf5"
     )
     with h5py.File(test_data_path, "r") as h5file:
-        ref_vertical_params = h5file["vertical/fit/params"][()]
-        vertical_params_errors = h5file["vertical/fit/errors"][()]
-        ref_horizontal_params = h5file["horizontal/fit/params"][()]
-        horizontal_params_errors = h5file["horizontal/fit/errors"][()]
+        ref_vertical_params = h5file[f"{ORIENTATION}/vertical/fit/params"][()]
+        vertical_params_errors = h5file[f"{ORIENTATION}/vertical/fit/errors"][()]
+        ref_horizontal_params = h5file[f"{ORIENTATION}/horizontal/fit/params"][()]
+        horizontal_params_errors = h5file[f"{ORIENTATION}/horizontal/fit/errors"][()]
     config = generate_input_files(tmp_path, test_data_path)
 
     # Act
