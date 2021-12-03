@@ -1,3 +1,4 @@
+from typing import Sequence
 import numpy as np
 import h5py
 
@@ -85,14 +86,14 @@ def diffVector(angles):
 
 
 def preStraind0cstEDD(
-    fileRead,
-    fileSave,
-    pathFileDetectorCalibration,
-    scanDetectorCalibration,
-    pathFileAngleCalibration,
-    scanAngleCalibration,
-    numberOfPeaks,
-    d0,
+    fileRead: str,
+    fileSave: str,
+    pathFileDetectorCalibration: str,
+    scanDetectorCalibration: str,
+    pathFileAngleCalibration: str,
+    scanAngleCalibration: str,
+    numberOfPeaks: int,
+    d0: Sequence[float],
 ):
 
     h5Save = h5py.File(fileSave, "a")  ## create/append h5 file to save in
