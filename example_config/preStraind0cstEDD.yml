@@ -1,0 +1,9 @@
+########### Example of the arguments of the main function #############
+fileRead: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_glob_TiC.h5'
+fileSave: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_globstrain_TiC.h5'
+pathFileDetectorCalibration: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_align.h5'
+scanDetectorCalibration: 'fit_0001_2_1'
+pathFileAngleCalibration: '/home/esrf/slim/easistrain/easistrain/EDD/Results_ihme10_TiC_calib.h5'
+scanAngleCalibration: 'fit_0001_3'
+numberOfPeaks: 5
+d0: [2.491844, 2.158000, 1.525936, 1.301323, 1.245922]
