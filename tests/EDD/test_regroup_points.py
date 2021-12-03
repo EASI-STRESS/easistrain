@@ -68,5 +68,4 @@ def test_regroupPoints(tmp_path: Path):
             ref_data = h5file[f"peak_{i}/ref_{point_name}/value"][()]
             ref_errors = h5file[f"peak_{i}/ref_{point_name}/errors"][()]
 
-        print(numpy.abs(point_data - ref_data))
         assert numpy.all(numpy.abs(point_data - ref_data) <= numpy.abs(ref_errors))

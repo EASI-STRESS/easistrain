@@ -5,27 +5,15 @@ import silx.math.fit.peaks
 import scipy.optimize
 import scipy.constants
 
+from easistrain.EDD.constants import pCstInkeVS, speedLightInAPerS
 from easistrain.EDD.utils import (
     calcBackground,
     guessParameters,
     linefunc,
     run_from_cli,
     splitPseudoVoigt,
+    uChEConversion,
 )
-
-
-def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
-    """
-    Calculates the uncertainty on the energy coming from the conversion from channel to energy.
-
-    It includes the uncertainty on the calibration of the coefficients and the peak position
-    """
-    return np.sqrt(
-        ((ua ** 2) * (ch ** 4))
-        + ((uch ** 2)) * (((2 * a * ch) + b) ** 2)
-        + ((ub ** 2) * ch ** 2)
-        + (uc ** 2)
-    )
 
 
 def angleCalibrationEDD(
@@ -45,14 +33,6 @@ def angleCalibrationEDD(
     sampleCalibrantFile: str,
 ):
     """Main function."""
-    pCstInkeVS = (
-        0.001 * scipy.constants.physical_constants["Planck constant in eV s"][0]
-    )  ## Planck Constant in keV s
-    speedLightInAPerS = (10 ** 10) * scipy.constants.physical_constants[
-        "speed of light in vacuum"
-    ][
-        0
-    ]  ## speed of light in Ang/second
 
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
         patternHorizontalDetector = h5Read[
