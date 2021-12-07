@@ -1,9 +1,6 @@
 import numpy as np
-import scipy.optimize
 
 
-
-########### Example of the arguments of the main function #############
 def diffVector(angles, e11, e22, e33, e23, e13, e12):
     phi = np.radians(angles[:, 0])
     chi = np.radians(angles[:, 1])
