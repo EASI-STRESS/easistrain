@@ -27,43 +27,45 @@ def linefunc(a, xData):
 
 
 def splitPseudoVoigt(xData, *params):
-    return silx.math.fit.sum_splitpvoigt(xData, *params)
+    return silx.math.fit.sum_splitpvoigt(xData, *params)  # type: ignore
 
 
 def gaussEstimation(xData, *params):
-    return silx.math.fit.sum_gauss(xData, *params)
+    return silx.math.fit.sum_gauss(xData, *params)  # type: ignore
 
 
-def calcBackground(xData, yData, fwhmRight, fwhmLeft, guessedPeaksIndex):
+def calcBackground(
+    xData: np.ndarray,
+    yData: np.ndarray,
+    fwhmRight: float,
+    fwhmLeft: float,
+    guessedPeaksIndex,
+):
     if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
         guessedPeaksIndex[-1] + 3 * fwhmRight
     ) <= len(
         xData
     ):  ## case of not enough of points at left
-        # print('## case of not enough of points at left')
         xBackground = xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
         yBackground = yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-    if (
+    elif (
         int(guessedPeaksIndex[-1] + 3 * fwhmRight) > len(xData)
         and int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0
     ):  ## case of not enough of points at right
-        # print('## case of not enough of points at right')
         xBackground = xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
         yBackground = yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
+    elif int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
         guessedPeaksIndex[-1] + 3 * fwhmRight
     ) > len(
         xData
     ):  ## case of not enough of points at left and right
-        # print('## case of not enough of points at left and right')
         xBackground = np.append(xData[0:5], xData[-5:])
         yBackground = np.append(yData[0:5], yData[-5:])
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0 and int(
+    elif int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0 and int(
         guessedPeaksIndex[-1] + 3 * fwhmRight
     ) <= len(
         xData
     ):  ## case of enough of points at left and right
-        # print('## case of enough of points at left and right')
         xBackground = np.append(
             xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
             xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
@@ -72,13 +74,11 @@ def calcBackground(xData, yData, fwhmRight, fwhmLeft, guessedPeaksIndex):
             yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
             yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
         )
-    # print(xData[0:int(guessedPeaksIndex[0] - 3 * fwhmLeft)])
-    # print(xData[-int(guessedPeaksIndex[-1] + 3 * fwhmRight):])
-    # print(int(guessedPeaksIndex[-1] + 3 * fwhmRight))
-    # print(int(guessedPeaksIndex[0] - 3 * fwhmLeft))
-    # print(fwhmRight)
-    # print(xBackground)
-    # print(yBackground)
+    else:
+        raise ValueError(
+            "Met a case that should not have been possible when calculating background"
+        )
+
     backgroundCoefficient = np.polyfit(
         x=xBackground, y=yBackground, deg=1
     )  ## fit of background with 1d polynom function
