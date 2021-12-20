@@ -1,5 +1,5 @@
 import argparse
-from typing import Callable, Sequence, Union
+from typing import Callable, Sequence, Tuple, Union
 from pathlib import Path
 import yaml
 import numpy as np
@@ -95,6 +95,7 @@ def guessParameters(
     yData: np.ndarray,
     counterOfBoxes: int,
     nbPeaksInBoxes: Sequence[int],
+    withBounds: bool,
 ):
     p0Guess = np.zeros(3 * nbPeaksInBoxes[counterOfBoxes], float)
     fwhmGuess = silx.math.fit.peaks.guess_fwhm(yData)
@@ -108,6 +109,7 @@ def guessParameters(
         relevance_info=False,
     )  ## index of the peak with peak relevance
     # (f'first evaluation of peak guess{peaksGuess}')
+    # print(peaksGuess)
     if (
         np.size(peaksGuess) > nbPeaksInBoxes[counterOfBoxes]
     ):  ## case if more peaks than expected are detected
@@ -143,15 +145,37 @@ def guessParameters(
         ]
         peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
     # print(peaksGuess)
+    minBounds = np.array(())
+    maxBounds = np.array(())
     for ipar in range(nbPeaksInBoxes[counterOfBoxes]):
         p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 2] = fwhmGuess
+        appendMinBounds = np.array(
+            ([np.amin(yData), p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2], 0])
+        )  # minimum bounds of the parametrs solution (H, C, FWHM) to apend
+        appendMaxBounds = np.array(
+            (
+                [
+                    np.amax(yData),
+                    p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2],
+                    2 * p0Guess[3 * ipar + 2],
+                ]
+            )
+        )  # maximum bounds of the parametrs solution (H, C, FWHM)to append
+        minBounds = np.append(
+            minBounds, appendMinBounds
+        )  # minimum bounds of the parametrs solution (H, C, FWHM)
+        maxBounds = np.append(
+            maxBounds, appendMaxBounds
+        )  # maximum bounds of the parametrs solution (H, C, FWHM)to append
+    # print(p0Guess)
     firstGuess, covGuess = scipy.optimize.curve_fit(
         gaussEstimation,
         xData,
         yData,
         p0Guess,
+        **({"bounds": (minBounds, maxBounds), "maxfev": 10000} if withBounds else {}),
     )
     # print(firstGuess)
     # print(peaksGuess)
@@ -170,3 +194,22 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
         + ((ub ** 2) * ch ** 2)
         + (uc ** 2)
     )
+
+
+def process_detector_data(fit_min: float, fit_max: float, input_data: np.ndarray):
+
+    peakHorizontalDetector = np.transpose(
+        (
+            np.arange(fit_min, fit_max),
+            input_data[fit_min:fit_max],
+        )
+    )  ## peak of the horizontal detector
+    backgroundHorizontalDetector = silx.math.fit.strip(
+        data=peakHorizontalDetector[:, 1],
+        w=5,
+        niterations=4000,
+        factor=1,
+        anchors=None,
+    )  ## stripped background of the horizontal detector (obtained by stripping the yData)
+
+    return backgroundHorizontalDetector, peakHorizontalDetector

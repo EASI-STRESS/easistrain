@@ -9,94 +9,8 @@ from easistrain.EDD.utils import (
     run_from_cli,
     splitPseudoVoigt,
     calcBackground,
+    guessParameters,
 )
-
-
-def guessParameters(xData, yData, counterOfBoxes, nbPeaksInBoxes):
-    p0Guess = np.zeros(3 * nbPeaksInBoxes[counterOfBoxes], float)
-    fwhmGuess = silx.math.fit.peaks.guess_fwhm(yData)
-    peaksGuess = silx.math.fit.peaks.peak_search(
-        yData,
-        fwhmGuess,
-        sensitivity=2.5,
-        begin_index=None,
-        end_index=None,
-        debug=False,
-        relevance_info=False,
-    )  ## index of the peak with peak relevance
-    # (f'first evaluation of peak guess{peaksGuess}')
-    # print(peaksGuess)
-    if (
-        np.size(peaksGuess) > nbPeaksInBoxes[counterOfBoxes]
-    ):  ## case if more peaks than expected are detected
-        peaksGuess = silx.math.fit.peaks.peak_search(
-            yData,
-            fwhmGuess,
-            sensitivity=1,
-            begin_index=None,
-            end_index=None,
-            debug=False,
-            relevance_info=True,
-        )  ## index of the peak with peak relevance
-        peaksGuessArray = np.asarray(peaksGuess)
-        orderedIndex = np.argsort(peaksGuessArray[:, 1])[
-            -nbPeaksInBoxes[counterOfBoxes] :
-        ]
-        peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
-    if (
-        np.size(peaksGuess) < nbPeaksInBoxes[counterOfBoxes]
-    ):  ## case if less peaks than expected are detected
-        peaksGuess = silx.math.fit.peaks.peak_search(
-            yData,
-            fwhmGuess,
-            sensitivity=1,
-            begin_index=None,
-            end_index=None,
-            debug=False,
-            relevance_info=True,
-        )  ## index of the peak with peak relevance
-        peaksGuessArray = np.asarray(peaksGuess)
-        orderedIndex = np.argsort(peaksGuessArray[:, 1])[
-            -nbPeaksInBoxes[counterOfBoxes] :
-        ]
-        peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
-    # print(peaksGuess)
-    minBounds = np.array(())
-    maxBounds = np.array(())
-    for ipar in range(nbPeaksInBoxes[counterOfBoxes]):
-        p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
-        p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
-        p0Guess[3 * ipar + 2] = fwhmGuess
-        appendMinBounds = np.array(
-            ([np.amin(yData), p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2], 0])
-        )  # minimum bounds of the parametrs solution (H, C, FWHM) to apend
-        appendMaxBounds = np.array(
-            (
-                [
-                    np.amax(yData),
-                    p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2],
-                    2 * p0Guess[3 * ipar + 2],
-                ]
-            )
-        )  # maximum bounds of the parametrs solution (H, C, FWHM)to append
-        minBounds = np.append(
-            minBounds, appendMinBounds
-        )  # minimum bounds of the parametrs solution (H, C, FWHM)
-        maxBounds = np.append(
-            maxBounds, appendMaxBounds
-        )  # maximum bounds of the parametrs solution (H, C, FWHM)to append
-    # print(p0Guess)
-    firstGuess, covGuess = scipy.optimize.curve_fit(
-        gaussEstimation,
-        xData,
-        yData,
-        p0Guess,
-        bounds=(minBounds, maxBounds),
-        maxfev=10000,
-    )
-    # print(firstGuess)
-    # print(peaksGuess)
-    return firstGuess, peaksGuess
 
 
 def fitEDD(
@@ -241,12 +155,14 @@ def fitEDD(
                     peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
                     i,
                     nbPeaksInBoxes,
+                    withBounds=True,
                 )  ## guess fit parameters for HD
                 peaksGuessVD, peaksIndexVD = guessParameters(
                     peakVerticalDetector[:, 0],
                     peakVerticalDetector[:, 1] - backgroundVerticalDetector,
                     i,
                     nbPeaksInBoxes,
+                    withBounds=True,
                 )  ## guess fit parameters for VD
                 yCalculatedBackgroundHD, coeffBgdHD = calcBackground(
                     peakHorizontalDetector[:, 0],
@@ -686,35 +602,19 @@ def fitEDD(
         )  ## create a group of each pattern (point of the scan)
         pointInScan.create_group("fitParams")  ## fit results group for the two detector
         for i in range(numberOfBoxes):
-            peakHorizontalDetector = np.transpose(
-                (
-                    np.arange(rangeFitHD[2 * i], rangeFitHD[(2 * i) + 1]),
-                    patternHorizontalDetector[
-                        rangeFitHD[2 * i] : rangeFitHD[(2 * i) + 1]
-                    ],
-                )
-            peakVerticalDetector = np.transpose(
-                (
-                    np.arange(rangeFitVD[2 * i], rangeFitVD[(2 * i) + 1]),
-                    patternVerticalDetector[
-                        rangeFitVD[2 * i] : rangeFitVD[(2 * i) + 1]
-                    ],
-                )
+            (
+                backgroundHorizontalDetector,
+                peakHorizontalDetector,
+            ) = process_detector_data(
+                fit_min=rangeFitHD[2 * i],
+                fit_max=rangeFitHD[(2 * i) + 1],
+                input_data=patternHorizontalDetector,
+            )
+            backgroundVerticalDetector, peakVerticalDetector = process_detector_data(
+                fit_min=rangeFitVD[2 * i],
+                fit_max=rangeFitVD[(2 * i) + 1],
+                input_data=patternVerticalDetector,
             )  ## peak of the vertical detector
-            backgroundHorizontalDetector = silx.math.fit.strip(
-                data=peakHorizontalDetector[:, 1],
-                w=5,
-                niterations=4000,
-                factor=1,
-                anchors=None,
-            )  ## stripped background of the horizontal detector (obtained by stripping the yData)
-            backgroundVerticalDetector = silx.math.fit.strip(
-                data=peakVerticalDetector[:, 1],
-                w=5,
-                niterations=4000,
-                factor=1,
-                anchors=None,
-            )  ## stripped background of the vertical detector (obtained by stripping the yData)
             fitLine = pointInScan.create_group(
                 f"fitLine_{str(i).zfill(4)}"
             )  ## create group for each range of peak(s)
@@ -731,12 +631,14 @@ def fitEDD(
                 peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
                 i,
                 nbPeaksInBoxes,
+                withBounds=True,
             )  ## guess fit parameters for HD
             peaksGuessVD, peaksIndexVD = guessParameters(
                 peakVerticalDetector[:, 0],
                 peakVerticalDetector[:, 1] - backgroundVerticalDetector,
                 i,
                 nbPeaksInBoxes,
+                withBounds=True,
             )  ## guess fit parameters for VD
             yCalculatedBackgroundHD, coeffBgdHD = calcBackground(
                 peakHorizontalDetector[:, 0],
