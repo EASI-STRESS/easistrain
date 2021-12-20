@@ -96,7 +96,6 @@ def guessParameters(
     nb_peaks: int,
     withBounds: bool,
 ):
-    p0Guess = np.zeros(3 * nb_peaks, float)
     fwhmGuess = silx.math.fit.peaks.guess_fwhm(yData)
     peaksGuess = silx.math.fit.peaks.peak_search(
         yData,
@@ -107,8 +106,7 @@ def guessParameters(
         debug=False,
         relevance_info=False,
     )  ## index of the peak with peak relevance
-    # (f'first evaluation of peak guess{peaksGuess}')
-    # print(peaksGuess)
+
     if np.size(peaksGuess) > nb_peaks:  ## case if more peaks than expected are detected
         peaksGuess = silx.math.fit.peaks.peak_search(
             yData,
@@ -135,41 +133,36 @@ def guessParameters(
         peaksGuessArray = np.asarray(peaksGuess)
         orderedIndex = np.argsort(peaksGuessArray[:, 1])[-nb_peaks:]
         peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
-    # print(peaksGuess)
-    minBounds = np.array(())
-    maxBounds = np.array(())
+
+    p0Guess = np.zeros(3 * nb_peaks, float)
+    minBounds = np.empty((nb_peaks, 3))
+    maxBounds = np.empty((nb_peaks, 3))
+
     for ipar in range(nb_peaks):
         p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 2] = fwhmGuess
-        appendMinBounds = np.array(
-            ([np.amin(yData), p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2], 0])
-        )  # minimum bounds of the parametrs solution (H, C, FWHM) to apend
-        appendMaxBounds = np.array(
-            (
-                [
-                    np.amax(yData),
-                    p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2],
-                    2 * p0Guess[3 * ipar + 2],
-                ]
-            )
-        )  # maximum bounds of the parametrs solution (H, C, FWHM)to append
-        minBounds = np.append(
-            minBounds, appendMinBounds
-        )  # minimum bounds of the parametrs solution (H, C, FWHM)
-        maxBounds = np.append(
-            maxBounds, appendMaxBounds
-        )  # maximum bounds of the parametrs solution (H, C, FWHM)to append
-    # print(p0Guess)
+
+        minBounds[ipar, 0] = np.amin(yData)  # min H
+        minBounds[ipar, 1] = p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2]  # min C
+        minBounds[ipar, 2] = 0  # min FWHM
+
+        maxBounds[ipar, 0] = np.amax(yData)  # max H
+        maxBounds[ipar, 1] = p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2]  # max C
+        maxBounds[ipar, 2] = 2 * p0Guess[3 * ipar + 2]  # max FWHM
+
     firstGuess, covGuess = scipy.optimize.curve_fit(
         gaussEstimation,
         xData,
         yData,
         p0Guess,
-        **({"bounds": (minBounds, maxBounds), "maxfev": 10000} if withBounds else {}),
+        **(
+            {"bounds": (minBounds.flatten(), maxBounds.flatten()), "maxfev": 10000}
+            if withBounds
+            else {}
+        ),
     )
-    # print(firstGuess)
-    # print(peaksGuess)
+
     return firstGuess, peaksGuess
 
 
