@@ -595,28 +595,38 @@ def fitEDD(
             f"{str(0).zfill(4)}"
         )  ## create a group of each pattern (point of the scan)
         pointInScan.create_group("fitParams")  ## fit results group for the two detector
-        for i in range(numberOfBoxes):
+        for i, nb_peaks in enumerate(nbPeaksInBoxes):
             (
                 backgroundHorizontalDetector,
                 peakHorizontalDetector,
                 peaksGuessHD,
                 peaksIndexHD,
+                yCalculatedBackgroundHD,
+                optimal_parametersHD,
+                covarianceHD,
+                boxFitParamsHD,
+                uncertaintyBoxFitParamsHD,
             ) = process_detector_data(
                 fit_min=rangeFitHD[2 * i],
                 fit_max=rangeFitHD[(2 * i) + 1],
                 input_data=patternHorizontalDetector,
-                nb_peaks=nbPeaksInBoxes[i],
+                nb_peaks=nb_peaks,
             )
             (
                 backgroundVerticalDetector,
                 peakVerticalDetector,
                 peaksGuessVD,
                 peaksIndexVD,
+                yCalculatedBackgroundVD,
+                optimal_parametersVD,
+                covarianceVD,
+                boxFitParamsVD,
+                uncertaintyBoxFitParamsVD,
             ) = process_detector_data(
                 fit_min=rangeFitVD[2 * i],
                 fit_max=rangeFitVD[(2 * i) + 1],
                 input_data=patternVerticalDetector,
-                nb_peaks=nbPeaksInBoxes[i],
+                nb_peaks=nb_peaks,
             )  ## peak of the vertical detector
             fitLine = pointInScan.create_group(
                 f"fitLine_{str(i).zfill(4)}"
@@ -629,13 +639,6 @@ def fitEDD(
             fitLine.create_dataset(
                 "rawVerticalDetector", dtype="float64", data=peakVerticalDetector
             )  ## create dataset for raw data of each calibration peak
-            yCalculatedBackgroundHD, coeffBgdHD = calcBackground(
-                peakHorizontalDetector[:, 0],
-                peakHorizontalDetector[:, 1],
-                peaksGuessHD[-1],
-                peaksGuessHD[2],
-                peaksIndexHD,
-            )  ## calculated ybackground of the horizontal detector
             fitLine.create_dataset(
                 "backgroundHorizontalDetector",
                 dtype="float64",
@@ -653,52 +656,6 @@ def fitEDD(
                     )
                 ),
             )  ## create dataset for HD raw data after subst of background
-            initialGuessHD = np.zeros(5 * nbPeaksInBoxes[i])
-            minBoundsHD = np.array(())
-            maxBoundsHD = np.array(())
-            for n in range(nbPeaksInBoxes[i]):
-                initialGuessHD[5 * n] = peaksGuessHD[3 * n]
-                initialGuessHD[5 * n + 1] = peaksGuessHD[3 * n + 1]
-                initialGuessHD[5 * n + 2] = peaksGuessHD[3 * n + 2]
-                initialGuessHD[5 * n + 3] = peaksGuessHD[3 * n + 2]
-                initialGuessHD[5 * n + 4] = 0.5
-                appendMinBoundsHD = np.array(
-                    (
-                        [
-                            np.amin(peakHorizontalDetector[:, 1]),
-                            initialGuessHD[5 * n + 1] - 3 * initialGuessHD[5 * n + 2],
-                            0,
-                            0,
-                            0,
-                        ]
-                    )
-                )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
-                appendMaxBoundsHD = np.array(
-                    (
-                        [
-                            np.amax(peakHorizontalDetector[:, 1]),
-                            initialGuessHD[5 * n + 1] + 3 * initialGuessHD[5 * n + 2],
-                            len(peakHorizontalDetector[:, 0]) / 2,
-                            len(peakHorizontalDetector[:, 0]) / 2,
-                            1,
-                        ]
-                    )
-                )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
-                minBoundsHD = np.append(
-                    minBoundsHD, appendMinBoundsHD
-                )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
-                maxBoundsHD = np.append(
-                    maxBoundsHD, appendMaxBoundsHD
-                )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
-            optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
-                f=splitPseudoVoigt,
-                xdata=peakHorizontalDetector[:, 0],
-                ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
-                p0=initialGuessHD,
-                sigma=None,
-                bounds=(minBoundsHD, maxBoundsHD),
-                maxfev=10000,
-            )  ## fit of the peak of the Horizontal detector
             fitLine.create_dataset(
                 "fitHorizontalDetector",
                 dtype="float64",
@@ -728,38 +685,6 @@ def fitEDD(
                     )
                 ),
             )  ## error of the horizontal detector
-            for n in range(nbPeaksInBoxes[i]):
-                fitParamsHD = np.append(
-                    fitParamsHD,
-                    np.append(
-                        optimal_parametersHD[5 * n : 5 * n + 5],
-                        100
-                        * np.sum(
-                            np.absolute(
-                                splitPseudoVoigt(
-                                    peakHorizontalDetector[:, 0],
-                                    optimal_parametersHD,
-                                )
-                                + backgroundHorizontalDetector
-                                - peakHorizontalDetector[:, 1]
-                            )
-                        )
-                        / np.sum(peakHorizontalDetector[:, 1]),
-                    ),
-                    axis=0,
-                )  ##
-                uncertaintyFitParamsHD = np.append(
-                    uncertaintyFitParamsHD,
-                    np.sqrt(np.diag(covarianceHD))[5 * n : 5 * n + 5],
-                    axis=0,
-                )  ##
-            yCalculatedBackgroundVD, coeffBgdVD = calcBackground(
-                peakVerticalDetector[:, 0],
-                peakVerticalDetector[:, 1],
-                peaksGuessVD[-1],
-                peaksGuessVD[2],
-                peaksIndexVD,
-            )  ## calculated ybackground of the vertical detector
             fitLine.create_dataset(
                 "backgroundVerticalDetector",
                 dtype="float64",
@@ -777,52 +702,6 @@ def fitEDD(
                     )
                 ),
             )  ## create dataset for VD raw data after subst of background
-            initialGuessVD = np.zeros(5 * nbPeaksInBoxes[i])
-            minBoundsVD = np.array(())
-            maxBoundsVD = np.array(())
-            for n in range(nbPeaksInBoxes[i]):
-                initialGuessVD[5 * n] = peaksGuessVD[3 * n]
-                initialGuessVD[5 * n + 1] = peaksGuessVD[3 * n + 1]
-                initialGuessVD[5 * n + 2] = peaksGuessVD[3 * n + 2]
-                initialGuessVD[5 * n + 3] = peaksGuessVD[3 * n + 2]
-                initialGuessVD[5 * n + 4] = 0.5
-                appendMinBoundsVD = np.array(
-                    (
-                        [
-                            np.amin(peakVerticalDetector[:, 1]),
-                            initialGuessVD[5 * n + 1] - 3 * initialGuessVD[5 * n + 2],
-                            0,
-                            0,
-                            0,
-                        ]
-                    )
-                )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the vertical detector
-                appendMaxBoundsVD = np.array(
-                    (
-                        [
-                            np.amax(peakVerticalDetector[:, 1]),
-                            initialGuessVD[5 * n + 1] + 3 * initialGuessVD[5 * n + 2],
-                            len(peakVerticalDetector[:, 0]) / 2,
-                            len(peakVerticalDetector[:, 0]) / 2,
-                            1,
-                        ]
-                    )
-                )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta)to append for the vertical detector
-                minBoundsVD = np.append(
-                    minBoundsVD, appendMinBoundsVD
-                )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
-                maxBoundsVD = np.append(
-                    maxBoundsVD, appendMaxBoundsVD
-                )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
-            optimal_parametersVD, covarianceVD = scipy.optimize.curve_fit(
-                f=splitPseudoVoigt,
-                xdata=peakVerticalDetector[:, 0],
-                ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
-                p0=initialGuessVD,
-                sigma=None,
-                bounds=(minBoundsVD, maxBoundsVD),
-                maxfev=10000,
-            )  ## fit of the peak of the Vertical detector
             fitLine.create_dataset(
                 "fitVerticalDetector",
                 dtype="float64",
@@ -852,30 +731,19 @@ def fitEDD(
                     )
                 ),
             )  ## error of the vertical detector
-            for n in range(nbPeaksInBoxes[i]):
-                fitParamsVD = np.append(
-                    fitParamsVD,
-                    np.append(
-                        optimal_parametersVD[5 * n : 5 * n + 5],
-                        100
-                        * np.sum(
-                            np.absolute(
-                                splitPseudoVoigt(
-                                    peakVerticalDetector[:, 0], optimal_parametersVD
-                                )
-                                + backgroundVerticalDetector
-                                - peakVerticalDetector[:, 1]
-                            )
-                        )
-                        / np.sum(peakVerticalDetector[:, 1]),
-                    ),
-                    axis=0,
-                )  ##
-                uncertaintyFitParamsVD = np.append(
-                    uncertaintyFitParamsVD,
-                    np.sqrt(np.diag(covarianceVD))[5 * n : 5 * n + 5],
-                    axis=0,
-                )  ##
+
+            # Accumulate fit parameters of this box
+            fitParamsHD = np.append(fitParamsHD, boxFitParamsHD)
+            uncertaintyFitParamsHD = np.append(
+                uncertaintyFitParamsHD, uncertaintyBoxFitParamsHD
+            )
+            fitParamsVD = np.append(fitParamsVD, boxFitParamsVD)
+            uncertaintyFitParamsVD = np.append(
+                uncertaintyFitParamsVD, uncertaintyBoxFitParamsVD
+            )
+
+        # End of detector processing
+
         pointInScan["fitParams"].create_dataset(
             "fitParamsHD",
             dtype="float64",
