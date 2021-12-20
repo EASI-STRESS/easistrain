@@ -153,15 +153,13 @@ def fitEDD(
                 peaksGuessHD, peaksIndexHD = guessParameters(
                     peakHorizontalDetector[:, 0],
                     peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
-                    i,
-                    nbPeaksInBoxes,
+                    nbPeaksInBoxes[i],
                     withBounds=True,
                 )  ## guess fit parameters for HD
                 peaksGuessVD, peaksIndexVD = guessParameters(
                     peakVerticalDetector[:, 0],
                     peakVerticalDetector[:, 1] - backgroundVerticalDetector,
-                    i,
-                    nbPeaksInBoxes,
+                    nbPeaksInBoxes[i],
                     withBounds=True,
                 )  ## guess fit parameters for VD
                 yCalculatedBackgroundHD, coeffBgdHD = calcBackground(
@@ -629,15 +627,13 @@ def fitEDD(
             peaksGuessHD, peaksIndexHD = guessParameters(
                 peakHorizontalDetector[:, 0],
                 peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
-                i,
-                nbPeaksInBoxes,
+                nbPeaksInBoxes[i],
                 withBounds=True,
             )  ## guess fit parameters for HD
             peaksGuessVD, peaksIndexVD = guessParameters(
                 peakVerticalDetector[:, 0],
                 peakVerticalDetector[:, 1] - backgroundVerticalDetector,
-                i,
-                nbPeaksInBoxes,
+                nbPeaksInBoxes[i],
                 withBounds=True,
             )  ## guess fit parameters for VD
             yCalculatedBackgroundHD, coeffBgdHD = calcBackground(

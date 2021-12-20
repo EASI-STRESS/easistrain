@@ -188,16 +188,14 @@ def calibEdd(
         peaksGuessHD, peaksIndexHD = guessParameters(
             peakHorizontalDetector[:, 0],
             peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
-            i,
-            nbPeaksInBoxes,
+            nbPeaksInBoxes[i],
             withBounds=False,
         )  ## guess fit parameters for HD
         # print(peaksIndexHD)
         peaksGuessVD, peaksIndexVD = guessParameters(
             peakVerticalDetector[:, 0],
             peakVerticalDetector[:, 1] - backgroundVerticalDetector,
-            i,
-            nbPeaksInBoxes,
+            nbPeaksInBoxes[i],
             withBounds=False,
         )  ## guess fit parameters for VD
         # print(peaksIndexVD)

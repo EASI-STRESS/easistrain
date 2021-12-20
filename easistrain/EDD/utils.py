@@ -93,11 +93,10 @@ def calcBackground(
 def guessParameters(
     xData: np.ndarray,
     yData: np.ndarray,
-    counterOfBoxes: int,
-    nbPeaksInBoxes: Sequence[int],
+    nb_peaks: int,
     withBounds: bool,
 ):
-    p0Guess = np.zeros(3 * nbPeaksInBoxes[counterOfBoxes], float)
+    p0Guess = np.zeros(3 * nb_peaks, float)
     fwhmGuess = silx.math.fit.peaks.guess_fwhm(yData)
     peaksGuess = silx.math.fit.peaks.peak_search(
         yData,
@@ -110,9 +109,7 @@ def guessParameters(
     )  ## index of the peak with peak relevance
     # (f'first evaluation of peak guess{peaksGuess}')
     # print(peaksGuess)
-    if (
-        np.size(peaksGuess) > nbPeaksInBoxes[counterOfBoxes]
-    ):  ## case if more peaks than expected are detected
+    if np.size(peaksGuess) > nb_peaks:  ## case if more peaks than expected are detected
         peaksGuess = silx.math.fit.peaks.peak_search(
             yData,
             fwhmGuess,
@@ -123,13 +120,9 @@ def guessParameters(
             relevance_info=True,
         )  ## index of the peak with peak relevance
         peaksGuessArray = np.asarray(peaksGuess)
-        orderedIndex = np.argsort(peaksGuessArray[:, 1])[
-            -nbPeaksInBoxes[counterOfBoxes] :
-        ]
+        orderedIndex = np.argsort(peaksGuessArray[:, 1])[-nb_peaks:]
         peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
-    if (
-        np.size(peaksGuess) < nbPeaksInBoxes[counterOfBoxes]
-    ):  ## case if less peaks than expected are detected
+    if np.size(peaksGuess) < nb_peaks:  ## case if less peaks than expected are detected
         peaksGuess = silx.math.fit.peaks.peak_search(
             yData,
             fwhmGuess,
@@ -140,14 +133,12 @@ def guessParameters(
             relevance_info=True,
         )  ## index of the peak with peak relevance
         peaksGuessArray = np.asarray(peaksGuess)
-        orderedIndex = np.argsort(peaksGuessArray[:, 1])[
-            -nbPeaksInBoxes[counterOfBoxes] :
-        ]
+        orderedIndex = np.argsort(peaksGuessArray[:, 1])[-nb_peaks:]
         peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
     # print(peaksGuess)
     minBounds = np.array(())
     maxBounds = np.array(())
-    for ipar in range(nbPeaksInBoxes[counterOfBoxes]):
+    for ipar in range(nb_peaks):
         p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 2] = fwhmGuess
