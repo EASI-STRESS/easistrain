@@ -178,8 +178,6 @@ def angleCalibrationEDD(
             peakHorizontalDetector[:, 1],
             peaksGuessHD[-1],
             peaksGuessHD[2],
-            i,
-            nbPeaksInBoxes,
             peaksIndexHD,
         )  ## calculated ybackground of the horizontal detector
         yCalculatedBackgroundVD, coeffBgdVD = calcBackground(
@@ -187,8 +185,6 @@ def angleCalibrationEDD(
             peakVerticalDetector[:, 1],
             peaksGuessVD[-1],
             peaksGuessVD[2],
-            i,
-            nbPeaksInBoxes,
             peaksIndexVD,
         )  ## calculated ybackground of the vertical detector
         fitLevel1_2[f"fitLine_{str(i)}"].create_dataset(

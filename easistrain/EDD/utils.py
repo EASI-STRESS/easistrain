@@ -34,9 +34,7 @@ def gaussEstimation(xData, *params):
     return silx.math.fit.sum_gauss(xData, *params)
 
 
-def calcBackground(
-    xData, yData, fwhmRight, fwhmLeft, counterOfBoxes, nbPeaksInBoxes, guessedPeaksIndex
-):
+def calcBackground(xData, yData, fwhmRight, fwhmLeft, guessedPeaksIndex):
     if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
         guessedPeaksIndex[-1] + 3 * fwhmRight
     ) <= len(
@@ -180,7 +178,9 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
     )
 
 
-def process_detector_data(fit_min: float, fit_max: float, input_data: np.ndarray):
+def process_detector_data(
+    fit_min: float, fit_max: float, input_data: np.ndarray, nb_peaks: int
+):
 
     peakHorizontalDetector = np.transpose(
         (
@@ -196,4 +196,16 @@ def process_detector_data(fit_min: float, fit_max: float, input_data: np.ndarray
         anchors=None,
     )  ## stripped background of the horizontal detector (obtained by stripping the yData)
 
-    return backgroundHorizontalDetector, peakHorizontalDetector
+    peaksGuessHD, peaksIndexHD = guessParameters(
+        peakHorizontalDetector[:, 0],
+        peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
+        nb_peaks,
+        withBounds=True,
+    )  ## guess fit parameters for HD
+
+    return (
+        backgroundHorizontalDetector,
+        peakHorizontalDetector,
+        peaksGuessHD,
+        peaksIndexHD,
+    )

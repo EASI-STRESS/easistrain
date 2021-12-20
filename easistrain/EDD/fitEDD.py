@@ -167,8 +167,6 @@ def fitEDD(
                     peakHorizontalDetector[:, 1],
                     peaksGuessHD[-1],
                     peaksGuessHD[2],
-                    i,
-                    nbPeaksInBoxes,
                     peaksIndexHD,
                 )  ## calculated ybackground of the horizontal detector
                 fitLine.create_dataset(
@@ -296,8 +294,6 @@ def fitEDD(
                     peakVerticalDetector[:, 1],
                     peaksGuessVD[-1],
                     peaksGuessVD[2],
-                    i,
-                    nbPeaksInBoxes,
                     peaksIndexVD,
                 )  ## calculated ybackground of the vertical detector
                 fitLine.create_dataset(
@@ -603,15 +599,24 @@ def fitEDD(
             (
                 backgroundHorizontalDetector,
                 peakHorizontalDetector,
+                peaksGuessHD,
+                peaksIndexHD,
             ) = process_detector_data(
                 fit_min=rangeFitHD[2 * i],
                 fit_max=rangeFitHD[(2 * i) + 1],
                 input_data=patternHorizontalDetector,
+                nb_peaks=nbPeaksInBoxes[i],
             )
-            backgroundVerticalDetector, peakVerticalDetector = process_detector_data(
+            (
+                backgroundVerticalDetector,
+                peakVerticalDetector,
+                peaksGuessVD,
+                peaksIndexVD,
+            ) = process_detector_data(
                 fit_min=rangeFitVD[2 * i],
                 fit_max=rangeFitVD[(2 * i) + 1],
                 input_data=patternVerticalDetector,
+                nb_peaks=nbPeaksInBoxes[i],
             )  ## peak of the vertical detector
             fitLine = pointInScan.create_group(
                 f"fitLine_{str(i).zfill(4)}"
@@ -624,25 +629,11 @@ def fitEDD(
             fitLine.create_dataset(
                 "rawVerticalDetector", dtype="float64", data=peakVerticalDetector
             )  ## create dataset for raw data of each calibration peak
-            peaksGuessHD, peaksIndexHD = guessParameters(
-                peakHorizontalDetector[:, 0],
-                peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
-                nbPeaksInBoxes[i],
-                withBounds=True,
-            )  ## guess fit parameters for HD
-            peaksGuessVD, peaksIndexVD = guessParameters(
-                peakVerticalDetector[:, 0],
-                peakVerticalDetector[:, 1] - backgroundVerticalDetector,
-                nbPeaksInBoxes[i],
-                withBounds=True,
-            )  ## guess fit parameters for VD
             yCalculatedBackgroundHD, coeffBgdHD = calcBackground(
                 peakHorizontalDetector[:, 0],
                 peakHorizontalDetector[:, 1],
                 peaksGuessHD[-1],
                 peaksGuessHD[2],
-                i,
-                nbPeaksInBoxes,
                 peaksIndexHD,
             )  ## calculated ybackground of the horizontal detector
             fitLine.create_dataset(
@@ -767,8 +758,6 @@ def fitEDD(
                 peakVerticalDetector[:, 1],
                 peaksGuessVD[-1],
                 peaksGuessVD[2],
-                i,
-                nbPeaksInBoxes,
                 peaksIndexVD,
             )  ## calculated ybackground of the vertical detector
             fitLine.create_dataset(
