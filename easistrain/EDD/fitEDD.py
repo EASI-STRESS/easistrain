@@ -116,7 +116,7 @@ def fitEDD(
 
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
         scan_meas = h5Read.get(
-            sample + "_" + str(dataset) + "_" + str(scanNumber) + ".1/measurement",
+            f"{sample}_{dataset}_{scanNumber}.1/measurement",
             default=None,
         )
 
@@ -130,30 +130,18 @@ def fitEDD(
 
         h5Save = h5py.File(fileSave, "a")  ## create/append h5 file to save in
         scanGroup = h5Save.create_group(
-            sample + "_" + str(dataset) + "_" + str(scanNumber) + ".1"
+            f"{sample}_{dataset}_{scanNumber}.1"
         )  ## create the group of the scan wich will contatin all the results of a scan
         positionersGroup = scanGroup.create_group(
             "positioners"
         )  ## positioners subgroup in scan group
         patternHorizontalDetector = h5Read[
-            sample
-            + "_"
-            + str(dataset)
-            + "_"
-            + str(scanNumber)
-            + ".1/measurement/"
-            + nameHorizontalDetector
+            f"{sample}_{dataset}_{scanNumber}.1/measurement/{nameHorizontalDetector}"
         ][
             ()
         ]  ## pattern of horizontal detector
         patternVerticalDetector = h5Read[
-            sample
-            + "_"
-            + str(dataset)
-            + "_"
-            + str(scanNumber)
-            + ".1/measurement/"
-            + nameVerticalDetector
+            f"{sample}_{dataset}_{scanNumber}.1/measurement/{nameVerticalDetector}"
         ][
             ()
         ]  ## pattern of vertical detector
@@ -169,13 +157,7 @@ def fitEDD(
                 positioner,
                 dtype="float64",
                 data=h5Read[
-                    sample
-                    + "_"
-                    + str(dataset)
-                    + "_"
-                    + str(scanNumber)
-                    + ".1/instrument/positioners/"
-                    + positioner
+                    f"{sample}_{dataset}_{scanNumber}.1/instrument/positioners/{positioner}"
                 ][()],
             )  ## saving all the requested positioners
         positionAngles[:, 0] = positionersGroup[positioners[0]][()]
@@ -764,14 +746,14 @@ def fitEDD(
                 nbPeaksInBoxes,
                 peaksIndexHD,
             )  ## calculated ybackground of the horizontal detector
-            pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+            fitLine.create_dataset(
                 "backgroundHorizontalDetector",
                 dtype="float64",
                 data=np.transpose(
                     (peakHorizontalDetector[:, 0], yCalculatedBackgroundHD)
                 ),
             )  ## create dataset for background of each calibration peak for HD
-            pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+            fitLine.create_dataset(
                 "bgdSubsDataHorizontalDetector",
                 dtype="float64",
                 data=np.transpose(
@@ -827,7 +809,7 @@ def fitEDD(
                 bounds=(minBoundsHD, maxBoundsHD),
                 maxfev=10000,
             )  ## fit of the peak of the Horizontal detector
-            pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+            fitLine.create_dataset(
                 "fitHorizontalDetector",
                 dtype="float64",
                 data=np.transpose(
@@ -840,7 +822,7 @@ def fitEDD(
                     )
                 ),
             )  ## fitted data of the horizontal detector
-            pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+            fitLine.create_dataset(
                 "errorHorizontalDetector",
                 dtype="float64",
                 data=np.transpose(
@@ -890,14 +872,14 @@ def fitEDD(
                 nbPeaksInBoxes,
                 peaksIndexVD,
             )  ## calculated ybackground of the vertical detector
-            pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+            fitLine.create_dataset(
                 "backgroundVerticalDetector",
                 dtype="float64",
                 data=np.transpose(
                     (peakVerticalDetector[:, 0], yCalculatedBackgroundVD)
                 ),
             )  ## create dataset for background of each calibration peak for VD
-            pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+            fitLine.create_dataset(
                 "bgdSubsDataVerticalDetector",
                 dtype="float64",
                 data=np.transpose(
@@ -953,7 +935,7 @@ def fitEDD(
                 bounds=(minBoundsVD, maxBoundsVD),
                 maxfev=10000,
             )  ## fit of the peak of the Vertical detector
-            pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+            fitLine.create_dataset(
                 "fitVerticalDetector",
                 dtype="float64",
                 data=np.transpose(
@@ -966,7 +948,7 @@ def fitEDD(
                     )
                 ),
             )  ## fitted data of the vertical detector
-            pointInScan[f"fitLine_{str(i).zfill(4)}"].create_dataset(
+            fitLine.create_dataset(
                 "errorVerticalDetector",
                 dtype="float64",
                 data=np.transpose(
