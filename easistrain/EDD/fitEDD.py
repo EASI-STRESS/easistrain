@@ -5,6 +5,7 @@ import silx.math.fit
 import scipy.optimize
 from easistrain.EDD.utils import (
     gaussEstimation,
+    process_detector_data,
     run_from_cli,
     splitPseudoVoigt,
     calcBackground,
@@ -145,10 +146,12 @@ def fitEDD(
         ][
             ()
         ]  ## pattern of vertical detector
-        if (
+        twoD_detector_data = (
             np.ndim(patternHorizontalDetector) == 2
             or np.ndim(patternVerticalDetector) == 2
-        ):
+        )
+
+        if twoD_detector_data:
             positionAngles = np.zeros((len(patternHorizontalDetector), 6), "float64")
         else:
             positionAngles = np.zeros((1, 6), "float64")
@@ -179,7 +182,7 @@ def fitEDD(
     rawDataLevel1_1.create_dataset(
         "verticalDetector", dtype="float64", data=patternVerticalDetector
     )  ## save raw data of the vertical detector
-    if np.ndim(patternHorizontalDetector) == 2 or np.ndim(patternVerticalDetector) == 2:
+    if twoD_detector_data:
         for k in range(len(patternHorizontalDetector)):
             fitParamsHD = np.array(())
             fitParamsVD = np.array(())
@@ -690,7 +693,6 @@ def fitEDD(
                         rangeFitHD[2 * i] : rangeFitHD[(2 * i) + 1]
                     ],
                 )
-            )  ## peak of the horizontal detector
             peakVerticalDetector = np.transpose(
                 (
                     np.arange(rangeFitVD[2 * i], rangeFitVD[(2 * i) + 1]),
