@@ -1,5 +1,5 @@
 import argparse
-from typing import Callable, Sequence, Tuple, Union
+from typing import Callable, List, Sequence, Tuple, Union
 from pathlib import Path
 import yaml
 import numpy as np
@@ -7,7 +7,7 @@ import scipy.optimize
 import silx.math.fit
 
 
-def read_config_file(path: Union[str, Path]):
+def read_config_file(path: Union[str, Path]) -> dict:
     with open(path, "r") as config_file:
         return yaml.load(config_file, Loader=yaml.SafeLoader)
 
@@ -39,8 +39,8 @@ def calcBackground(
     yData: np.ndarray,
     fwhmRight: float,
     fwhmLeft: float,
-    guessedPeaksIndex,
-):
+    guessedPeaksIndex: Sequence[float],
+) -> np.ndarray:
     if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
         guessedPeaksIndex[-1] + 3 * fwhmRight
     ) <= len(
@@ -85,7 +85,7 @@ def calcBackground(
     yCalculatedBackground = np.poly1d(backgroundCoefficient)(
         xData
     )  ## yBackground calcuated with the 1d polynom fitted coefficient
-    return yCalculatedBackground, backgroundCoefficient
+    return yCalculatedBackground
 
 
 def guessParameters(
@@ -93,44 +93,30 @@ def guessParameters(
     yData: np.ndarray,
     nb_peaks: int,
     withBounds: bool,
-):
+) -> Tuple[np.ndarray, List[float]]:
     fwhmGuess = silx.math.fit.peaks.guess_fwhm(yData)
-    peaksGuess = silx.math.fit.peaks.peak_search(
+    first_peaks_guess: List[float] = silx.math.fit.peaks.peak_search(
         yData,
         fwhmGuess,
         sensitivity=2.5,
-        begin_index=None,
-        end_index=None,
-        debug=False,
         relevance_info=False,
-    )  ## index of the peak with peak relevance
+    )
 
-    if np.size(peaksGuess) > nb_peaks:  ## case if more peaks than expected are detected
-        peaksGuess = silx.math.fit.peaks.peak_search(
-            yData,
-            fwhmGuess,
-            sensitivity=1,
-            begin_index=None,
-            end_index=None,
-            debug=False,
-            relevance_info=True,
+    if (
+        len(first_peaks_guess) != nb_peaks
+    ):  ## case if more or less peaks than expected are detected
+        raw_peak_guess: List[Tuple[float, float]] = silx.math.fit.peaks.peak_search(
+            yData, fwhmGuess, sensitivity=1, relevance_info=True
         )  ## index of the peak with peak relevance
-        peaksGuessArray = np.asarray(peaksGuess)
+        peaksGuessArray = np.asarray(raw_peak_guess)
+        # Take nb_peaks that are the most relevant
         orderedIndex = np.argsort(peaksGuessArray[:, 1])[-nb_peaks:]
-        peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
-    if np.size(peaksGuess) < nb_peaks:  ## case if less peaks than expected are detected
-        peaksGuess = silx.math.fit.peaks.peak_search(
-            yData,
-            fwhmGuess,
-            sensitivity=1,
-            begin_index=None,
-            end_index=None,
-            debug=False,
-            relevance_info=True,
-        )  ## index of the peak with peak relevance
-        peaksGuessArray = np.asarray(peaksGuess)
-        orderedIndex = np.argsort(peaksGuessArray[:, 1])[-nb_peaks:]
-        peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
+        unsorted_peaks_guess: List[float] = peaksGuessArray[
+            orderedIndex[:], 0
+        ].tolist()  ## peaks indices
+    else:
+        unsorted_peaks_guess = first_peaks_guess
+    peaksGuess = sorted(unsorted_peaks_guess)
 
     p0Guess = np.zeros(3 * nb_peaks, float)
     minBounds = np.empty((nb_peaks, 3))
@@ -189,10 +175,10 @@ def process_detector_data(
       - Fit the data without background starting from the first guess
     """
 
-    channels = np.arange(fit_min, fit_max)
-    raw_data = input_data[fit_min:fit_max]
+    channels: np.ndarray[int, np.float64] = np.arange(fit_min, fit_max)
+    raw_data: np.ndarray = input_data[fit_min:fit_max]
 
-    data_background = silx.math.fit.strip(  # type: ignore
+    data_background: np.ndarray = silx.math.fit.strip(  # type: ignore
         data=raw_data,
         w=5,
         niterations=4000,
@@ -207,7 +193,7 @@ def process_detector_data(
         withBounds=True,
     )  ## guess fit parameters for HD
 
-    calculated_background, coeffBgdHD = calcBackground(
+    calculated_background = calcBackground(
         xData=channels,
         yData=raw_data,
         fwhmRight=peak_guesses[-1],

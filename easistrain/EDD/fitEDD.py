@@ -163,7 +163,7 @@ def fitEDD(
                     nbPeaksInBoxes[i],
                     withBounds=True,
                 )  ## guess fit parameters for VD
-                yCalculatedBackgroundHD, coeffBgdHD = calcBackground(
+                yCalculatedBackgroundHD = calcBackground(
                     peakHorizontalDetector[:, 0],
                     peakHorizontalDetector[:, 1],
                     peaksGuessHD[-1],
@@ -290,7 +290,7 @@ def fitEDD(
                         np.sqrt(np.diag(covarianceHD))[5 * n : 5 * n + 5],
                         axis=0,
                     )  ##
-                yCalculatedBackgroundVD, coeffBgdVD = calcBackground(
+                yCalculatedBackgroundVD = calcBackground(
                     peakVerticalDetector[:, 0],
                     peakVerticalDetector[:, 1],
                     peaksGuessVD[-1],
