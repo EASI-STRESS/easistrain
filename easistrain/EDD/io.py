@@ -1,4 +1,64 @@
+from typing import Sequence
+import h5py
 import numpy as np
+
+
+def create_info_group(
+    root: h5py.Group,
+    fileRead: str,
+    fileSave: str,
+    sample: str,
+    dataset: str,
+    scanNumber: int,
+    nameHorizontalDetector: str,
+    nameVerticalDetector: str,
+    numberOfBoxes: int,
+    nbPeaksInBoxes: Sequence[int],
+    rangeFitHD: Sequence[int],
+    rangeFitVD: Sequence[int],
+    positioners: Sequence[str],
+):
+    infoGroup = root.create_group("infos")  ## infos group creation
+    infoGroup.create_dataset(
+        "fileRead", dtype=h5py.string_dtype(encoding="utf-8"), data=fileRead
+    )  ## save path of raw data file in infos group
+    infoGroup.create_dataset(
+        "fileSave", dtype=h5py.string_dtype(encoding="utf-8"), data=fileSave
+    )  ## save path of the file in which results will be saved in info group
+    infoGroup.create_dataset(
+        "sample", dtype=h5py.string_dtype(encoding="utf-8"), data=sample
+    )  ## save the name of the sample in infos group
+    infoGroup.create_dataset(
+        "dataset", dtype=h5py.string_dtype(encoding="utf-8"), data=dataset
+    )  ## save the name of dataset in infos group
+    infoGroup.create_dataset(
+        "scanNumber", dtype="int", data=scanNumber
+    )  ## save of the number of the scan in infos group
+    infoGroup.create_dataset(
+        "nameHorizontalDetector",
+        dtype=h5py.string_dtype(encoding="utf-8"),
+        data=nameHorizontalDetector,
+    )  ## save of the name of the horizontal detector in infos group
+    infoGroup.create_dataset(
+        "nameVerticalDetector",
+        dtype=h5py.string_dtype(encoding="utf-8"),
+        data=nameVerticalDetector,
+    )  ## save of the name of the vertical detector in infos group
+    infoGroup.create_dataset(
+        "numberOfBoxes", dtype="int", data=numberOfBoxes
+    )  ## save of the number of the boxes/widows extracted from the raw data in infos group
+    infoGroup.create_dataset(
+        "nbPeaksInBoxes", dtype="int", data=nbPeaksInBoxes
+    )  ## save of the number of peaks per box/window in infos group
+    infoGroup.create_dataset(
+        "rangeFitHD", dtype="int", data=rangeFitHD
+    )  ## save of the range of the fit of each box/window of the horizontal detector in infos group
+    infoGroup.create_dataset(
+        "rangeFitVD", dtype="int", data=rangeFitVD
+    )  ## save of the range of the fit of each box/window of the vertical detector in infos group
+    infoGroup.create_dataset(
+        "positioners", dtype=h5py.string_dtype(encoding="utf-8"), data=positioners
+    )  ## save of the range of the fit of each box/window of the vertical detector in infos group
 
 
 def peak_dataset_data(positionAngles: np.ndarray, savedPeakFitParams: np.ndarray):
