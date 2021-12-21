@@ -3,6 +3,7 @@ import numpy as np
 import h5py
 import silx.math.fit
 import scipy.optimize
+from easistrain.EDD.io import peak_dataset_data
 from easistrain.EDD.utils import (
     gaussEstimation,
     process_detector_data,
@@ -791,130 +792,29 @@ def fitEDD(
                 )  ## create a dataset for uncertainty for each peak in tthPositionGroup
             else:
                 peakDataset = tthPositionsGroup[f"peak_{str(peakNumber).zfill(4)}"]
+                assert isinstance(peakDataset, h5py.Dataset)
                 uncertaintyPeakDataset = tthPositionsGroup[
                     f"uncertaintyPeak_{str(peakNumber).zfill(4)}"
                 ]
-            peakDataset[0, 0:6] = positionAngles[
-                0, 0:6
-            ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
-            peakDataset[
-                0, 6
-            ] = -90  ## delta angle of the horizontal detector (debye scherer angle)
-            peakDataset[
-                0, 7
-            ] = 0  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
-            peakDataset[0, 8] = pointInScan["fitParams/fitParamsHD"][
-                (peakNumber, 1)
-            ]  ## peak position of HD
-            peakDataset[0, 9] = pointInScan["fitParams/fitParamsHD"][
-                (peakNumber, 0)
-            ]  ## peak intensity of HD (maximum intensity)
-            peakDataset[0, 10] = 0.5 * (
-                pointInScan["fitParams/fitParamsHD"][(peakNumber, 2)]
-                + pointInScan["fitParams/fitParamsHD"][(peakNumber, 3)]
-            )  ## FWHM of HD (mean of the FWHM at left and right as I am using an assymetric function)
-            peakDataset[0, 11] = pointInScan["fitParams/fitParamsHD"][
-                (peakNumber, 4)
-            ]  ## shape factor (contribution of the lorentzian function)
-            peakDataset[0, 12] = pointInScan["fitParams/fitParamsHD"][
-                (peakNumber, 5)
-            ]  ## Rw factor of HD (goodness of the fit)
-            peakDataset[1, 0:6] = positionAngles[
-                0, 0:6
-            ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
-            peakDataset[1, 8] = pointInScan["fitParams/fitParamsVD"][
-                (peakNumber, 1)
-            ]  ## peak position of VD
-            peakDataset[1, 9] = pointInScan["fitParams/fitParamsVD"][
-                (peakNumber, 0)
-            ]  ## peak intensity of VD (maximum intensity)
-            peakDataset[1, 10] = 0.5 * (
-                pointInScan["fitParams/fitParamsVD"][(peakNumber, 2)]
-                + pointInScan["fitParams/fitParamsVD"][(peakNumber, 3)]
-            )  ## FWHM of VD (mean of the FWHM at left and right as I am using an assymetric function)
-            peakDataset[1, 11] = pointInScan["fitParams/fitParamsVD"][
-                (peakNumber, 4)
-            ]  ## shape factor (lorentz contribution)
-            peakDataset[1, 12] = pointInScan["fitParams/fitParamsVD"][
-                (peakNumber, 5)
-            ]  ## Rw factor of VD (goodness of the fit)
-            uncertaintyPeakDataset[0, 0:6] = positionAngles[
-                0, 0:6
-            ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
-            uncertaintyPeakDataset[
-                0, 6
-            ] = (
-                -90
-            )  ## uncertainty of the delta angle of the horizontal detector (debye scherer angle) (I put the angle for the moment)
-            uncertaintyPeakDataset[
-                0, 7
-            ] = 0  ## uncertainty of the theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
-            uncertaintyPeakDataset[0, 8] = pointInScan[
-                "fitParams/uncertaintyFitParamsHD"
-            ][
-                (peakNumber, 1)
-            ]  ## uncertainty of the peak position of HD
-            uncertaintyPeakDataset[0, 9] = pointInScan[
-                "fitParams/uncertaintyFitParamsHD"
-            ][
-                (peakNumber, 0)
-            ]  ## uncertainty of the peak intensity of HD (maximum intensity)
-            uncertaintyPeakDataset[0, 10] = 0.5 * (
-                pointInScan["fitParams/uncertaintyFitParamsHD"][(peakNumber, 2)]
-                + pointInScan["fitParams/uncertaintyFitParamsHD"][(peakNumber, 3)]
-            )  ## uncertainty of the FWHM of HD (mean of the FWHM at left and right as I am using an assymetric function)
-            uncertaintyPeakDataset[0, 11] = pointInScan[
-                "fitParams/uncertaintyFitParamsHD"
-            ][
-                (peakNumber, 4)
-            ]  ## uncertainty of the shape factor (contribution of the lorentzian function)
-            uncertaintyPeakDataset[
-                0, 12
-            ] = 0  ## No utility of this thing I set it to zero/ Rw factor of HD (goodness of the fit)
-            uncertaintyPeakDataset[1, 0:6] = positionAngles[
-                0, 0:6
-            ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
-            peakDataset[
-                1, 6
-            ] = 0  ## delta angle of the horizontal detector (debye scherer angle)
-            uncertaintyPeakDataset[
-                1, 6
-            ] = 0  ## uncertainty of the delta angle of the horizontal detector (debye scherer angle) (I set it to zero for the moment)
-            peakDataset[
-                1, 7
-            ] = 0  ## theta angle (diffraction fixed angle) of the vertical detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
-            uncertaintyPeakDataset[
-                1, 7
-            ] = 0  ## theta angle (diffraction fixed angle) of the vertical detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
-            uncertaintyPeakDataset[1, 8] = pointInScan[
-                "fitParams/uncertaintyFitParamsVD"
-            ][
-                (peakNumber, 1)
-            ]  ## uncertainty of the peak position of VD
-            uncertaintyPeakDataset[1, 9] = pointInScan[
-                "fitParams/uncertaintyFitParamsVD"
-            ][
-                (peakNumber, 0)
-            ]  ## uncertainty of the peak intensity of VD (maximum intensity)
-            uncertaintyPeakDataset[1, 10] = 0.5 * (
-                pointInScan["fitParams/uncertaintyFitParamsVD"][(peakNumber, 2)]
-                + pointInScan["fitParams/uncertaintyFitParamsVD"][(peakNumber, 3)]
-            )  ## uncertainty of the FWHM of VD (mean of the FWHM at left and right as I am using an assymetric function)
-            uncertaintyPeakDataset[1, 11] = pointInScan[
-                "fitParams/uncertaintyFitParamsVD"
-            ][
-                (peakNumber, 4)
-            ]  ## uncertainty of the shape factor (lorentz contribution)
-            uncertaintyPeakDataset[
-                1, 12
-            ] = 0  ## No utility of this thing I set it to zero / Rw factor of VD (goodness of the fit)
+                assert isinstance(uncertaintyPeakDataset, h5py.Dataset)
+            peakDataset[0] = peak_dataset_data(
+                positionAngles, savedFitParamsHD[peakNumber]
+            )
+            peakDataset[1] = peak_dataset_data(
+                positionAngles, savedFitParamsVD[peakNumber]
+            )
+            uncertaintyPeakDataset[0] = peak_dataset_data(
+                positionAngles, savedUncertaintyFitParamsHD[peakNumber]
+            )
+            uncertaintyPeakDataset[1] = peak_dataset_data(
+                positionAngles, savedUncertaintyFitParamsVD[peakNumber]
+            )
         if "infoPeak" not in tthPositionsGroup.keys():
             tthPositionsGroup.create_dataset(
                 "infoPeak",
                 dtype=h5py.string_dtype(encoding="utf-8"),
                 data=f"{positioners}, delta, thetha, position in channel, Intenstity, FWHM, shape factor, goodness factor",
             )  ## create info about dataset saved for each peak in tthPositionGroup
-            # print(positionAngles)
 
     infoGroup = scanGroup.create_group("infos")  ## infos group creation
     infoGroup.create_dataset(
