@@ -5,7 +5,6 @@ import silx.math.fit
 import scipy.optimize
 from easistrain.EDD.io import create_info_group, peak_dataset_data
 from easistrain.EDD.utils import (
-    gaussEstimation,
     process_detector_data,
     run_from_cli,
     splitPseudoVoigt,
