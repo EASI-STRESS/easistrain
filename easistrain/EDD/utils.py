@@ -164,9 +164,7 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
     )
 
 
-def process_detector_data(
-    fit_min: float, fit_max: float, input_data: np.ndarray, nb_peaks: int
-):
+def fit_detector_data(channels: np.ndarray, raw_data: np.ndarray, nb_peaks: int):
     """
     Process detector data:
       - Find the background
@@ -174,9 +172,6 @@ def process_detector_data(
       - Calculate a background (?)
       - Fit the data without background starting from the first guess
     """
-
-    channels: np.ndarray = np.arange(fit_min, fit_max)
-    raw_data: np.ndarray = input_data[fit_min:fit_max]
 
     data_background: np.ndarray = silx.math.fit.strip(  # type: ignore
         data=raw_data,
@@ -246,8 +241,6 @@ def process_detector_data(
     uncertainty_fit_params = np.sqrt(np.diag(covariance))
 
     return (
-        channels,
-        raw_data,
         calculated_background,
         fitted_data,
         fit_params.flatten(),

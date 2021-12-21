@@ -5,7 +5,7 @@ import silx.math.fit
 import scipy.optimize
 from easistrain.EDD.io import as_nxchar, create_info_group, peak_dataset_data
 from easistrain.EDD.utils import (
-    process_detector_data,
+    fit_detector_data,
     run_from_cli,
     splitPseudoVoigt,
     calcBackground,
@@ -601,26 +601,27 @@ def fitEDD(
             )  ## create group for each range of peak(s)
 
             for detector in ["horizontal", "vertical"]:
-                range_fit = (
-                    rangeFitHD if detector == "horizontal" else rangeFitVD
+                fit_min, fit_max = (
+                    (rangeFitHD[2 * i], rangeFitHD[2 * i + 1])
+                    if detector == "horizontal"
+                    else (rangeFitVD[2 * i], rangeFitVD[2 * i + 1])
                 )  # To be improved
                 pattern = (
                     patternHorizontalDetector
                     if detector == "horizontal"
                     else patternVerticalDetector
                 )  # To be improved
+                channels = np.arange(fit_min, fit_max)
+                raw_data = pattern[fit_min:fit_max]
                 assert isinstance(pattern, np.ndarray)
                 (
-                    channels,
-                    raw_data,
                     background,
                     fitted_data,
                     boxFitParams,
                     uncertaintyBoxFitParams,
-                ) = process_detector_data(
-                    fit_min=range_fit[2 * i],
-                    fit_max=range_fit[(2 * i) + 1],
-                    input_data=pattern,
+                ) = fit_detector_data(
+                    channels=channels,
+                    raw_data=raw_data,
                     nb_peaks=nb_peaks,
                 )
 
@@ -668,8 +669,8 @@ def fitEDD(
                 uncertaintyFitParams[detector] = np.append(
                     uncertaintyFitParams[detector], uncertaintyBoxFitParams
                 )
+        # End of fitting procedure
 
-        # End of detector processing
         savedFitParamsHD = np.reshape(
             fitParams["horizontal"], (int(np.size(fitParams["horizontal"]) / 6), 6)
         )
