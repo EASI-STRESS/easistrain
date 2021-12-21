@@ -210,8 +210,8 @@ def process_detector_data(
     calculated_background, coeffBgdHD = calcBackground(
         xData=channels,
         yData=raw_data,
-        fwhmLeft=peak_guesses[-1],
-        fwhmRight=peak_guesses[2],
+        fwhmRight=peak_guesses[-1],
+        fwhmLeft=peak_guesses[2],
         guessedPeaksIndex=peak_indices,
     )
 
