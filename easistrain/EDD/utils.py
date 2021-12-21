@@ -175,7 +175,7 @@ def process_detector_data(
       - Fit the data without background starting from the first guess
     """
 
-    channels: np.ndarray[int, np.float64] = np.arange(fit_min, fit_max)
+    channels: np.ndarray = np.arange(fit_min, fit_max)
     raw_data: np.ndarray = input_data[fit_min:fit_max]
 
     data_background: np.ndarray = silx.math.fit.strip(  # type: ignore
@@ -235,36 +235,22 @@ def process_detector_data(
 
     fit_params = np.array(())
     uncertainty_fit_params = np.sqrt(np.diag(covariance))
+    fitted_data = splitPseudoVoigt(channels, optimal_parameters) + calculated_background
     for n in range(nb_peaks):
         fit_params = np.append(
             fit_params,
             np.append(
                 optimal_parameters[5 * n : 5 * n + 5],
-                100
-                * np.sum(
-                    np.absolute(
-                        splitPseudoVoigt(
-                            channels,
-                            optimal_parameters,
-                        )
-                        + data_background
-                        - raw_data
-                    )
-                )
-                / np.sum(raw_data),
+                100 * np.sum(np.absolute(fitted_data - raw_data)) / np.sum(raw_data),
             ),
             axis=0,
         )
 
     return (
-        np.transpose(
-            (
-                channels,
-                raw_data,
-            )
-        ),  # peakHorizontalDetector
+        channels,
+        raw_data,
         calculated_background,
-        optimal_parameters,
+        fitted_data,
         fit_params,
         uncertainty_fit_params,
     )

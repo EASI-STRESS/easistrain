@@ -611,9 +611,10 @@ def fitEDD(
                 )  # To be improved
                 assert isinstance(pattern, np.ndarray)
                 (
-                    peakDetector,
-                    yCalculatedBackground,
-                    optimal_parameters,
+                    channels,
+                    raw_data,
+                    background,
+                    fitted_data,
                     boxFitParams,
                     uncertaintyBoxFitParams,
                 ) = process_detector_data(
@@ -622,43 +623,37 @@ def fitEDD(
                     input_data=pattern,
                     nb_peaks=nb_peaks,
                 )
-                horizontal_channels = peakDetector[:, 0]
-                raw_horizontal_data = peakDetector[:, 1]
-                horizontal_fit = (
-                    splitPseudoVoigt(horizontal_channels, optimal_parameters)
-                    + yCalculatedBackground
-                )
 
                 detectorGroup = fitLine.create_group(detector)
                 detectorGroup.create_dataset(
                     "channels",
                     dtype="float64",
-                    data=horizontal_channels,
+                    data=channels,
                 )
                 detectorGroup.create_dataset(
                     "raw_data",
                     dtype="float64",
-                    data=raw_horizontal_data,
+                    data=raw_data,
                 )
                 detectorGroup.create_dataset(
                     "background",
                     dtype="float64",
-                    data=yCalculatedBackground,
+                    data=background,
                 )
                 detectorGroup.create_dataset(
                     "data - background",
                     dtype="float64",
-                    data=raw_horizontal_data - yCalculatedBackground,
+                    data=raw_data - background,
                 )
                 detectorGroup.create_dataset(
                     "fitted_data",
                     dtype="float64",
-                    data=horizontal_fit,
+                    data=fitted_data,
                 )
                 detectorGroup.create_dataset(
                     "error",
                     dtype="float64",
-                    data=(horizontal_fit - raw_horizontal_data),
+                    data=(fitted_data - raw_data),
                 )  ## error of the horizontal detector
 
                 # NeXus
