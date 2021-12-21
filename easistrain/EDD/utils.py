@@ -181,119 +181,108 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
 def process_detector_data(
     fit_min: float, fit_max: float, input_data: np.ndarray, nb_peaks: int
 ):
+    """
+    Process detector data:
+      - Find the background
+      - Make a first guess of peak parameters
+      - Calculate a background (?)
+      - Fit the data without background starting from the first guess
+    """
 
-    peakHorizontalDetector = np.transpose(
-        (
-            np.arange(fit_min, fit_max),
-            input_data[fit_min:fit_max],
-        )
-    )  ## peak of the horizontal detector
-    backgroundHorizontalDetector = silx.math.fit.strip(
-        data=peakHorizontalDetector[:, 1],
+    channels = np.arange(fit_min, fit_max)
+    raw_data = input_data[fit_min:fit_max]
+
+    data_background = silx.math.fit.strip(  # type: ignore
+        data=raw_data,
         w=5,
         niterations=4000,
         factor=1,
         anchors=None,
-    )  ## stripped background of the horizontal detector (obtained by stripping the yData)
+    )  ## background of the horizontal detector (obtained by stripping the yData)
 
-    peaksGuessHD, peaksIndexHD = guessParameters(
-        peakHorizontalDetector[:, 0],
-        peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
-        nb_peaks,
+    peak_guesses, peak_indices = guessParameters(
+        xData=channels,
+        yData=raw_data - data_background,
+        nb_peaks=nb_peaks,
         withBounds=True,
     )  ## guess fit parameters for HD
 
-    yCalculatedBackgroundHD, coeffBgdHD = calcBackground(
-        peakHorizontalDetector[:, 0],
-        peakHorizontalDetector[:, 1],
-        peaksGuessHD[-1],
-        peaksGuessHD[2],
-        peaksIndexHD,
+    calculated_background, coeffBgdHD = calcBackground(
+        xData=channels,
+        yData=raw_data,
+        fwhmLeft=peak_guesses[-1],
+        fwhmRight=peak_guesses[2],
+        guessedPeaksIndex=peak_indices,
     )
 
-    initialGuessHD = np.zeros(5 * nb_peaks)
-    minBoundsHD = np.array(())
-    maxBoundsHD = np.array(())
+    initial_fit_guess = np.zeros(5 * nb_peaks)
+    fit_min_bounds = np.zeros(5 * nb_peaks)
+    fit_max_bounds = np.zeros(5 * nb_peaks)
     for n in range(nb_peaks):
-        initialGuessHD[5 * n] = peaksGuessHD[3 * n]
-        initialGuessHD[5 * n + 1] = peaksGuessHD[3 * n + 1]
-        initialGuessHD[5 * n + 2] = peaksGuessHD[3 * n + 2]
-        initialGuessHD[5 * n + 3] = peaksGuessHD[3 * n + 2]
-        initialGuessHD[5 * n + 4] = 0.5
-        appendMinBoundsHD = np.array(
-            (
-                [
-                    np.amin(peakHorizontalDetector[:, 1]),
-                    initialGuessHD[5 * n + 1] - 3 * initialGuessHD[5 * n + 2],
-                    0,
-                    0,
-                    0,
-                ]
-            )
-        )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
-        appendMaxBoundsHD = np.array(
-            (
-                [
-                    np.amax(peakHorizontalDetector[:, 1]),
-                    initialGuessHD[5 * n + 1] + 3 * initialGuessHD[5 * n + 2],
-                    len(peakHorizontalDetector[:, 0]) / 2,
-                    len(peakHorizontalDetector[:, 0]) / 2,
-                    1,
-                ]
-            )
-        )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
-        minBoundsHD = np.append(
-            minBoundsHD, appendMinBoundsHD
-        )  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
-        maxBoundsHD = np.append(
-            maxBoundsHD, appendMaxBoundsHD
-        )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
-    optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
+        initial_fit_guess[5 * n] = peak_guesses[3 * n]
+        initial_fit_guess[5 * n + 1] = peak_guesses[3 * n + 1]
+        initial_fit_guess[5 * n + 2] = peak_guesses[3 * n + 2]
+        initial_fit_guess[5 * n + 3] = peak_guesses[3 * n + 2]
+        initial_fit_guess[5 * n + 4] = 0.5
+        fit_min_bounds[5 * n : 5 * n + 5] = [
+            np.amin(raw_data),
+            initial_fit_guess[5 * n + 1] - 3 * initial_fit_guess[5 * n + 2],
+            0,
+            0,
+            0,
+        ]  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
+        fit_max_bounds[5 * n : 5 * n + 5] = [
+            np.amax(raw_data),
+            initial_fit_guess[5 * n + 1] + 3 * initial_fit_guess[5 * n + 2],
+            len(channels) / 2,
+            len(channels) / 2,
+            1,
+        ]
+    optimal_parameters, covariance = scipy.optimize.curve_fit(
         f=splitPseudoVoigt,
-        xdata=peakHorizontalDetector[:, 0],
-        ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
-        p0=initialGuessHD,
-        sigma=None,
-        bounds=(minBoundsHD, maxBoundsHD),
+        xdata=channels,
+        ydata=raw_data - calculated_background,
+        p0=initial_fit_guess,
+        bounds=(fit_min_bounds, fit_max_bounds),
         maxfev=10000,
     )  ## fit of the peak of the Horizontal detector
 
-    boxFitParamsHD = np.array(())
-    uncertaintyBoxFitParamsHD = np.array(())
+    fit_params = np.array(())
+    uncertainty_fit_params = np.sqrt(np.diag(covariance))
     for n in range(nb_peaks):
-        boxFitParamsHD = np.append(
-            boxFitParamsHD,
+        fit_params = np.append(
+            fit_params,
             np.append(
-                optimal_parametersHD[5 * n : 5 * n + 5],
+                optimal_parameters[5 * n : 5 * n + 5],
                 100
                 * np.sum(
                     np.absolute(
                         splitPseudoVoigt(
-                            peakHorizontalDetector[:, 0],
-                            optimal_parametersHD,
+                            channels,
+                            optimal_parameters,
                         )
-                        + backgroundHorizontalDetector
-                        - peakHorizontalDetector[:, 1]
+                        + data_background
+                        - raw_data
                     )
                 )
-                / np.sum(peakHorizontalDetector[:, 1]),
+                / np.sum(raw_data),
             ),
             axis=0,
-        )  ##
-        uncertaintyBoxFitParamsHD = np.append(
-            uncertaintyBoxFitParamsHD,
-            np.sqrt(np.diag(covarianceHD))[5 * n : 5 * n + 5],
-            axis=0,
-        )  ##
+        )
 
     return (
-        backgroundHorizontalDetector,
-        peakHorizontalDetector,
-        peaksGuessHD,
-        peaksIndexHD,
-        yCalculatedBackgroundHD,
-        optimal_parametersHD,
-        covarianceHD,
-        boxFitParamsHD,
-        uncertaintyBoxFitParamsHD,
+        data_background,
+        np.transpose(
+            (
+                channels,
+                raw_data,
+            )
+        ),  # peakHorizontalDetector
+        peak_guesses,
+        peak_indices,
+        calculated_background,
+        optimal_parameters,
+        covariance,
+        fit_params,
+        uncertainty_fit_params,
     )

@@ -958,6 +958,7 @@ def fitEDD(
 
 
 def fitEDD_with_scan_number_parse(**config):
+    """Wrapper function to allow scanNumber to be a list or a slice."""
     n_scan_arg = config.pop("scanNumber")
     if isinstance(n_scan_arg, int):
         fitEDD(**config, scanNumber=n_scan_arg)
