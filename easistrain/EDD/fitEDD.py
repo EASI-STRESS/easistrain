@@ -594,7 +594,9 @@ def fitEDD(
         pointInScan = fitGroup.create_group(
             f"{str(0).zfill(4)}"
         )  ## create a group of each pattern (point of the scan)
-        pointInScan.create_group("fitParams")  ## fit results group for the two detector
+        fitParamsGroup = pointInScan.create_group(
+            "fitParams"
+        )  ## fit results group for the two detector
         for i, nb_peaks in enumerate(nbPeaksInBoxes):
             (
                 backgroundHorizontalDetector,
@@ -744,32 +746,36 @@ def fitEDD(
 
         # End of detector processing
 
-        pointInScan["fitParams"].create_dataset(
+        savedFitParamsHD = np.reshape(fitParamsHD, (int(np.size(fitParamsHD) / 6), 6))
+        fitParamsGroup.create_dataset(
             "fitParamsHD",
             dtype="float64",
-            data=np.reshape(fitParamsHD, (int(np.size(fitParamsHD) / 6), 6)),
+            data=savedFitParamsHD,
         )  ## save parameters of the fit of HD
-        pointInScan["fitParams"].create_dataset(
+        savedUncertaintyFitParamsHD = np.reshape(
+            uncertaintyFitParamsHD,
+            (int(np.size(uncertaintyFitParamsHD) / 5), 5),
+        )
+        fitParamsGroup.create_dataset(
             "uncertaintyFitParamsHD",
             dtype="float64",
-            data=np.reshape(
-                uncertaintyFitParamsHD,
-                (int(np.size(uncertaintyFitParamsHD) / 5), 5),
-            ),
+            data=savedUncertaintyFitParamsHD,
         )  ## save uncertainty on the parameters of the fit of HD
 
-        pointInScan["fitParams"].create_dataset(
+        savedFitParamsVD = np.reshape(fitParamsVD, (int(np.size(fitParamsVD) / 6), 6))
+        fitParamsGroup.create_dataset(
             "fitParamsVD",
             dtype="float64",
-            data=np.reshape(fitParamsVD, (int(np.size(fitParamsVD) / 6), 6)),
+            data=savedFitParamsVD,
         )  ## save parameters of the fit of VD
-        pointInScan["fitParams"].create_dataset(
+        savedUncertaintyFitParamsVD = np.reshape(
+            uncertaintyFitParamsVD,
+            (int(np.size(uncertaintyFitParamsVD) / 5), 5),
+        )
+        fitParamsGroup.create_dataset(
             "uncertaintyFitParamsVD",
             dtype="float64",
-            data=np.reshape(
-                uncertaintyFitParamsVD,
-                (int(np.size(uncertaintyFitParamsVD) / 5), 5),
-            ),
+            data=savedUncertaintyFitParamsVD,
         )  ## save uncertainty on the parameters of the fit of VD
         for peakNumber in range(np.sum(nbPeaksInBoxes)):
             if f"peak_{str(peakNumber).zfill(4)}" not in tthPositionsGroup.keys():
@@ -791,64 +797,80 @@ def fitEDD(
             peakDataset[0, 0:6] = positionAngles[
                 0, 0:6
             ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
-            uncertaintyPeakDataset[0, 0:6] = positionAngles[
-                0, 0:6
-            ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
             peakDataset[
                 0, 6
             ] = -90  ## delta angle of the horizontal detector (debye scherer angle)
+            peakDataset[
+                0, 7
+            ] = 0  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
+            peakDataset[0, 8] = pointInScan["fitParams/fitParamsHD"][
+                (peakNumber, 1)
+            ]  ## peak position of HD
+            peakDataset[0, 9] = pointInScan["fitParams/fitParamsHD"][
+                (peakNumber, 0)
+            ]  ## peak intensity of HD (maximum intensity)
+            peakDataset[0, 10] = 0.5 * (
+                pointInScan["fitParams/fitParamsHD"][(peakNumber, 2)]
+                + pointInScan["fitParams/fitParamsHD"][(peakNumber, 3)]
+            )  ## FWHM of HD (mean of the FWHM at left and right as I am using an assymetric function)
+            peakDataset[0, 11] = pointInScan["fitParams/fitParamsHD"][
+                (peakNumber, 4)
+            ]  ## shape factor (contribution of the lorentzian function)
+            peakDataset[0, 12] = pointInScan["fitParams/fitParamsHD"][
+                (peakNumber, 5)
+            ]  ## Rw factor of HD (goodness of the fit)
+            peakDataset[1, 0:6] = positionAngles[
+                0, 0:6
+            ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
+            peakDataset[1, 8] = pointInScan["fitParams/fitParamsVD"][
+                (peakNumber, 1)
+            ]  ## peak position of VD
+            peakDataset[1, 9] = pointInScan["fitParams/fitParamsVD"][
+                (peakNumber, 0)
+            ]  ## peak intensity of VD (maximum intensity)
+            peakDataset[1, 10] = 0.5 * (
+                pointInScan["fitParams/fitParamsVD"][(peakNumber, 2)]
+                + pointInScan["fitParams/fitParamsVD"][(peakNumber, 3)]
+            )  ## FWHM of VD (mean of the FWHM at left and right as I am using an assymetric function)
+            peakDataset[1, 11] = pointInScan["fitParams/fitParamsVD"][
+                (peakNumber, 4)
+            ]  ## shape factor (lorentz contribution)
+            peakDataset[1, 12] = pointInScan["fitParams/fitParamsVD"][
+                (peakNumber, 5)
+            ]  ## Rw factor of VD (goodness of the fit)
+            uncertaintyPeakDataset[0, 0:6] = positionAngles[
+                0, 0:6
+            ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
             uncertaintyPeakDataset[
                 0, 6
             ] = (
                 -90
             )  ## uncertainty of the delta angle of the horizontal detector (debye scherer angle) (I put the angle for the moment)
-            peakDataset[
-                0, 7
-            ] = 0  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
             uncertaintyPeakDataset[
                 0, 7
             ] = 0  ## uncertainty of the theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
-            peakDataset[0, 8] = pointInScan["fitParams/fitParamsHD"][
-                (peakNumber, 1)
-            ]  ## peak position of HD
             uncertaintyPeakDataset[0, 8] = pointInScan[
                 "fitParams/uncertaintyFitParamsHD"
             ][
                 (peakNumber, 1)
             ]  ## uncertainty of the peak position of HD
-            peakDataset[0, 9] = pointInScan["fitParams/fitParamsHD"][
-                (peakNumber, 0)
-            ]  ## peak intensity of HD (maximum intensity)
             uncertaintyPeakDataset[0, 9] = pointInScan[
                 "fitParams/uncertaintyFitParamsHD"
             ][
                 (peakNumber, 0)
             ]  ## uncertainty of the peak intensity of HD (maximum intensity)
-            peakDataset[0, 10] = 0.5 * (
-                pointInScan["fitParams/fitParamsHD"][(peakNumber, 2)]
-                + pointInScan["fitParams/fitParamsHD"][(peakNumber, 3)]
-            )  ## FWHM of HD (mean of the FWHM at left and right as I am using an assymetric function)
             uncertaintyPeakDataset[0, 10] = 0.5 * (
                 pointInScan["fitParams/uncertaintyFitParamsHD"][(peakNumber, 2)]
                 + pointInScan["fitParams/uncertaintyFitParamsHD"][(peakNumber, 3)]
             )  ## uncertainty of the FWHM of HD (mean of the FWHM at left and right as I am using an assymetric function)
-            peakDataset[0, 11] = pointInScan["fitParams/fitParamsHD"][
-                (peakNumber, 4)
-            ]  ## shape factor (contribution of the lorentzian function)
             uncertaintyPeakDataset[0, 11] = pointInScan[
                 "fitParams/uncertaintyFitParamsHD"
             ][
                 (peakNumber, 4)
             ]  ## uncertainty of the shape factor (contribution of the lorentzian function)
-            peakDataset[0, 12] = pointInScan["fitParams/fitParamsHD"][
-                (peakNumber, 5)
-            ]  ## Rw factor of HD (goodness of the fit)
             uncertaintyPeakDataset[
                 0, 12
             ] = 0  ## No utility of this thing I set it to zero/ Rw factor of HD (goodness of the fit)
-            peakDataset[1, 0:6] = positionAngles[
-                0, 0:6
-            ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument
             uncertaintyPeakDataset[1, 0:6] = positionAngles[
                 0, 0:6
             ]  ## coordinates of the point in the insrument reference and phi, chi and omega angles of the instrument (I save the coordinates for the moment because i use them later fir filtering the points)
@@ -864,41 +886,25 @@ def fitEDD(
             uncertaintyPeakDataset[
                 1, 7
             ] = 0  ## theta angle (diffraction fixed angle) of the vertical detector (I suppose that it is zero as we work at high energy and the angle is fixed to 2.5 deg)
-            peakDataset[1, 8] = pointInScan["fitParams/fitParamsVD"][
-                (peakNumber, 1)
-            ]  ## peak position of VD
             uncertaintyPeakDataset[1, 8] = pointInScan[
                 "fitParams/uncertaintyFitParamsVD"
             ][
                 (peakNumber, 1)
             ]  ## uncertainty of the peak position of VD
-            peakDataset[1, 9] = pointInScan["fitParams/fitParamsVD"][
-                (peakNumber, 0)
-            ]  ## peak intensity of VD (maximum intensity)
             uncertaintyPeakDataset[1, 9] = pointInScan[
                 "fitParams/uncertaintyFitParamsVD"
             ][
                 (peakNumber, 0)
             ]  ## uncertainty of the peak intensity of VD (maximum intensity)
-            peakDataset[1, 10] = 0.5 * (
-                pointInScan["fitParams/fitParamsVD"][(peakNumber, 2)]
-                + pointInScan["fitParams/fitParamsVD"][(peakNumber, 3)]
-            )  ## FWHM of VD (mean of the FWHM at left and right as I am using an assymetric function)
             uncertaintyPeakDataset[1, 10] = 0.5 * (
                 pointInScan["fitParams/uncertaintyFitParamsVD"][(peakNumber, 2)]
                 + pointInScan["fitParams/uncertaintyFitParamsVD"][(peakNumber, 3)]
             )  ## uncertainty of the FWHM of VD (mean of the FWHM at left and right as I am using an assymetric function)
-            peakDataset[1, 11] = pointInScan["fitParams/fitParamsVD"][
-                (peakNumber, 4)
-            ]  ## shape factor (lorentz contribution)
             uncertaintyPeakDataset[1, 11] = pointInScan[
                 "fitParams/uncertaintyFitParamsVD"
             ][
                 (peakNumber, 4)
             ]  ## uncertainty of the shape factor (lorentz contribution)
-            peakDataset[1, 12] = pointInScan["fitParams/fitParamsVD"][
-                (peakNumber, 5)
-            ]  ## Rw factor of VD (goodness of the fit)
             uncertaintyPeakDataset[
                 1, 12
             ] = 0  ## No utility of this thing I set it to zero / Rw factor of VD (goodness of the fit)
