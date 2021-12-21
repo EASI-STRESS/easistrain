@@ -257,18 +257,14 @@ def process_detector_data(
         )
 
     return (
-        data_background,
         np.transpose(
             (
                 channels,
                 raw_data,
             )
         ),  # peakHorizontalDetector
-        peak_guesses,
-        peak_indices,
         calculated_background,
         optimal_parameters,
-        covariance,
         fit_params,
         uncertainty_fit_params,
     )

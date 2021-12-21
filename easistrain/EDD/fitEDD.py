@@ -587,10 +587,8 @@ def fitEDD(
                 )  ## create info about dataset saved for each peak in tthPositionGroup
         # print(positionAngles)
     else:
-        fitParamsHD = np.array(())
-        fitParamsVD = np.array(())
-        uncertaintyFitParamsHD = np.array(())
-        uncertaintyFitParamsVD = np.array(())
+        fitParams = {"horizontal": np.array(()), "vertical": np.array(())}
+        uncertaintyFitParams = {"horizontal": np.array(()), "vertical": np.array(())}
         pointInScan = fitGroup.create_group(
             f"{str(0).zfill(4)}"
         )  ## create a group of each pattern (point of the scan)
@@ -598,149 +596,96 @@ def fitEDD(
             "fitParams"
         )  ## fit results group for the two detector
         for i, nb_peaks in enumerate(nbPeaksInBoxes):
-            (
-                backgroundHorizontalDetector,
-                peakHorizontalDetector,
-                peaksGuessHD,
-                peaksIndexHD,
-                yCalculatedBackgroundHD,
-                optimal_parametersHD,
-                covarianceHD,
-                boxFitParamsHD,
-                uncertaintyBoxFitParamsHD,
-            ) = process_detector_data(
-                fit_min=rangeFitHD[2 * i],
-                fit_max=rangeFitHD[(2 * i) + 1],
-                input_data=patternHorizontalDetector,
-                nb_peaks=nb_peaks,
-            )
-            horizontal_channels = peakHorizontalDetector[:, 0]
-            raw_horizontal_data = peakHorizontalDetector[:, 1]
-            horizontal_fit = (
-                splitPseudoVoigt(horizontal_channels, optimal_parametersHD)
-                + yCalculatedBackgroundHD
-            )
-            (
-                backgroundVerticalDetector,
-                peakVerticalDetector,
-                peaksGuessVD,
-                peaksIndexVD,
-                yCalculatedBackgroundVD,
-                optimal_parametersVD,
-                covarianceVD,
-                boxFitParamsVD,
-                uncertaintyBoxFitParamsVD,
-            ) = process_detector_data(
-                fit_min=rangeFitVD[2 * i],
-                fit_max=rangeFitVD[(2 * i) + 1],
-                input_data=patternVerticalDetector,
-                nb_peaks=nb_peaks,
-            )  ## peak of the vertical detector
-            vertical_channels = peakVerticalDetector[:, 0]
-            raw_vertical_data = peakVerticalDetector[:, 1]
-            vertical_fit = (
-                splitPseudoVoigt(vertical_channels, optimal_parametersVD)
-                + yCalculatedBackgroundVD
-            )
-
             fitLine = pointInScan.create_group(
                 f"fitLine_{str(i).zfill(4)}"
             )  ## create group for each range of peak(s)
 
-            # Save horizontal detector data
-            fitLine.create_dataset(
-                "horizontalChannels",
-                dtype="float64",
-                data=horizontal_channels,
-            )
-            fitLine.create_dataset(
-                "rawHorizontalDetector",
-                dtype="float64",
-                data=raw_horizontal_data,
-            )  ## create dataset for raw data of each calibration peak
-            fitLine.create_dataset(
-                "backgroundHorizontalDetector",
-                dtype="float64",
-                data=yCalculatedBackgroundHD,
-            )  ## create dataset for background of each calibration peak for HD
-            fitLine.create_dataset(
-                "bgdSubsDataHorizontalDetector",
-                dtype="float64",
-                data=raw_horizontal_data - yCalculatedBackgroundHD,
-            )  ## create dataset for HD raw data after subst of background
-            horizontal_fit = (
-                splitPseudoVoigt(horizontal_channels, optimal_parametersHD)
-                + yCalculatedBackgroundHD
-            )
-            fitLine.create_dataset(
-                "fitHorizontalDetector",
-                dtype="float64",
-                data=horizontal_fit,
-            )  ## fitted data of the horizontal detector
-            fitLine.create_dataset(
-                "errorHorizontalDetector",
-                dtype="float64",
-                data=(horizontal_fit - raw_horizontal_data),
-            )  ## error of the horizontal detector
+            for detector in ["horizontal", "vertical"]:
+                range_fit = (
+                    rangeFitHD if detector == "horizontal" else rangeFitVD
+                )  # To be improved
+                pattern = (
+                    patternHorizontalDetector
+                    if detector == "horizontal"
+                    else patternVerticalDetector
+                )  # To be improved
+                assert isinstance(pattern, np.ndarray)
+                (
+                    peakDetector,
+                    yCalculatedBackground,
+                    optimal_parameters,
+                    boxFitParams,
+                    uncertaintyBoxFitParams,
+                ) = process_detector_data(
+                    fit_min=range_fit[2 * i],
+                    fit_max=range_fit[(2 * i) + 1],
+                    input_data=pattern,
+                    nb_peaks=nb_peaks,
+                )
+                horizontal_channels = peakDetector[:, 0]
+                raw_horizontal_data = peakDetector[:, 1]
+                horizontal_fit = (
+                    splitPseudoVoigt(horizontal_channels, optimal_parameters)
+                    + yCalculatedBackground
+                )
 
-            # Save vertical detector data
-            fitLine.create_dataset(
-                "verticalChannels",
-                dtype="float64",
-                data=vertical_channels,
-            )
-            fitLine.create_dataset(
-                "rawVerticalDetector", dtype="float64", data=raw_vertical_data
-            )  ## create dataset for raw data of each calibration peak
-            fitLine.create_dataset(
-                "backgroundVerticalDetector",
-                dtype="float64",
-                data=yCalculatedBackgroundVD,
-            )  ## create dataset for background of each calibration peak for VD
-            fitLine.create_dataset(
-                "bgdSubsDataVerticalDetector",
-                dtype="float64",
-                data=raw_vertical_data - yCalculatedBackgroundVD,
-            )  ## create dataset for VD raw data after subst of background
-            fitLine.create_dataset(
-                "fitVerticalDetector",
-                dtype="float64",
-                data=vertical_fit,
-            )  ## fitted data of the vertical detector
-            fitLine.create_dataset(
-                "errorVerticalDetector",
-                dtype="float64",
-                data=np.absolute(vertical_fit - raw_vertical_data),
-            )  ## error of the vertical detector
+                detectorGroup = fitLine.create_group(detector)
+                detectorGroup.create_dataset(
+                    "channels",
+                    dtype="float64",
+                    data=horizontal_channels,
+                )
+                detectorGroup.create_dataset(
+                    "raw_data",
+                    dtype="float64",
+                    data=raw_horizontal_data,
+                )
+                detectorGroup.create_dataset(
+                    "background",
+                    dtype="float64",
+                    data=yCalculatedBackground,
+                )
+                detectorGroup.create_dataset(
+                    "data - background",
+                    dtype="float64",
+                    data=raw_horizontal_data - yCalculatedBackground,
+                )
+                detectorGroup.create_dataset(
+                    "fitted_data",
+                    dtype="float64",
+                    data=horizontal_fit,
+                )
+                detectorGroup.create_dataset(
+                    "error",
+                    dtype="float64",
+                    data=(horizontal_fit - raw_horizontal_data),
+                )  ## error of the horizontal detector
 
-            # NeXus
-            fitLine.attrs["NX_class"] = as_nxchar("NXdata")
-            fitLine.attrs["auxiliary_signals"] = as_nxchar(["rawVerticalDetector"])
-            fitLine.attrs["errors"] = as_nxchar("errorVerticalDetector")
-            fitLine.attrs["signal"] = as_nxchar("fitVerticalDetector")
-            fitLine.attrs["axes"] = as_nxchar("verticalChannels")
+                # NeXus
+                detectorGroup.attrs["NX_class"] = as_nxchar("NXdata")
+                detectorGroup.attrs["auxiliary_signals"] = as_nxchar(["raw_data"])
+                detectorGroup.attrs["errors"] = as_nxchar("error")
+                detectorGroup.attrs["signal"] = as_nxchar("fitted_data")
+                detectorGroup.attrs["axes"] = as_nxchar("channels")
 
-            # Accumulate fit parameters of this box
-            fitParamsHD = np.append(fitParamsHD, boxFitParamsHD)
-            uncertaintyFitParamsHD = np.append(
-                uncertaintyFitParamsHD, uncertaintyBoxFitParamsHD
-            )
-            fitParamsVD = np.append(fitParamsVD, boxFitParamsVD)
-            uncertaintyFitParamsVD = np.append(
-                uncertaintyFitParamsVD, uncertaintyBoxFitParamsVD
-            )
+                # Accumulate fit parameters of this box
+                fitParams[detector] = np.append(fitParams[detector], boxFitParams)
+                uncertaintyFitParams[detector] = np.append(
+                    uncertaintyFitParams[detector], uncertaintyBoxFitParams
+                )
 
         # End of detector processing
-
-        savedFitParamsHD = np.reshape(fitParamsHD, (int(np.size(fitParamsHD) / 6), 6))
+        savedFitParamsHD = np.reshape(
+            fitParams["horizontal"], (int(np.size(fitParams["horizontal"]) / 6), 6)
+        )
         fitParamsGroup.create_dataset(
             "fitParamsHD",
             dtype="float64",
             data=savedFitParamsHD,
         )  ## save parameters of the fit of HD
         savedUncertaintyFitParamsHD = np.reshape(
-            uncertaintyFitParamsHD,
-            (int(np.size(uncertaintyFitParamsHD) / 5), 5),
+            uncertaintyFitParams["horizontal"],
+            (int(np.size(uncertaintyFitParams["horizontal"]) / 5), 5),
         )
         fitParamsGroup.create_dataset(
             "uncertaintyFitParamsHD",
@@ -748,15 +693,17 @@ def fitEDD(
             data=savedUncertaintyFitParamsHD,
         )  ## save uncertainty on the parameters of the fit of HD
 
-        savedFitParamsVD = np.reshape(fitParamsVD, (int(np.size(fitParamsVD) / 6), 6))
+        savedFitParamsVD = np.reshape(
+            fitParams["vertical"], (int(np.size(fitParams["vertical"]) / 6), 6)
+        )
         fitParamsGroup.create_dataset(
             "fitParamsVD",
             dtype="float64",
             data=savedFitParamsVD,
         )  ## save parameters of the fit of VD
         savedUncertaintyFitParamsVD = np.reshape(
-            uncertaintyFitParamsVD,
-            (int(np.size(uncertaintyFitParamsVD) / 5), 5),
+            uncertaintyFitParams["vertical"],
+            (int(np.size(uncertaintyFitParams["vertical"]) / 5), 5),
         )
         fitParamsGroup.create_dataset(
             "uncertaintyFitParamsVD",
