@@ -1,6 +1,12 @@
-from typing import Sequence
+from typing import Sequence, Union
 import h5py
 import numpy as np
+
+nxchar = h5py.special_dtype(vlen=str)
+
+
+def as_nxchar(s: Union[str, Sequence[str]]) -> np.ndarray:
+    return np.array(s, dtype=nxchar)
 
 
 def create_info_group(
