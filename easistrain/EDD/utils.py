@@ -184,14 +184,14 @@ def process_detector_data(
         niterations=4000,
         factor=1,
         anchors=None,
-    )  ## background of the horizontal detector (obtained by stripping the yData)
+    )
 
     peak_guesses, peak_indices = guessParameters(
         xData=channels,
         yData=raw_data - data_background,
         nb_peaks=nb_peaks,
         withBounds=True,
-    )  ## guess fit parameters for HD
+    )  ## guess fit parameters
 
     calculated_background = calcBackground(
         xData=channels,
@@ -216,7 +216,7 @@ def process_detector_data(
             0,
             0,
             0,
-        ]  # minimum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) to append for the horizontal detector
+        ]
         fit_max_bounds[5 * n : 5 * n + 5] = [
             np.amax(raw_data),
             initial_fit_guess[5 * n + 1] + 3 * initial_fit_guess[5 * n + 2],
@@ -231,26 +231,25 @@ def process_detector_data(
         p0=initial_fit_guess,
         bounds=(fit_min_bounds, fit_max_bounds),
         maxfev=10000,
-    )  ## fit of the peak of the Horizontal detector
+    )
 
-    fit_params = np.array(())
-    uncertainty_fit_params = np.sqrt(np.diag(covariance))
     fitted_data = splitPseudoVoigt(channels, optimal_parameters) + calculated_background
+
+    goodness_factor = (
+        100 * np.sum(np.absolute(fitted_data - raw_data)) / np.sum(raw_data)
+    )
+    fit_params = np.empty((nb_peaks, 6), dtype=optimal_parameters.dtype)
     for n in range(nb_peaks):
-        fit_params = np.append(
-            fit_params,
-            np.append(
-                optimal_parameters[5 * n : 5 * n + 5],
-                100 * np.sum(np.absolute(fitted_data - raw_data)) / np.sum(raw_data),
-            ),
-            axis=0,
-        )
+        fit_params[n, :5] = optimal_parameters[5 * n : 5 * n + 5]
+        fit_params[n, 5] = goodness_factor
+
+    uncertainty_fit_params = np.sqrt(np.diag(covariance))
 
     return (
         channels,
         raw_data,
         calculated_background,
         fitted_data,
-        fit_params,
+        fit_params.flatten(),
         uncertainty_fit_params,
     )
