@@ -652,7 +652,7 @@ def fitEDD(
                     data=fitted_data,
                 )
                 detectorGroup.create_dataset(
-                    "error",
+                    "errors",
                     dtype="float64",
                     data=(fitted_data - raw_data),
                 )  ## error of the horizontal detector
@@ -660,7 +660,6 @@ def fitEDD(
                 # NeXus
                 detectorGroup.attrs["NX_class"] = as_nxchar("NXdata")
                 detectorGroup.attrs["auxiliary_signals"] = as_nxchar(["raw_data"])
-                detectorGroup.attrs["errors"] = as_nxchar("error")
                 detectorGroup.attrs["signal"] = as_nxchar("fitted_data")
                 detectorGroup.attrs["axes"] = as_nxchar("channels")
 
