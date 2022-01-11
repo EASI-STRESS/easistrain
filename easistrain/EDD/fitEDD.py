@@ -613,7 +613,7 @@ def fitEDD(
                 )  # To be improved
                 channels = np.arange(fit_min, fit_max)
                 raw_data = pattern[fit_min:fit_max]
-                assert isinstance(pattern, np.ndarray)
+                assert isinstance(raw_data, np.ndarray)
                 (
                     background,
                     fitted_data,

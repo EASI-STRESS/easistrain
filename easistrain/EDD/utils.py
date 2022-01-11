@@ -41,51 +41,33 @@ def calcBackground(
     fwhmLeft: float,
     guessedPeaksIndex: Sequence[float],
 ) -> np.ndarray:
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) <= len(
-        xData
-    ):  ## case of not enough of points at left
-        xBackground = xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-        yBackground = yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-    elif (
-        int(guessedPeaksIndex[-1] + 3 * fwhmRight) > len(xData)
-        and int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0
-    ):  ## case of not enough of points at right
-        xBackground = xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-        yBackground = yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-    elif int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) > len(
-        xData
-    ):  ## case of not enough of points at left and right
-        xBackground = np.append(xData[0:5], xData[-5:])
-        yBackground = np.append(yData[0:5], yData[-5:])
-    elif int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) <= len(
-        xData
-    ):  ## case of enough of points at left and right
-        xBackground = np.append(
-            xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
-            xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
-        )
-        yBackground = np.append(
-            yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
-            yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
-        )
-    else:
-        raise ValueError(
-            "Met a case that should not have been possible when calculating background"
-        )
+    """Extracts the data outside of the peak bounds to fit the background"""
+    peak_left_bound = int(guessedPeaksIndex[0] - 3 * fwhmLeft)
+    peak_right_bound = int(guessedPeaksIndex[-1] + 3 * fwhmRight)
+
+    if peak_left_bound < 0 and peak_right_bound <= len(xData):
+        # case of not enough of points at left
+        xBackground = xData[peak_right_bound:]
+        yBackground = yData[peak_right_bound:]
+    if peak_right_bound > len(xData) and peak_left_bound >= 0:
+        # case of not enough of points at right
+        xBackground = xData[:peak_left_bound]
+        yBackground = yData[:peak_left_bound]
+    if peak_left_bound < 0 and peak_right_bound > len(xData):
+        # case of not enough of points at left and right
+        xBackground = np.append(xData[:5], xData[-5:])
+        yBackground = np.append(yData[:5], yData[-5:])
+    if peak_left_bound >= 0 and peak_right_bound <= len(xData):
+        # case of enough of points at left and right
+        xBackground = np.append(xData[:peak_left_bound], xData[peak_right_bound:])
+        yBackground = np.append(yData[:peak_left_bound], yData[peak_right_bound:])
 
     backgroundCoefficient = np.polyfit(
         x=xBackground, y=yBackground, deg=1
     )  ## fit of background with 1d polynom function
-    yCalculatedBackground = np.poly1d(backgroundCoefficient)(
+    return np.poly1d(backgroundCoefficient)(
         xData
-    )  ## yBackground calcuated with the 1d polynom fitted coefficient
-    return yCalculatedBackground
+    )  ## yBackground calculated with the 1d polynom fitted coefficient
 
 
 def guessParameters(
