@@ -67,10 +67,12 @@ def create_info_group(
     )  ## save of the range of the fit of each box/window of the vertical detector in infos group
 
 
-def peak_dataset_data(positionAngles: np.ndarray, savedPeakFitParams: np.ndarray):
+def peak_dataset_data(
+    positionAngles: np.ndarray, savedPeakFitParams: np.ndarray, delta_angle: float
+):
     return [
         *positionAngles[0, 0:6],
-        -90,  ## delta angle of the horizontal detector (debye scherer angle)
+        delta_angle,  ## delta angle of the horizontal detector (debye scherer angle)
         0,  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
         savedPeakFitParams[1],  ## peak position of HD
         savedPeakFitParams[0],  ## peak intensity of HD (maximum intensity)

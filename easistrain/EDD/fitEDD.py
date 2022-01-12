@@ -725,16 +725,16 @@ def fitEDD(
                 ]
                 assert isinstance(uncertaintyPeakDataset, h5py.Dataset)
             peakDataset[0] = peak_dataset_data(
-                positionAngles, savedFitParamsHD[peakNumber]
+                positionAngles, savedFitParamsHD[peakNumber], -90
             )
             peakDataset[1] = peak_dataset_data(
-                positionAngles, savedFitParamsVD[peakNumber]
+                positionAngles, savedFitParamsVD[peakNumber], 0
             )
             uncertaintyPeakDataset[0] = peak_dataset_data(
-                positionAngles, savedUncertaintyFitParamsHD[peakNumber]
+                positionAngles, savedUncertaintyFitParamsHD[peakNumber], -90
             )
             uncertaintyPeakDataset[1] = peak_dataset_data(
-                positionAngles, savedUncertaintyFitParamsVD[peakNumber]
+                positionAngles, savedUncertaintyFitParamsVD[peakNumber], 0
             )
         if "infoPeak" not in tthPositionsGroup.keys():
             tthPositionsGroup.create_dataset(
