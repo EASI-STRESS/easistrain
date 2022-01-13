@@ -42,25 +42,25 @@ def calcBackground(
     guessedPeaksIndex: Sequence[float],
 ) -> np.ndarray:
     """Extracts the data outside of the peak bounds to fit the background"""
-    peak_left_bound = int(guessedPeaksIndex[0] - 3 * fwhmLeft)
-    peak_right_bound = int(guessedPeaksIndex[-1] + 3 * fwhmRight)
+    peaks_left_bound = int(guessedPeaksIndex[0] - 3 * fwhmLeft)
+    peaks_right_bound = int(guessedPeaksIndex[-1] + 3 * fwhmRight)
 
-    if peak_left_bound < 0 and peak_right_bound <= len(xData):
+    if peaks_left_bound < 0 and peaks_right_bound <= len(xData):
         # case of not enough of points at left
-        xBackground = xData[peak_right_bound:]
-        yBackground = yData[peak_right_bound:]
-    if peak_right_bound > len(xData) and peak_left_bound >= 0:
+        xBackground = xData[peaks_right_bound:]
+        yBackground = yData[peaks_right_bound:]
+    if peaks_right_bound > len(xData) and peaks_left_bound >= 0:
         # case of not enough of points at right
-        xBackground = xData[:peak_left_bound]
-        yBackground = yData[:peak_left_bound]
-    if peak_left_bound < 0 and peak_right_bound > len(xData):
+        xBackground = xData[:peaks_left_bound]
+        yBackground = yData[:peaks_left_bound]
+    if peaks_left_bound < 0 and peaks_right_bound > len(xData):
         # case of not enough of points at left and right
         xBackground = np.append(xData[:5], xData[-5:])
         yBackground = np.append(yData[:5], yData[-5:])
-    if peak_left_bound >= 0 and peak_right_bound <= len(xData):
+    if peaks_left_bound >= 0 and peaks_right_bound <= len(xData):
         # case of enough of points at left and right
-        xBackground = np.append(xData[:peak_left_bound], xData[peak_right_bound:])
-        yBackground = np.append(yData[:peak_left_bound], yData[peak_right_bound:])
+        xBackground = np.append(xData[:peaks_left_bound], xData[peaks_right_bound:])
+        yBackground = np.append(yData[:peaks_left_bound], yData[peaks_right_bound:])
 
     backgroundCoefficient = np.polyfit(
         x=xBackground, y=yBackground, deg=1
@@ -155,7 +155,7 @@ def fit_detector_data(channels: np.ndarray, raw_data: np.ndarray, nb_peaks: int)
       - Fit the data without background starting from the first guess
     """
 
-    data_background: np.ndarray = silx.math.fit.strip(  # type: ignore
+    first_guess_background: np.ndarray = silx.math.fit.strip(  # type: ignore
         data=raw_data,
         w=5,
         niterations=4000,
@@ -165,7 +165,7 @@ def fit_detector_data(channels: np.ndarray, raw_data: np.ndarray, nb_peaks: int)
 
     peak_guesses, peak_indices = guessParameters(
         xData=channels,
-        yData=raw_data - data_background,
+        yData=raw_data - first_guess_background,
         nb_peaks=nb_peaks,
         withBounds=True,
     )  ## guess fit parameters
