@@ -1,5 +1,5 @@
 import argparse
-from typing import Callable, Sequence, Union
+from typing import Callable, List, Sequence, Tuple, Union
 from pathlib import Path
 import yaml
 import numpy as np
@@ -7,7 +7,7 @@ import scipy.optimize
 import silx.math.fit
 
 
-def read_config_file(path: Union[str, Path]):
+def read_config_file(path: Union[str, Path]) -> dict:
     with open(path, "r") as config_file:
         return yaml.load(config_file, Loader=yaml.SafeLoader)
 
@@ -27,134 +27,108 @@ def linefunc(a, xData):
 
 
 def splitPseudoVoigt(xData, *params):
-    return silx.math.fit.sum_splitpvoigt(xData, *params)
+    return silx.math.fit.sum_splitpvoigt(xData, *params)  # type: ignore
 
 
 def gaussEstimation(xData, *params):
-    return silx.math.fit.sum_gauss(xData, *params)
+    return silx.math.fit.sum_gauss(xData, *params)  # type: ignore
 
 
 def calcBackground(
-    xData, yData, fwhmRight, fwhmLeft, counterOfBoxes, nbPeaksInBoxes, guessedPeaksIndex
-):
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) <= len(
-        xData
-    ):  ## case of not enough of points at left
-        # print('## case of not enough of points at left')
-        xBackground = xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-        yBackground = yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :]
-    if (
-        int(guessedPeaksIndex[-1] + 3 * fwhmRight) > len(xData)
-        and int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0
-    ):  ## case of not enough of points at right
-        # print('## case of not enough of points at right')
-        xBackground = xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-        yBackground = yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)]
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) < 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) > len(
-        xData
-    ):  ## case of not enough of points at left and right
-        # print('## case of not enough of points at left and right')
-        xBackground = np.append(xData[0:5], xData[-5:])
-        yBackground = np.append(yData[0:5], yData[-5:])
-    if int(guessedPeaksIndex[0] - 3 * fwhmLeft) >= 0 and int(
-        guessedPeaksIndex[-1] + 3 * fwhmRight
-    ) <= len(
-        xData
-    ):  ## case of enough of points at left and right
-        # print('## case of enough of points at left and right')
-        xBackground = np.append(
-            xData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
-            xData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
-        )
-        yBackground = np.append(
-            yData[0 : int(guessedPeaksIndex[0] - 3 * fwhmLeft)],
-            yData[int(guessedPeaksIndex[-1] + 3 * fwhmRight) :],
-        )
-    # print(xData[0:int(guessedPeaksIndex[0] - 3 * fwhmLeft)])
-    # print(xData[-int(guessedPeaksIndex[-1] + 3 * fwhmRight):])
-    # print(int(guessedPeaksIndex[-1] + 3 * fwhmRight))
-    # print(int(guessedPeaksIndex[0] - 3 * fwhmLeft))
-    # print(fwhmRight)
-    # print(xBackground)
-    # print(yBackground)
+    xData: np.ndarray,
+    yData: np.ndarray,
+    fwhmRight: float,
+    fwhmLeft: float,
+    guessedPeaksIndex: Sequence[float],
+) -> np.ndarray:
+    """Extracts the data outside of the peak bounds to fit the background"""
+    peaks_left_bound = int(guessedPeaksIndex[0] - 3 * fwhmLeft)
+    peaks_right_bound = int(guessedPeaksIndex[-1] + 3 * fwhmRight)
+
+    if peaks_left_bound < 0 and peaks_right_bound <= len(xData):
+        # case of not enough of points at left
+        xBackground = xData[peaks_right_bound:]
+        yBackground = yData[peaks_right_bound:]
+    if peaks_right_bound > len(xData) and peaks_left_bound >= 0:
+        # case of not enough of points at right
+        xBackground = xData[:peaks_left_bound]
+        yBackground = yData[:peaks_left_bound]
+    if peaks_left_bound < 0 and peaks_right_bound > len(xData):
+        # case of not enough of points at left and right
+        xBackground = np.append(xData[:5], xData[-5:])
+        yBackground = np.append(yData[:5], yData[-5:])
+    if peaks_left_bound >= 0 and peaks_right_bound <= len(xData):
+        # case of enough of points at left and right
+        xBackground = np.append(xData[:peaks_left_bound], xData[peaks_right_bound:])
+        yBackground = np.append(yData[:peaks_left_bound], yData[peaks_right_bound:])
+
     backgroundCoefficient = np.polyfit(
         x=xBackground, y=yBackground, deg=1
     )  ## fit of background with 1d polynom function
-    yCalculatedBackground = np.poly1d(backgroundCoefficient)(
+    return np.poly1d(backgroundCoefficient)(
         xData
-    )  ## yBackground calcuated with the 1d polynom fitted coefficient
-    return yCalculatedBackground, backgroundCoefficient
+    )  ## yBackground calculated with the 1d polynom fitted coefficient
 
 
 def guessParameters(
     xData: np.ndarray,
     yData: np.ndarray,
-    counterOfBoxes: int,
-    nbPeaksInBoxes: Sequence[int],
-):
-    p0Guess = np.zeros(3 * nbPeaksInBoxes[counterOfBoxes], float)
+    nb_peaks: int,
+    withBounds: bool,
+) -> Tuple[np.ndarray, List[float]]:
     fwhmGuess = silx.math.fit.peaks.guess_fwhm(yData)
-    peaksGuess = silx.math.fit.peaks.peak_search(
+    first_peaks_guess: List[float] = silx.math.fit.peaks.peak_search(
         yData,
         fwhmGuess,
         sensitivity=2.5,
-        begin_index=None,
-        end_index=None,
-        debug=False,
         relevance_info=False,
-    )  ## index of the peak with peak relevance
-    # (f'first evaluation of peak guess{peaksGuess}')
+    )
+
     if (
-        np.size(peaksGuess) > nbPeaksInBoxes[counterOfBoxes]
-    ):  ## case if more peaks than expected are detected
-        peaksGuess = silx.math.fit.peaks.peak_search(
-            yData,
-            fwhmGuess,
-            sensitivity=1,
-            begin_index=None,
-            end_index=None,
-            debug=False,
-            relevance_info=True,
+        len(first_peaks_guess) != nb_peaks
+    ):  ## case if more or less peaks than expected are detected
+        raw_peak_guess: List[Tuple[float, float]] = silx.math.fit.peaks.peak_search(
+            yData, fwhmGuess, sensitivity=1, relevance_info=True
         )  ## index of the peak with peak relevance
-        peaksGuessArray = np.asarray(peaksGuess)
-        orderedIndex = np.argsort(peaksGuessArray[:, 1])[
-            -nbPeaksInBoxes[counterOfBoxes] :
-        ]
-        peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
-    if (
-        np.size(peaksGuess) < nbPeaksInBoxes[counterOfBoxes]
-    ):  ## case if less peaks than expected are detected
-        peaksGuess = silx.math.fit.peaks.peak_search(
-            yData,
-            fwhmGuess,
-            sensitivity=1,
-            begin_index=None,
-            end_index=None,
-            debug=False,
-            relevance_info=True,
-        )  ## index of the peak with peak relevance
-        peaksGuessArray = np.asarray(peaksGuess)
-        orderedIndex = np.argsort(peaksGuessArray[:, 1])[
-            -nbPeaksInBoxes[counterOfBoxes] :
-        ]
-        peaksGuess = sorted(peaksGuessArray[orderedIndex[:], 0])  ## peaks indices
-    # print(peaksGuess)
-    for ipar in range(nbPeaksInBoxes[counterOfBoxes]):
+        peaksGuessArray = np.asarray(raw_peak_guess)
+        # Take nb_peaks that are the most relevant
+        orderedIndex = np.argsort(peaksGuessArray[:, 1])[-nb_peaks:]
+        unsorted_peaks_guess: List[float] = peaksGuessArray[
+            orderedIndex[:], 0
+        ].tolist()  ## peaks indices
+    else:
+        unsorted_peaks_guess = first_peaks_guess
+    peaksGuess = sorted(unsorted_peaks_guess)
+
+    p0Guess = np.zeros(3 * nb_peaks, float)
+    minBounds = np.empty((nb_peaks, 3))
+    maxBounds = np.empty((nb_peaks, 3))
+
+    for ipar in range(nb_peaks):
         p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
         p0Guess[3 * ipar + 2] = fwhmGuess
+
+        minBounds[ipar, 0] = np.amin(yData)  # min H
+        minBounds[ipar, 1] = p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2]  # min C
+        minBounds[ipar, 2] = 0  # min FWHM
+
+        maxBounds[ipar, 0] = np.amax(yData)  # max H
+        maxBounds[ipar, 1] = p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2]  # max C
+        maxBounds[ipar, 2] = 2 * p0Guess[3 * ipar + 2]  # max FWHM
+
     firstGuess, covGuess = scipy.optimize.curve_fit(
         gaussEstimation,
         xData,
         yData,
         p0Guess,
+        **(
+            {"bounds": (minBounds.flatten(), maxBounds.flatten()), "maxfev": 10000}
+            if withBounds
+            else {}
+        ),
     )
-    # print(firstGuess)
-    # print(peaksGuess)
+
     return firstGuess, peaksGuess
 
 
@@ -169,4 +143,88 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
         + ((uch ** 2)) * (((2 * a * ch) + b) ** 2)
         + ((ub ** 2) * ch ** 2)
         + (uc ** 2)
+    )
+
+
+def fit_detector_data(channels: np.ndarray, raw_data: np.ndarray, nb_peaks: int):
+    """
+    Process detector data:
+      - Find the background
+      - Make a first guess of peak parameters
+      - Calculate a background (?)
+      - Fit the data without background starting from the first guess
+    """
+
+    first_guess_background: np.ndarray = silx.math.fit.strip(  # type: ignore
+        data=raw_data,
+        w=5,
+        niterations=4000,
+        factor=1,
+        anchors=None,
+    )
+
+    peak_guesses, peak_indices = guessParameters(
+        xData=channels,
+        yData=raw_data - first_guess_background,
+        nb_peaks=nb_peaks,
+        withBounds=True,
+    )  ## guess fit parameters
+
+    calculated_background = calcBackground(
+        xData=channels,
+        yData=raw_data,
+        fwhmRight=peak_guesses[-1],
+        fwhmLeft=peak_guesses[2],
+        guessedPeaksIndex=peak_indices,
+    )
+
+    initial_fit_guess = np.zeros(5 * nb_peaks)
+    fit_min_bounds = np.zeros(5 * nb_peaks)
+    fit_max_bounds = np.zeros(5 * nb_peaks)
+    for n in range(nb_peaks):
+        initial_fit_guess[5 * n] = peak_guesses[3 * n]
+        initial_fit_guess[5 * n + 1] = peak_guesses[3 * n + 1]
+        initial_fit_guess[5 * n + 2] = peak_guesses[3 * n + 2]
+        initial_fit_guess[5 * n + 3] = peak_guesses[3 * n + 2]
+        initial_fit_guess[5 * n + 4] = 0.5
+        fit_min_bounds[5 * n : 5 * n + 5] = [
+            np.amin(raw_data),
+            initial_fit_guess[5 * n + 1] - 3 * initial_fit_guess[5 * n + 2],
+            0,
+            0,
+            0,
+        ]
+        fit_max_bounds[5 * n : 5 * n + 5] = [
+            np.amax(raw_data),
+            initial_fit_guess[5 * n + 1] + 3 * initial_fit_guess[5 * n + 2],
+            len(channels) / 2,
+            len(channels) / 2,
+            1,
+        ]
+    optimal_parameters, covariance = scipy.optimize.curve_fit(
+        f=splitPseudoVoigt,
+        xdata=channels,
+        ydata=raw_data - calculated_background,
+        p0=initial_fit_guess,
+        bounds=(fit_min_bounds, fit_max_bounds),
+        maxfev=10000,
+    )
+
+    fitted_data = splitPseudoVoigt(channels, optimal_parameters) + calculated_background
+
+    goodness_factor = (
+        100 * np.sum(np.absolute(fitted_data - raw_data)) / np.sum(raw_data)
+    )
+    fit_params = np.empty((nb_peaks, 6), dtype=optimal_parameters.dtype)
+    for n in range(nb_peaks):
+        fit_params[n, :5] = optimal_parameters[5 * n : 5 * n + 5]
+        fit_params[n, 5] = goodness_factor
+
+    uncertainty_fit_params = np.sqrt(np.diag(covariance))
+
+    return (
+        calculated_background,
+        fitted_data,
+        fit_params.flatten(),
+        uncertainty_fit_params,
     )
