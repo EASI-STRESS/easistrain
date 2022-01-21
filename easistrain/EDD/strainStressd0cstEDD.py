@@ -77,6 +77,11 @@ def strainStressTensor(
     fileRead: str, fileSave: str, numberOfPeaks: int, XEC: Sequence[float]
 ):
 
+    if len(XEC) < numberOfPeaks * 2:
+        raise ValueError(
+            f"XEC must have a length of numberOfPeaks*2 ({numberOfPeaks*2})"
+        )
+
     h5Save = h5py.File(fileSave, "a")  ## create/append h5 file to save in
     strainTensor = h5Save.create_group(
         "strain_tensor"
@@ -103,54 +108,41 @@ def strainStressTensor(
                 ]
                 assert isinstance(upointInPeak, np.ndarray)
 
-                guessEps11 = (
-                    np.mean(pointInPeak[pointInPeak[:, 9] >= 0.9, 8])
-                    if len(pointInPeak[pointInPeak[:, 9] >= 0.9, 8]) > 0
-                    else 0
-                )  ## guess of strainxx
-                guessEps22 = (
-                    np.mean(pointInPeak[pointInPeak[:, 10] >= 0.9, 8])
-                    if len(pointInPeak[pointInPeak[:, 10] >= 0.9, 8]) > 0
-                    else 0
-                )  ## guess of strainyy
-                guessEps33 = (
-                    np.mean(pointInPeak[pointInPeak[:, 11] >= 0.9, 8])
-                    if len(pointInPeak[pointInPeak[:, 11] >= 0.9, 8]) > 0
-                    else 0
-                )  ## guess of strainzz
+                meas_strain = pointInPeak[:, 8]
+                meas_exx = pointInPeak[:, 9]
+                meas_eyy = pointInPeak[:, 10]
+                meas_ezz = pointInPeak[:, 11]
+
+                raw_eps11_guess = meas_strain[meas_exx >= 0.9]
+                guessEps11 = np.mean(raw_eps11_guess) if len(raw_eps11_guess) > 0 else 0
+
+                raw_eps22_guess = meas_strain[meas_eyy >= 0.9]
+                guessEps22 = np.mean(raw_eps22_guess) if len(raw_eps22_guess) > 0 else 0
+
+                raw_eps33_guess = meas_strain[meas_ezz >= 0.9]
+                guessEps33 = np.mean(raw_eps33_guess) if len(raw_eps33_guess) > 0 else 0
+
+                raw_eps23_guess = meas_strain[meas_eyy * meas_ezz >= 0.9]
                 guessEps23 = (
-                    np.mean(
-                        pointInPeak[pointInPeak[:, 10] * pointInPeak[:, 11] >= 0.9, 8]
-                    )
-                    - 0.5 * (guessEps22 + guessEps33)
-                    if len(
-                        pointInPeak[pointInPeak[:, 10] * pointInPeak[:, 11] >= 0.9, 8]
-                    )
-                    > 0
+                    np.mean(raw_eps23_guess) - 0.5 * (guessEps22 + guessEps33)
+                    if len(raw_eps23_guess) > 0
                     else 0
-                )  ## guess of strainyz
+                )
+
+                raw_eps13_guess = meas_strain[meas_exx * meas_ezz >= 0.9]
                 guessEps13 = (
-                    np.mean(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 11] >= 0.9, 8]
-                    )
-                    - 0.5 * (guessEps11 + guessEps33)
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 11] >= 0.9, 8]
-                    )
-                    > 0
+                    np.mean(raw_eps13_guess) - 0.5 * (guessEps11 + guessEps33)
+                    if len(raw_eps13_guess) > 0
                     else 0
                 )  ## guess of strainxz
+
+                raw_eps12_guess = meas_strain[meas_exx * meas_eyy >= 0.9]
                 guessEps12 = (
-                    np.mean(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 10] >= 0.9, 8]
-                    )
-                    - 0.5 * (guessEps11 + guessEps22)
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 10] >= 0.9, 8]
-                    )
-                    > 0
+                    raw_eps12_guess - 0.5 * (guessEps11 + guessEps22)
+                    if len(raw_eps12_guess) > 0
                     else 0
-                )  ## guess of strainxz
+                )
+
                 guessSig11 = (1 / XEC[2 * peakNumber + 1]) * (
                     guessEps11
                     + (
