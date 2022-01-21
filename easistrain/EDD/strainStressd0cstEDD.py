@@ -5,43 +5,45 @@ import scipy.optimize
 from easistrain.EDD.utils import run_from_cli
 
 
-def deforDirMeas(angles, e11, e22, e33, e23, e13, e12):
-    phi = np.radians(angles[:, 0])
-    chi = np.radians(angles[:, 1])
-    omega = np.radians(angles[:, 2])
-    delta = np.radians(angles[:, 3])
-    theta = np.radians(0.5 * angles[:, 4])
+def angles_to_rad(angles: np.ndarray):
+    rad_angles = np.radians(angles)
+    # Convert 2*theta in theta
+    rad_angles[:, 4] = 0.5 * rad_angles[:, 4]
+
+    # phi, chi, omega, delta, 2*theta as columns
+    return np.transpose(rad_angles)
+
+
+def compute_q_factors(angles: np.ndarray):
+    rad_angles = angles_to_rad(angles)
+    cos_phi, cos_chi, cos_omega, cos_delta, cos_theta = np.cos(rad_angles)
+    sin_phi, sin_chi, sin_omega, sin_delta, sin_theta = np.sin(rad_angles)
     q1 = (
-        (np.cos(theta) * np.cos(chi) * np.sin(delta) * np.sin(phi))
+        (cos_theta * cos_chi * sin_delta * sin_phi)
         + (
-            np.cos(delta)
-            * np.cos(theta)
-            * (
-                (np.cos(phi) * np.sin(omega))
-                - (np.cos(omega) * np.sin(phi) * np.sin(chi))
-            )
+            cos_delta
+            * cos_theta
+            * ((cos_phi * sin_omega) - (cos_omega * sin_phi * sin_chi))
         )
-        - np.sin(theta)
-        * ((np.cos(phi) * np.cos(omega)) + (np.sin(phi) * np.sin(chi) * np.sin(omega)))
+        - sin_theta * ((cos_phi * cos_omega) + (sin_phi * sin_chi * sin_omega))
     )
     q2 = (
-        np.cos(delta)
-        * np.cos(theta)
-        * ((np.cos(phi) * np.cos(omega) * np.sin(chi)) + (np.sin(phi) * np.sin(omega)))
-        - (np.cos(theta) * np.cos(phi) * np.cos(chi) * np.sin(delta))
-        - (
-            np.sin(theta)
-            * (
-                (np.cos(omega) * np.sin(phi))
-                - (np.cos(phi) * np.sin(chi) * np.sin(omega))
-            )
-        )
+        cos_delta
+        * cos_theta
+        * ((cos_phi * cos_omega * sin_chi) + (sin_phi * sin_omega))
+        - (cos_theta * cos_phi * cos_chi * sin_delta)
+        - (sin_theta * ((cos_omega * sin_phi) - (cos_phi * sin_chi * sin_omega)))
     )
     q3 = (
-        (np.cos(delta) * np.cos(theta) * np.cos(chi) * np.cos(omega))
-        + (np.cos(theta) * np.sin(delta) * np.sin(chi))
-        + (np.cos(chi) * np.sin(theta) * np.sin(omega))
+        (cos_delta * cos_theta * cos_chi * cos_omega)
+        + (cos_theta * sin_delta * sin_chi)
+        + (cos_chi * sin_theta * sin_omega)
     )
+    return q1, q2, q3
+
+
+def deforDirMeas(angles, e11, e22, e33, e23, e13, e12):
+    q1, q2, q3 = compute_q_factors(angles)
     defDirMeas = (
         (e11 * q1**2)
         + (e22 * q2**2)
@@ -54,44 +56,9 @@ def deforDirMeas(angles, e11, e22, e33, e23, e13, e12):
 
 
 def deforDirMeasStress(anglesAndXEC, s11, s22, s33, s23, s13, s12):
-    phi = np.radians(anglesAndXEC[:-1, 0])
-    chi = np.radians(anglesAndXEC[:-1, 1])
-    omega = np.radians(anglesAndXEC[:-1, 2])
-    delta = np.radians(anglesAndXEC[:-1, 3])
-    theta = np.radians(0.5 * anglesAndXEC[:-1, 4])
+    q1, q2, q3 = compute_q_factors(anglesAndXEC[:-1])
     S1 = anglesAndXEC[-1, 0]
     dS2 = anglesAndXEC[-1, 1]
-    q1 = (
-        (np.cos(theta) * np.cos(chi) * np.sin(delta) * np.sin(phi))
-        + (
-            np.cos(delta)
-            * np.cos(theta)
-            * (
-                (np.cos(phi) * np.sin(omega))
-                - (np.cos(omega) * np.sin(phi) * np.sin(chi))
-            )
-        )
-        - np.sin(theta)
-        * ((np.cos(phi) * np.cos(omega)) + (np.sin(phi) * np.sin(chi) * np.sin(omega)))
-    )
-    q2 = (
-        np.cos(delta)
-        * np.cos(theta)
-        * ((np.cos(phi) * np.cos(omega) * np.sin(chi)) + (np.sin(phi) * np.sin(omega)))
-        - (np.cos(theta) * np.cos(phi) * np.cos(chi) * np.sin(delta))
-        - (
-            np.sin(theta)
-            * (
-                (np.cos(omega) * np.sin(phi))
-                - (np.cos(phi) * np.sin(chi) * np.sin(omega))
-            )
-        )
-    )
-    q3 = (
-        (np.cos(delta) * np.cos(theta) * np.cos(chi) * np.cos(omega))
-        + (np.cos(theta) * np.sin(delta) * np.sin(chi))
-        + (np.cos(chi) * np.sin(theta) * np.sin(omega))
-    )
     defDirMeasStress = (S1 * (s11 + s22 + s33)) + (
         dS2
         * (
@@ -129,10 +96,12 @@ def strainStressTensor(
             input_peak_group = h5Read[f"STRAIN_with_d0/peak_{str(peakNumber).zfill(4)}"]
             assert isinstance(input_peak_group, h5py.Group)
             for i in range(len(input_peak_group) // 2):
-                pointInPeak = input_peak_group[f"point_{str(i).zfill(5)}"][()]  ##
+                pointInPeak = input_peak_group[f"point_{str(i).zfill(5)}"][()]
+                assert isinstance(pointInPeak, np.ndarray)
                 upointInPeak = input_peak_group[f"uncertainty_point_{str(i).zfill(5)}"][
                     ()
-                ]  ##
+                ]
+                assert isinstance(upointInPeak, np.ndarray)
 
                 guessEps11 = (
                     np.mean(pointInPeak[pointInPeak[:, 9] >= 0.9, 8])
