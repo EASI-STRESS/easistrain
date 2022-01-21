@@ -118,9 +118,7 @@ def strainStressTensor(
         "stress_tensor"
     )  ## creation of the stress tensor group
 
-    with h5py.File(
-        fileRead, "r"
-    ) as h5Read:  ## Read the h5 file of the energy calibration of the detectors
+    with h5py.File(fileRead, "r") as h5Read:
         for peakNumber in range(numberOfPeaks):
             peakGroup = strainTensor.create_group(
                 f"peak_{str(peakNumber).zfill(4)}"
@@ -128,54 +126,14 @@ def strainStressTensor(
             peakGroupStress = stressTensor.create_group(
                 f"peak_{str(peakNumber).zfill(4)}"
             )  ## create group for each peak in the stressTensor group
-            for i in range(
-                int(
-                    len(list(h5Read[f"STRAIN_with_d0/peak_{str(peakNumber).zfill(4)}"]))
-                    / 2
-                )
-            ):
-                pointInPeak = h5Read[
-                    f"STRAIN_with_d0/peak_{str(peakNumber).zfill(4)}/point_{str(i).zfill(5)}"
-                ][
+            input_peak_group = h5Read[f"STRAIN_with_d0/peak_{str(peakNumber).zfill(4)}"]
+            assert isinstance(input_peak_group, h5py.Group)
+            for i in range(len(input_peak_group) // 2):
+                pointInPeak = input_peak_group[f"point_{str(i).zfill(5)}"][()]  ##
+                upointInPeak = input_peak_group[f"uncertainty_point_{str(i).zfill(5)}"][
                     ()
                 ]  ##
-                upointInPeak = h5Read[
-                    f"STRAIN_with_d0/peak_{str(peakNumber).zfill(4)}/uncertainty_point_{str(i).zfill(5)}"
-                ][
-                    ()
-                ]  ##
-                pointInPeakGroup = peakGroup.create_dataset(
-                    f"point_{str(i).zfill(5)}",
-                    dtype="float64",
-                    data=np.zeros((1, 9), "float64"),
-                )  ## strain tensor in point i
-                pointInPeakGroupStress = peakGroupStress.create_dataset(
-                    f"point_{str(i).zfill(5)}",
-                    dtype="float64",
-                    data=np.zeros((1, 9), "float64"),
-                )  ## stress tensor in point i
-                upointInPeakGroup = peakGroup.create_dataset(
-                    f"uncertainty_point_{str(i).zfill(5)}",
-                    dtype="float64",
-                    data=np.zeros((1, 9), "float64"),
-                )  ## uncertinty on the strain tensor component in point i
-                upointInPeakGroupStress = peakGroupStress.create_dataset(
-                    f"uncertainty_point_{str(i).zfill(5)}",
-                    dtype="float64",
-                    data=np.zeros((1, 9), "float64"),
-                )  ## uncertainty on the stress tensor component in point i
-                pointInPeakGroup[0, 0:3] = pointInPeak[
-                    0, 0:3
-                ]  ## coordinate of the point in the sample reference to put in the strain tensor components matrix
-                upointInPeakGroup[0, 0:3] = upointInPeak[
-                    0, 0:3
-                ]  ## coordinate of the point in the sample reference to put in the strain tensor components matrix
-                pointInPeakGroupStress[0, 0:3] = pointInPeak[
-                    0, 0:3
-                ]  ## coordinate of the point in the sample reference to put in the stress tensor components matrix
-                upointInPeakGroupStress[0, 0:3] = upointInPeak[
-                    0, 0:3
-                ]  ## coordinate of the point in the sample reference to put in the stress tensor components matrix
+
                 guessEps11 = (
                     np.mean(pointInPeak[pointInPeak[:, 9] >= 0.9, 8])
                     if len(pointInPeak[pointInPeak[:, 9] >= 0.9, 8]) > 0
@@ -452,23 +410,48 @@ def strainStressTensor(
                         ],
                     ),
                 )  ## fit of the stress tensor
-                pointInPeakGroup[
-                    0, 3:9
-                ] = strainTensorComponents  ## strain tensor components
+
+                pointInPeakGroup = peakGroup.create_dataset(
+                    f"point_{str(i).zfill(5)}",
+                    dtype="float64",
+                    data=np.zeros((1, 9), "float64"),
+                )  ## strain tensor in point i
+                pointInPeakGroupStress = peakGroupStress.create_dataset(
+                    f"point_{str(i).zfill(5)}",
+                    dtype="float64",
+                    data=np.zeros((1, 9), "float64"),
+                )  ## stress tensor in point i
+                upointInPeakGroup = peakGroup.create_dataset(
+                    f"uncertainty_point_{str(i).zfill(5)}",
+                    dtype="float64",
+                    data=np.zeros((1, 9), "float64"),
+                )  ## uncertinty on the strain tensor component in point i
+                upointInPeakGroupStress = peakGroupStress.create_dataset(
+                    f"uncertainty_point_{str(i).zfill(5)}",
+                    dtype="float64",
+                    data=np.zeros((1, 9), "float64"),
+                )  ## uncertainty on the stress tensor component in point i
+
+                pointInPeakGroup[0, 0:3] = pointInPeak[0, 0:3]
+                pointInPeakGroup[0, 3:9] = strainTensorComponents
+
+                upointInPeakGroup[0, 0:3] = upointInPeak[0, 0:3]
                 upointInPeakGroup[0, 3:9] = (
                     np.sqrt(np.diag(covarStrains))
                     if np.sum(covarStrains) != np.inf
                     else np.mean(upointInPeak[:, 8])
-                )  ## uncertainty on the strain tensor components
-                pointInPeakGroupStress[
-                    0, 3:9
-                ] = stressTensorComponents  ## stress tensor components
+                )
+
+                pointInPeakGroupStress[0, 0:3] = pointInPeak[0, 0:3]
+                pointInPeakGroupStress[0, 3:9] = stressTensorComponents
+
+                upointInPeakGroupStress[0, 0:3] = upointInPeak[0, 0:3]
                 upointInPeakGroupStress[0, 3:9] = (
                     np.sqrt(np.diag(covarStress))
                     if np.sum(covarStress) != np.inf
                     else (1 / (XEC[2 * peakNumber + 1] + XEC[2 * peakNumber]))
                     * np.mean(upointInPeak[:, 8])
-                )  ## uncertainty on the strain tensor components
+                )
 
     h5Save.close()
     return
