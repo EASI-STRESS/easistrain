@@ -112,6 +112,12 @@ def strainStressTensor(
                 meas_exx = pointInPeak[:, 9]
                 meas_eyy = pointInPeak[:, 10]
                 meas_ezz = pointInPeak[:, 11]
+                meas_eyz = meas_eyy * meas_ezz
+                meas_exz = meas_exx * meas_ezz
+                meas_exy = meas_exx * meas_eyy
+                meas_strain_tensor = np.array(
+                    [meas_exx, meas_eyy, meas_ezz, meas_eyz, meas_exz, meas_exy]
+                )
 
                 raw_eps11_guess = meas_strain[meas_exx >= 0.9]
                 guessEps11 = np.mean(raw_eps11_guess) if len(raw_eps11_guess) > 0 else 0
@@ -122,21 +128,21 @@ def strainStressTensor(
                 raw_eps33_guess = meas_strain[meas_ezz >= 0.9]
                 guessEps33 = np.mean(raw_eps33_guess) if len(raw_eps33_guess) > 0 else 0
 
-                raw_eps23_guess = meas_strain[meas_eyy * meas_ezz >= 0.9]
+                raw_eps23_guess = meas_strain[meas_eyz >= 0.9]
                 guessEps23 = (
                     np.mean(raw_eps23_guess) - 0.5 * (guessEps22 + guessEps33)
                     if len(raw_eps23_guess) > 0
                     else 0
                 )
 
-                raw_eps13_guess = meas_strain[meas_exx * meas_ezz >= 0.9]
+                raw_eps13_guess = meas_strain[meas_exz >= 0.9]
                 guessEps13 = (
                     np.mean(raw_eps13_guess) - 0.5 * (guessEps11 + guessEps33)
                     if len(raw_eps13_guess) > 0
                     else 0
                 )  ## guess of strainxz
 
-                raw_eps12_guess = meas_strain[meas_exx * meas_eyy >= 0.9]
+                raw_eps12_guess = meas_strain[meas_exy >= 0.9]
                 guessEps12 = (
                     raw_eps12_guess - 0.5 * (guessEps11 + guessEps22)
                     if len(raw_eps12_guess) > 0
@@ -198,147 +204,25 @@ def strainStressTensor(
                     guessSig13,
                     guessSig12,
                 ]  ## initial guess of the stress tensor
-                boundsEps11 = [
-                    -np.inf
-                    if len(pointInPeak[pointInPeak[:, 9] >= 0.1, 8]) > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(pointInPeak[pointInPeak[:, 9] >= 0.1, 8]) > 0
-                    else 10**-10,
-                ]  ## bounds on epsilon11
-                boundsEps22 = [
-                    -np.inf
-                    if len(pointInPeak[pointInPeak[:, 10] >= 0.1, 8]) > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(pointInPeak[pointInPeak[:, 10] >= 0.1, 8]) > 0
-                    else 10**-10,
-                ]  ## bounds on epsilon22
-                boundsEps33 = [
-                    -np.inf
-                    if len(pointInPeak[pointInPeak[:, 11] >= 0.1, 8]) > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(pointInPeak[pointInPeak[:, 11] >= 0.1, 8]) > 0
-                    else 10**-10,
-                ]  ## bounds on epsilon33
-                boundsEps23 = [
-                    -np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 10] * pointInPeak[:, 11] >= 0.1, 8]
-                    )
-                    > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 10] * pointInPeak[:, 11] >= 0.1, 8]
-                    )
-                    > 0
-                    else 10**-10,
-                ]  ## bounds on epsilon23
-                boundsEps13 = [
-                    -np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 11] >= 0.1, 8]
-                    )
-                    > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 11] >= 0.1, 8]
-                    )
-                    > 0
-                    else 10**-10,
-                ]  ## bounds on epsilon13
-                boundsEps12 = [
-                    -np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 10] >= 0.1, 8]
-                    )
-                    > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 10] >= 0.1, 8]
-                    )
-                    > 0
-                    else 10**-10,
-                ]  ## bounds on epsilon12
-                boundsSig11 = [-np.inf, np.inf]  ## bounds on sigma11
-                boundsSig22 = [-np.inf, np.inf]  ## bounds on sigma22
-                boundsSig33 = [-np.inf, np.inf]  ## bounds on sigma33
-                boundsSig23 = [
-                    -np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 10] * pointInPeak[:, 11] >= 0.1, 8]
-                    )
-                    > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 10] * pointInPeak[:, 11] >= 0.1, 8]
-                    )
-                    > 0
-                    else 10**-10,
-                ]  ## bounds on sigma23
-                boundsSig13 = [
-                    -np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 11] >= 0.1, 8]
-                    )
-                    > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 11] >= 0.1, 8]
-                    )
-                    > 0
-                    else 10**-10,
-                ]  ## bounds on sigma13
-                boundsSig12 = [
-                    -np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 10] >= 0.1, 8]
-                    )
-                    > 0
-                    else -(10**-10),
-                    np.inf
-                    if len(
-                        pointInPeak[pointInPeak[:, 9] * pointInPeak[:, 10] >= 0.1, 8]
-                    )
-                    > 0
-                    else 10**-10,
-                ]  ## bounds on sigma12
-                # print(strainTensorInitialGuess)
-                # print(stressTensorInitialGuess)
-                # print(([boundsEps11[0],boundsEps22[0],boundsEps33[0],boundsEps23[0],boundsEps13[0],boundsEps12[0]],
-                # [boundsEps11[1],boundsEps22[1],boundsEps33[1],boundsEps23[1],boundsEps13[1],boundsEps12[1]]))
-                # print(([boundsSig11[0],boundsSig22[0],boundsSig33[0],boundsSig23[0],boundsSig13[0],boundsSig12[0]],
-                # [boundsSig11[1],boundsSig22[1],boundsSig33[1],boundsSig23[1],boundsSig13[1],boundsSig12[1]]))
+
+                bounds_eps = np.ones((6)) * (10**-10)
+                bounds_sig = np.ones((6)) * (10**-10)
+
+                for j, meas_e in enumerate(meas_strain_tensor):
+                    if len(meas_strain[meas_e >= 0.1]) > 0:
+                        bounds_eps[j] = np.inf
+                        bounds_sig[j] = np.inf
+
+                # bounds on sigma11, sigma22, sigma33
+                bounds_sig[:3] = np.inf
+
                 strainTensorComponents, covarStrains = scipy.optimize.curve_fit(
                     f=deforDirMeas,
                     xdata=pointInPeak[:, 3:8],
                     ydata=pointInPeak[:, 8],
                     p0=strainTensorInitialGuess,
                     sigma=upointInPeak[:, 8],
-                    bounds=(
-                        [
-                            boundsEps11[0],
-                            boundsEps22[0],
-                            boundsEps33[0],
-                            boundsEps23[0],
-                            boundsEps13[0],
-                            boundsEps12[0],
-                        ],
-                        [
-                            boundsEps11[1],
-                            boundsEps22[1],
-                            boundsEps33[1],
-                            boundsEps23[1],
-                            boundsEps13[1],
-                            boundsEps12[1],
-                        ],
-                    ),
+                    bounds=(-bounds_eps, bounds_eps),
                 )  ## fit of the strain tensor
                 stressTensorComponents, covarStress = scipy.optimize.curve_fit(
                     f=deforDirMeasStress,
@@ -352,24 +236,7 @@ def strainStressTensor(
                     ydata=pointInPeak[:, 8],
                     p0=stressTensorInitialGuess,
                     sigma=upointInPeak[:, 8],
-                    bounds=(
-                        [
-                            boundsSig11[0],
-                            boundsSig22[0],
-                            boundsSig33[0],
-                            boundsSig23[0],
-                            boundsSig13[0],
-                            boundsSig12[0],
-                        ],
-                        [
-                            boundsSig11[1],
-                            boundsSig22[1],
-                            boundsSig33[1],
-                            boundsSig23[1],
-                            boundsSig13[1],
-                            boundsSig12[1],
-                        ],
-                    ),
+                    bounds=(-bounds_sig, bounds_sig),
                 )  ## fit of the stress tensor
 
                 pointInPeakGroup = peakGroup.create_dataset(
