@@ -115,9 +115,6 @@ def strainStressTensor(
                 meas_eyz = meas_eyy * meas_ezz
                 meas_exz = meas_exx * meas_ezz
                 meas_exy = meas_exx * meas_eyy
-                meas_strain_tensor = np.array(
-                    [meas_exx, meas_eyy, meas_ezz, meas_eyz, meas_exz, meas_exy]
-                )
 
                 raw_eps11_guess = meas_strain[meas_exx >= 0.9]
                 guessEps11 = np.mean(raw_eps11_guess) if len(raw_eps11_guess) > 0 else 0
@@ -208,7 +205,9 @@ def strainStressTensor(
                 bounds_eps = np.ones((6)) * (10**-10)
                 bounds_sig = np.ones((6)) * (10**-10)
 
-                for j, meas_e in enumerate(meas_strain_tensor):
+                for j, meas_e in enumerate(
+                    [meas_exx, meas_eyy, meas_ezz, meas_eyz, meas_exz, meas_exy]
+                ):
                     if len(meas_strain[meas_e >= 0.1]) > 0:
                         bounds_eps[j] = np.inf
                         bounds_sig[j] = np.inf
@@ -224,13 +223,12 @@ def strainStressTensor(
                     sigma=upointInPeak[:, 8],
                     bounds=(-bounds_eps, bounds_eps),
                 )  ## fit of the strain tensor
+
                 stressTensorComponents, covarStress = scipy.optimize.curve_fit(
                     f=deforDirMeasStress,
                     xdata=np.append(
                         pointInPeak[:, 3:8],
-                        np.array(
-                            [[XEC[2 * peakNumber], XEC[2 * peakNumber + 1], 0, 0, 0]]
-                        ),
+                        [[XEC[2 * peakNumber], XEC[2 * peakNumber + 1], 0, 0, 0]],
                         axis=0,
                     ),
                     ydata=pointInPeak[:, 8],
@@ -239,25 +237,24 @@ def strainStressTensor(
                     bounds=(-bounds_sig, bounds_sig),
                 )  ## fit of the stress tensor
 
+                point_name = f"point_{str(i).zfill(5)}"
                 pointInPeakGroup = peakGroup.create_dataset(
-                    f"point_{str(i).zfill(5)}",
+                    point_name,
                     dtype="float64",
-                    data=np.zeros((1, 9), "float64"),
+                    shape=(1, 9),
                 )  ## strain tensor in point i
                 pointInPeakGroupStress = peakGroupStress.create_dataset(
-                    f"point_{str(i).zfill(5)}",
-                    dtype="float64",
-                    data=np.zeros((1, 9), "float64"),
+                    point_name, dtype="float64", shape=(1, 9)
                 )  ## stress tensor in point i
                 upointInPeakGroup = peakGroup.create_dataset(
-                    f"uncertainty_point_{str(i).zfill(5)}",
+                    f"uncertainty_{point_name}",
                     dtype="float64",
-                    data=np.zeros((1, 9), "float64"),
+                    shape=(1, 9),
                 )  ## uncertinty on the strain tensor component in point i
                 upointInPeakGroupStress = peakGroupStress.create_dataset(
-                    f"uncertainty_point_{str(i).zfill(5)}",
+                    f"uncertainty_{point_name}",
                     dtype="float64",
-                    data=np.zeros((1, 9), "float64"),
+                    shape=(1, 9),
                 )  ## uncertainty on the stress tensor component in point i
 
                 pointInPeakGroup[0, 0:3] = pointInPeak[0, 0:3]
