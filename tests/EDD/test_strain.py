@@ -63,13 +63,15 @@ def test_strain(tmp_path: Path):
             point_name = "point_00000"  # Take only first point
             with h5py.File(config["fileSave"], "r") as h5file:
                 point_data = h5file[
-                    f"{tensor_type}_tensor/{peak_grp_name}/{point_name}"
+                    f"/{peak_grp_name}/{point_name}/{tensor_type}_tensor_fit"
                 ][()]
 
             with h5py.File(test_data_path, "r") as h5file:
-                ref_data = h5file[f"{tensor_type}/peak_{i}/ref_{point_name}/value"][()]
+                ref_data = h5file[f"{tensor_type}/peak_{i}/ref_{point_name}/value"][
+                    0, 3:
+                ]
                 ref_errors = h5file[f"{tensor_type}/peak_{i}/ref_{point_name}/errors"][
-                    ()
+                    0, 3:
                 ]
 
             assert numpy.all(numpy.abs(point_data - ref_data) <= numpy.abs(ref_errors))

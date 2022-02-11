@@ -111,15 +111,13 @@ def guess_strain(
 
 
 def guess_stress(
-    strain_guess, strain_bounds, young_modulus, poisson_factor
+    strain_guess, strain_bounds, XEC0, XEC1
 ) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
 
     module_guess: np.ndarray = np.zeros_like(strain_guess)
-    module_guess[3:] = (-young_modulus / (poisson_factor + 3 * young_modulus)) * np.sum(
-        strain_guess[3:]
-    )
+    module_guess[3:] = (-XEC0 / (XEC1 + 3 * XEC0)) * np.sum(strain_guess[3:])
 
-    stress_guess = (1 / poisson_factor) * (strain_guess + module_guess)
+    stress_guess = (1 / XEC1) * (strain_guess + module_guess)
 
     min_strain, max_strain = strain_bounds
     max_stress: np.ndarray = np.zeros_like(max_strain)
@@ -171,41 +169,32 @@ def strainStressTensor(
         )
 
     h5Save = h5py.File(fileSave, "a")  ## create/append h5 file to save in
-    strainTensor = h5Save.create_group(
-        "strain_tensor"
-    )  ## creation of the strain tensor group
-    stressTensor = h5Save.create_group(
-        "stress_tensor"
-    )  ## creation of the stress tensor group
 
     with h5py.File(fileRead, "r") as h5Read:
         for peakNumber in range(numberOfPeaks):
-            peakGroup = strainTensor.create_group(
+            peak_group = h5Save.create_group(
                 f"peak_{str(peakNumber).zfill(4)}"
             )  ## create group for each peak in the strainTensor group
-            peakGroupStress = stressTensor.create_group(
-                f"peak_{str(peakNumber).zfill(4)}"
-            )  ## create group for each peak in the stressTensor group
             input_peak_group = h5Read[f"STRAIN_with_d0/peak_{str(peakNumber).zfill(4)}"]
             assert isinstance(input_peak_group, h5py.Group)
             for i in range(len(input_peak_group) // 2):
-                pointInPeak = input_peak_group[f"point_{str(i).zfill(5)}"][()]
-                assert isinstance(pointInPeak, np.ndarray)
-                upointInPeak = input_peak_group[f"uncertainty_point_{str(i).zfill(5)}"][
-                    ()
-                ]
-                assert isinstance(upointInPeak, np.ndarray)
+                input_point_data = input_peak_group[f"point_{str(i).zfill(5)}"][()]
+                assert isinstance(input_point_data, np.ndarray)
+                input_point_errors = input_peak_group[
+                    f"uncertainty_point_{str(i).zfill(5)}"
+                ][()]
+                assert isinstance(input_point_errors, np.ndarray)
 
-                meas_angles = pointInPeak[:, 3:8]
-                meas_strain = pointInPeak[:, 8]
-                scattering_x = pointInPeak[:, 9]
-                scattering_y = pointInPeak[:, 10]
-                scattering_z = pointInPeak[:, 11]
+                meas_angles = input_point_data[:, 3:8]
+                meas_strain = input_point_data[:, 8]
+                scattering_x = input_point_data[:, 9]
+                scattering_y = input_point_data[:, 10]
+                scattering_z = input_point_data[:, 11]
 
                 strain_tensor_guess, strain_tensor_bounds = guess_strain(
                     meas_strain, scattering_x, scattering_y, scattering_z
                 )
-                uncertainty_meas_strain = upointInPeak[:, 8]
+                uncertainty_meas_strain = input_point_errors[:, 8]
                 strain_tensor_fit, covarStrains = scipy.optimize.curve_fit(
                     f=strain_in_meas_direction,
                     xdata=meas_angles,
@@ -235,44 +224,36 @@ def strainStressTensor(
                 )
 
                 point_name = f"point_{str(i).zfill(5)}"
-                pointInPeakGroup = peakGroup.create_dataset(
-                    point_name,
-                    dtype="float64",
-                    shape=(1, 9),
-                )  ## strain tensor in point i
-                pointInPeakGroupStress = peakGroupStress.create_dataset(
-                    point_name, dtype="float64", shape=(1, 9)
-                )  ## stress tensor in point i
-                upointInPeakGroup = peakGroup.create_dataset(
-                    f"uncertainty_{point_name}",
-                    dtype="float64",
-                    shape=(1, 9),
-                )  ## uncertinty on the strain tensor component in point i
-                upointInPeakGroupStress = peakGroupStress.create_dataset(
-                    f"uncertainty_{point_name}",
-                    dtype="float64",
-                    shape=(1, 9),
-                )  ## uncertainty on the stress tensor component in point i
-
-                pointInPeakGroup[0, 0:3] = pointInPeak[0, 0:3]
-                pointInPeakGroup[0, 3:9] = strain_tensor_fit
-
-                upointInPeakGroup[0, 0:3] = upointInPeak[0, 0:3]
-                upointInPeakGroup[0, 3:9] = (
-                    np.sqrt(np.diag(covarStrains))
-                    if np.sum(covarStrains) != np.inf
-                    else np.mean(upointInPeak[:, 8])
+                point_in_peak_group = peak_group.create_group(point_name)
+                point_in_peak_group.create_dataset(
+                    "position", data=input_point_data[0, 0:3]
+                )
+                point_in_peak_group.create_dataset(
+                    "position_errors", data=input_point_errors[0, 0:3]
+                )
+                point_in_peak_group.create_dataset(
+                    "strain_tensor_fit", data=strain_tensor_fit
+                )
+                point_in_peak_group.create_dataset(
+                    "strain_tensor_errors",
+                    data=(
+                        np.sqrt(np.diag(covarStrains))
+                        if np.sum(covarStrains) != np.inf
+                        else np.mean(input_point_errors[:, 8])
+                    ),
                 )
 
-                pointInPeakGroupStress[0, 0:3] = pointInPeak[0, 0:3]
-                pointInPeakGroupStress[0, 3:9] = stress_tensor_fit
-
-                upointInPeakGroupStress[0, 0:3] = upointInPeak[0, 0:3]
-                upointInPeakGroupStress[0, 3:9] = (
-                    np.sqrt(np.diag(covarStress))
-                    if np.sum(covarStress) != np.inf
-                    else (1 / (XEC[2 * peakNumber + 1] + XEC[2 * peakNumber]))
-                    * np.mean(upointInPeak[:, 8])
+                point_in_peak_group.create_dataset(
+                    "stress_tensor_fit", data=stress_tensor_fit
+                )
+                point_in_peak_group.create_dataset(
+                    "stress_tensor_errors",
+                    data=(
+                        np.sqrt(np.diag(covarStress))
+                        if np.sum(covarStress) != np.inf
+                        else (1 / (XEC[2 * peakNumber + 1] + XEC[2 * peakNumber]))
+                        * np.mean(input_point_errors[:, 8])
+                    ),
                 )
 
     h5Save.close()
