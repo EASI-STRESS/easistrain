@@ -77,6 +77,7 @@ def guess_strain(
 def guess_stress(
     strain_guess, strain_bounds, XEC0, XEC1
 ) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    """Initial guess of the stress tensor"""
 
     module_guess: np.ndarray = np.zeros_like(strain_guess)
     module_guess[3:] = (-XEC0 / (XEC1 + 3 * XEC0)) * np.sum(strain_guess[3:])
@@ -198,26 +199,27 @@ def strainStressTensor(
                 point_in_peak_group.create_dataset(
                     "strain_tensor_fit", data=strain_tensor_fit
                 )
-                point_in_peak_group.create_dataset(
+                strain_errors = point_in_peak_group.create_dataset(
                     "strain_tensor_errors",
-                    data=(
-                        np.sqrt(np.diag(covarStrains))
-                        if np.sum(covarStrains) != np.inf
-                        else np.mean(input_point_errors[:, 8])
-                    ),
+                    shape=(6),
+                )
+                strain_errors[:] = (
+                    np.sqrt(np.diag(covarStrains))
+                    if np.sum(covarStrains) != np.inf
+                    else np.mean(input_point_errors[:, 8])
                 )
 
                 point_in_peak_group.create_dataset(
                     "stress_tensor_fit", data=stress_tensor_fit
                 )
-                point_in_peak_group.create_dataset(
-                    "stress_tensor_errors",
-                    data=(
-                        np.sqrt(np.diag(covarStress))
-                        if np.sum(covarStress) != np.inf
-                        else (1 / (XEC[2 * peakNumber + 1] + XEC[2 * peakNumber]))
-                        * np.mean(input_point_errors[:, 8])
-                    ),
+                stress_errors = point_in_peak_group.create_dataset(
+                    "stress_tensor_errors", shape=(6)
+                )
+                stress_errors[:] = (
+                    np.sqrt(np.diag(covarStress))
+                    if np.sum(covarStress) != np.inf
+                    else (1 / (XEC[2 * peakNumber + 1] + XEC[2 * peakNumber]))
+                    * np.mean(input_point_errors[:, 8])
                 )
 
     h5Save.close()
