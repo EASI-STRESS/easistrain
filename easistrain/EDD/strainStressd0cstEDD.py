@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Tuple
 import numpy as np
 import h5py
 import scipy.optimize
@@ -40,6 +40,95 @@ def compute_qs(angles: np.ndarray):
         + (cos_chi * sin_theta * sin_omega)
     )
     return q1, q2, q3
+
+
+def guess_strain(
+    meas_strain, scattering_x, scattering_y, scattering_z
+) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+    """Initial guess of the strain tensor"""
+    scattering_yz = scattering_y * scattering_z
+    scattering_xz = scattering_x * scattering_z
+    scattering_xy = scattering_x * scattering_y
+
+    raw_eps11_guess = meas_strain[scattering_x >= 0.9]
+    guessEps11 = np.mean(raw_eps11_guess) if len(raw_eps11_guess) > 0 else 0
+
+    raw_eps22_guess = meas_strain[scattering_y >= 0.9]
+    guessEps22 = np.mean(raw_eps22_guess) if len(raw_eps22_guess) > 0 else 0
+
+    raw_eps33_guess = meas_strain[scattering_z >= 0.9]
+    guessEps33 = np.mean(raw_eps33_guess) if len(raw_eps33_guess) > 0 else 0
+
+    raw_eps23_guess = meas_strain[scattering_yz >= 0.9]
+    guessEps23 = (
+        np.mean(raw_eps23_guess) - 0.5 * (guessEps22 + guessEps33)
+        if len(raw_eps23_guess) > 0
+        else 0
+    )
+
+    raw_eps13_guess = meas_strain[scattering_xz >= 0.9]
+    guessEps13 = (
+        np.mean(raw_eps13_guess) - 0.5 * (guessEps11 + guessEps33)
+        if len(raw_eps13_guess) > 0
+        else 0
+    )  ## guess of strainxz
+
+    raw_eps12_guess = meas_strain[scattering_xy >= 0.9]
+    guessEps12 = (
+        raw_eps12_guess - 0.5 * (guessEps11 + guessEps22)
+        if len(raw_eps12_guess) > 0
+        else 0
+    )
+
+    max_strain = np.ones((6)) * (10**-10)
+
+    for j, meas_e in enumerate(
+        [
+            scattering_x,
+            scattering_y,
+            scattering_z,
+            scattering_yz,
+            scattering_xz,
+            scattering_xy,
+        ]
+    ):
+        if len(meas_strain[meas_e >= 0.1]) > 0:
+            max_strain[j] = np.inf
+
+    return (
+        np.array(
+            [
+                guessEps11,
+                guessEps22,
+                guessEps33,
+                guessEps23,
+                guessEps13,
+                guessEps12,
+            ]
+        ),
+        (-max_strain, max_strain),
+    )
+
+
+def guess_stress(
+    strain_guess, strain_bounds, young_modulus, poisson_factor
+) -> Tuple[np.ndarray, Tuple[np.ndarray, np.ndarray]]:
+
+    module_guess: np.ndarray = np.zeros_like(strain_guess)
+    module_guess[3:] = (-young_modulus / (poisson_factor + 3 * young_modulus)) * np.sum(
+        strain_guess[3:]
+    )
+
+    stress_guess = (1 / poisson_factor) * (strain_guess + module_guess)
+
+    min_strain, max_strain = strain_bounds
+    max_stress: np.ndarray = np.zeros_like(max_strain)
+    max_stress[3:] = max_strain[3:]
+    max_stress[:3] = np.inf
+    return (
+        stress_guess,
+        (-max_stress, max_stress),
+    )
 
 
 def strain_in_meas_direction(angles, e11, e22, e33, e23, e13, e12):
@@ -109,103 +198,30 @@ def strainStressTensor(
 
                 meas_angles = pointInPeak[:, 3:8]
                 meas_strain = pointInPeak[:, 8]
-                uncertainty_meas_strain = upointInPeak[:, 8]
                 scattering_x = pointInPeak[:, 9]
                 scattering_y = pointInPeak[:, 10]
                 scattering_z = pointInPeak[:, 11]
-                scattering_yz = scattering_y * scattering_z
-                scattering_xz = scattering_x * scattering_z
-                scattering_xy = scattering_x * scattering_y
 
-                raw_eps11_guess = meas_strain[scattering_x >= 0.9]
-                guessEps11 = np.mean(raw_eps11_guess) if len(raw_eps11_guess) > 0 else 0
-
-                raw_eps22_guess = meas_strain[scattering_y >= 0.9]
-                guessEps22 = np.mean(raw_eps22_guess) if len(raw_eps22_guess) > 0 else 0
-
-                raw_eps33_guess = meas_strain[scattering_z >= 0.9]
-                guessEps33 = np.mean(raw_eps33_guess) if len(raw_eps33_guess) > 0 else 0
-
-                raw_eps23_guess = meas_strain[scattering_yz >= 0.9]
-                guessEps23 = (
-                    np.mean(raw_eps23_guess) - 0.5 * (guessEps22 + guessEps33)
-                    if len(raw_eps23_guess) > 0
-                    else 0
+                strain_tensor_guess, strain_tensor_bounds = guess_strain(
+                    meas_strain, scattering_x, scattering_y, scattering_z
                 )
-
-                raw_eps13_guess = meas_strain[scattering_xz >= 0.9]
-                guessEps13 = (
-                    np.mean(raw_eps13_guess) - 0.5 * (guessEps11 + guessEps33)
-                    if len(raw_eps13_guess) > 0
-                    else 0
-                )  ## guess of strainxz
-
-                raw_eps12_guess = meas_strain[scattering_xy >= 0.9]
-                guessEps12 = (
-                    raw_eps12_guess - 0.5 * (guessEps11 + guessEps22)
-                    if len(raw_eps12_guess) > 0
-                    else 0
-                )
-                strainTensorInitialGuess = np.array(
-                    [
-                        guessEps11,
-                        guessEps22,
-                        guessEps33,
-                        guessEps23,
-                        guessEps13,
-                        guessEps12,
-                    ]
-                )  ## initial guess of the strain tensor
-
-                module_guess = (
-                    -XEC[2 * peakNumber]
-                    / (XEC[2 * peakNumber + 1] + 3 * XEC[2 * peakNumber])
-                ) * (guessEps11 + guessEps22 + guessEps33)
-                guessSig11 = (1 / XEC[2 * peakNumber + 1]) * (guessEps11 + module_guess)
-                guessSig22 = (1 / XEC[2 * peakNumber + 1]) * (guessEps22 + module_guess)
-                guessSig33 = (1 / XEC[2 * peakNumber + 1]) * (guessEps33 + module_guess)
-                guessSig23 = (1 / XEC[2 * peakNumber + 1]) * guessEps23
-                guessSig13 = (1 / XEC[2 * peakNumber + 1]) * guessEps13
-                guessSig12 = (1 / XEC[2 * peakNumber + 1]) * guessEps12
-                stressTensorInitialGuess = [
-                    guessSig11,
-                    guessSig22,
-                    guessSig33,
-                    guessSig23,
-                    guessSig13,
-                    guessSig12,
-                ]  ## initial guess of the stress tensor
-
-                bounds_eps = np.ones((6)) * (10**-10)
-                bounds_sig = np.ones((6)) * (10**-10)
-
-                for j, meas_e in enumerate(
-                    [
-                        scattering_x,
-                        scattering_y,
-                        scattering_z,
-                        scattering_yz,
-                        scattering_xz,
-                        scattering_xy,
-                    ]
-                ):
-                    if len(meas_strain[meas_e >= 0.1]) > 0:
-                        bounds_eps[j] = np.inf
-                        bounds_sig[j] = np.inf
-
-                # bounds on sigma11, sigma22, sigma33
-                bounds_sig[:3] = np.inf
-
-                strainTensorComponents, covarStrains = scipy.optimize.curve_fit(
+                uncertainty_meas_strain = upointInPeak[:, 8]
+                strain_tensor_fit, covarStrains = scipy.optimize.curve_fit(
                     f=strain_in_meas_direction,
                     xdata=meas_angles,
                     ydata=meas_strain,
-                    p0=strainTensorInitialGuess,
+                    p0=strain_tensor_guess,
                     sigma=uncertainty_meas_strain,
-                    bounds=(-bounds_eps, bounds_eps),
-                )  ## fit of the strain tensor
+                    bounds=strain_tensor_bounds,
+                )
 
-                stressTensorComponents, covarStress = scipy.optimize.curve_fit(
+                stress_tensor_guess, stress_tensor_bounds = guess_stress(
+                    strain_tensor_guess,
+                    strain_tensor_bounds,
+                    XEC[2 * peakNumber],
+                    XEC[2 * peakNumber + 1],
+                )
+                stress_tensor_fit, covarStress = scipy.optimize.curve_fit(
                     f=stress_in_meas_direction,
                     xdata=np.append(
                         meas_angles,
@@ -213,10 +229,10 @@ def strainStressTensor(
                         axis=0,
                     ),
                     ydata=meas_strain,
-                    p0=stressTensorInitialGuess,
+                    p0=stress_tensor_guess,
                     sigma=uncertainty_meas_strain,
-                    bounds=(-bounds_sig, bounds_sig),
-                )  ## fit of the stress tensor
+                    bounds=stress_tensor_bounds,
+                )
 
                 point_name = f"point_{str(i).zfill(5)}"
                 pointInPeakGroup = peakGroup.create_dataset(
@@ -239,7 +255,7 @@ def strainStressTensor(
                 )  ## uncertainty on the stress tensor component in point i
 
                 pointInPeakGroup[0, 0:3] = pointInPeak[0, 0:3]
-                pointInPeakGroup[0, 3:9] = strainTensorComponents
+                pointInPeakGroup[0, 3:9] = strain_tensor_fit
 
                 upointInPeakGroup[0, 0:3] = upointInPeak[0, 0:3]
                 upointInPeakGroup[0, 3:9] = (
@@ -249,7 +265,7 @@ def strainStressTensor(
                 )
 
                 pointInPeakGroupStress[0, 0:3] = pointInPeak[0, 0:3]
-                pointInPeakGroupStress[0, 3:9] = stressTensorComponents
+                pointInPeakGroupStress[0, 3:9] = stress_tensor_fit
 
                 upointInPeakGroupStress[0, 0:3] = upointInPeak[0, 0:3]
                 upointInPeakGroupStress[0, 3:9] = (
