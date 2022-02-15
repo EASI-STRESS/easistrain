@@ -80,7 +80,7 @@ def guess_stress(
     """Initial guess of the stress tensor"""
 
     module_guess: np.ndarray = np.zeros_like(strain_guess)
-    module_guess[3:] = (-XEC0 / (XEC1 + 3 * XEC0)) * np.sum(strain_guess[3:])
+    module_guess[:3] = (-XEC0 / (XEC1 + 3 * XEC0)) * np.sum(strain_guess[:3])
 
     stress_guess = (1 / XEC1) * (strain_guess + module_guess)
 
