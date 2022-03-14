@@ -35,17 +35,15 @@ def angleCalibrationEDD(
     """Main function."""
 
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
-        nb_channels = np.shape(
-            h5Read[
-                sample
-                + "_"
-                + str(dataset)
-                + "_"
-                + str(scanNumber)
-                + ".1/measurement/"
-                + nameHorizontalDetector
-            ][()]
-        )[
+        nb_channels = h5Read[
+            sample
+            + "_"
+            + str(dataset)
+            + "_"
+            + str(scanNumber)
+            + ".1/measurement/"
+            + nameHorizontalDetector
+        ].shape[
             1
         ]  # number of channels
         patternHorizontalDetector = np.reshape(

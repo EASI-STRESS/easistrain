@@ -236,10 +236,16 @@ def fitEDD(
                         maxfev=10000,
                     )  ## fit of the peak of the Horizontal detector
                 except RuntimeError:
-                    optimal_parametersHD = np.ones_like(initialGuessHD)
-                    covarianceHD = np.ones(
+                    print(
+                        f"!!Fitting of Peaks in box {n} in scan {scanNumber} failed for the horizontal detector !"
+                    )
+                    print("!!Filling fit parameters with NaN values")
+                    optimal_parametersHD = np.empty_like(initialGuessHD)
+                    optimal_parametersHD.fill(np.NaN)
+                    covarianceHD = np.empty(
                         (5 * nbPeaksInBoxes[i], 5 * nbPeaksInBoxes[i])
                     )
+                    covarianceHD.fill(np.NaN)
                 fitLine.create_dataset(
                     "fitHorizontalDetector",
                     dtype="float64",
@@ -369,10 +375,16 @@ def fitEDD(
                         maxfev=10000,
                     )  ## fit of the peak of the Vertical detector
                 except RuntimeError:
-                    optimal_parametersVD = np.ones_like(initialGuessVD)
-                    covarianceVD = np.ones(
+                    print(
+                        f"!!Fitting of Peaks in box {n} in scan {scanNumber} failed for the vertical detector !"
+                    )
+                    print("!!Filling fit parameters with NaN values")
+                    optimal_parametersVD = np.empty_like(initialGuessVD)
+                    optimal_parametersVD.fill(np.NaN)
+                    covarianceVD = np.empty(
                         (5 * nbPeaksInBoxes[i], 5 * nbPeaksInBoxes[i])
                     )
+                    covarianceVD.fill(np.NaN)
                 fitLine.create_dataset(
                     "fitVerticalDetector",
                     dtype="float64",
