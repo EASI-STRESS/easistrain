@@ -63,7 +63,7 @@ def create_info_group(
         "rangeFitVD", dtype="int", data=rangeFitVD
     )  ## save of the range of the fit of each box/window of the vertical detector in infos group
     infoGroup.create_dataset(
-        "positioners", dtype=h5py.string_dtype(encoding="utf-8"), data=positioners
+        "positioners", dtype=h5py.string_dtype(encoding="utf-8"), data=str(positioners)
     )  ## save of the range of the fit of each box/window of the vertical detector in infos group
 
 

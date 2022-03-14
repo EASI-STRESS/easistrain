@@ -30,7 +30,7 @@ def calibEdd(
     """Main function."""
 
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
-        patternHorizontalDetector = h5Read[
+        nb_channels = np.shape(h5Read[
             sample
             + "_"
             + str(dataset)
@@ -40,8 +40,19 @@ def calibEdd(
             + nameHorizontalDetector
         ][
             ()
-        ]  ## calibration pattern of horizontal detector
-        patternVerticalDetector = h5Read[
+        ])[1] # number of channels
+        patternHorizontalDetector = np.reshape(h5Read[
+            sample
+            + "_"
+            + str(dataset)
+            + "_"
+            + str(scanNumberHorizontalDetector)
+            + ".1/measurement/"
+            + nameHorizontalDetector
+        ][
+            ()
+        ],(nb_channels))  ## calibration pattern of horizontal detector
+        patternVerticalDetector = np.reshape(h5Read[
             sample
             + "_"
             + str(dataset)
@@ -51,7 +62,7 @@ def calibEdd(
             + nameVerticalDetector
         ][
             ()
-        ]  ## calibration pattern of vertical detector
+        ], (nb_channels))  ## calibration pattern of vertical detector
 
     h5Save = h5py.File(fileSave, "a")  ## create h5 file to save in
     if "detectorCalibration" not in h5Save.keys():

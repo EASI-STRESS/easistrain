@@ -38,7 +38,7 @@ def plot1D(
                 secXData, scanNumber
             )  ## The scanNumber to put in the axis of the second figure
     plt.figure(figsize=(10, 8))
-    plt.plot(xData, yData, ".")
+    plt.plot(xData, yData, ".-")
     plt.xlabel(positioner, family="sans-serif", fontsize=28)
     plt.ylabel(
         f"{counterAfterSample}/{counterBeforeSample}", family="sans-serif", fontsize=28
@@ -47,7 +47,7 @@ def plot1D(
     plt.yticks(fontsize=20)
     plt.grid()
     plt.figure(figsize=(10, 8))
-    plt.plot(secXData, yData, ".")
+    plt.plot(secXData, yData, ".-")
     plt.xlabel("Scan Number", family="sans-serif", fontsize=28)
     plt.ylabel(
         f"{counterAfterSample}/{counterBeforeSample}", family="sans-serif", fontsize=28
@@ -56,4 +56,4 @@ def plot1D(
     plt.yticks(fontsize=20)
     plt.grid()
     plt.show()
-    return
+    return yData
