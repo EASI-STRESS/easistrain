@@ -227,17 +227,19 @@ def fitEDD(
                     )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the horizontal detector
                 try:
                     optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
-                    f=splitPseudoVoigt,
-                    xdata=peakHorizontalDetector[:, 0],
-                    ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
-                    p0=initialGuessHD,
-                    sigma=None,
-                    bounds=(minBoundsHD, maxBoundsHD),
-                    maxfev=10000,
-                )  ## fit of the peak of the Horizontal detector
+                        f=splitPseudoVoigt,
+                        xdata=peakHorizontalDetector[:, 0],
+                        ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
+                        p0=initialGuessHD,
+                        sigma=None,
+                        bounds=(minBoundsHD, maxBoundsHD),
+                        maxfev=10000,
+                    )  ## fit of the peak of the Horizontal detector
                 except:
                     optimal_parametersHD = np.ones_like(initialGuessHD)
-                    covarianceHD = np.ones((5*nbPeaksInBoxes[i], 5*nbPeaksInBoxes[i]))
+                    covarianceHD = np.ones(
+                        (5 * nbPeaksInBoxes[i], 5 * nbPeaksInBoxes[i])
+                    )
                 fitLine.create_dataset(
                     "fitHorizontalDetector",
                     dtype="float64",
@@ -356,7 +358,7 @@ def fitEDD(
                     maxBoundsVD = np.append(
                         maxBoundsVD, appendMaxBoundsVD
                     )  # maximum bounds of the parametrs solution (H, C, FWHM1, FWHM2, eta) for the vertical detector
-                try: 
+                try:
                     optimal_parametersVD, covarianceVD = scipy.optimize.curve_fit(
                         f=splitPseudoVoigt,
                         xdata=peakVerticalDetector[:, 0],
@@ -368,7 +370,9 @@ def fitEDD(
                     )  ## fit of the peak of the Vertical detector
                 except:
                     optimal_parametersVD = np.ones_like(initialGuessVD)
-                    covarianceVD = np.ones((5*nbPeaksInBoxes[i], 5*nbPeaksInBoxes[i]))
+                    covarianceVD = np.ones(
+                        (5 * nbPeaksInBoxes[i], 5 * nbPeaksInBoxes[i])
+                    )
                 fitLine.create_dataset(
                     "fitVerticalDetector",
                     dtype="float64",
