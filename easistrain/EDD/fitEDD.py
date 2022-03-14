@@ -235,7 +235,7 @@ def fitEDD(
                         bounds=(minBoundsHD, maxBoundsHD),
                         maxfev=10000,
                     )  ## fit of the peak of the Horizontal detector
-                except:
+                except RuntimeError:
                     optimal_parametersHD = np.ones_like(initialGuessHD)
                     covarianceHD = np.ones(
                         (5 * nbPeaksInBoxes[i], 5 * nbPeaksInBoxes[i])
@@ -368,7 +368,7 @@ def fitEDD(
                         bounds=(minBoundsVD, maxBoundsVD),
                         maxfev=10000,
                     )  ## fit of the peak of the Vertical detector
-                except:
+                except RuntimeError:
                     optimal_parametersVD = np.ones_like(initialGuessVD)
                     covarianceVD = np.ones(
                         (5 * nbPeaksInBoxes[i], 5 * nbPeaksInBoxes[i])
