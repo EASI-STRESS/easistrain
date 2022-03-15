@@ -200,7 +200,11 @@ def fitEDD(
                             [
                                 np.amin(peakHorizontalDetector[:, 1]),
                                 initialGuessHD[5 * n + 1]
-                                - 3 * initialGuessHD[5 * n + 2],
+                                - 3 * initialGuessHD[5 * n + 2]
+                                if initialGuessHD[5 * n + 1]
+                                - 3 * initialGuessHD[5 * n + 2]
+                                >= peakHorizontalDetector[0, 0]
+                                else peakHorizontalDetector[0, 0],
                                 0,
                                 0,
                                 0,
@@ -212,7 +216,11 @@ def fitEDD(
                             [
                                 np.amax(peakHorizontalDetector[:, 1]),
                                 initialGuessHD[5 * n + 1]
-                                + 3 * initialGuessHD[5 * n + 2],
+                                + 3 * initialGuessHD[5 * n + 2]
+                                if initialGuessHD[5 * n + 1]
+                                + 3 * initialGuessHD[5 * n + 2]
+                                <= peakHorizontalDetector[-1, 0]
+                                else peakHorizontalDetector[-1, 0],
                                 len(peakHorizontalDetector[:, 0]) / 2,
                                 len(peakHorizontalDetector[:, 0]) / 2,
                                 1,
@@ -235,9 +243,9 @@ def fitEDD(
                         bounds=(minBoundsHD, maxBoundsHD),
                         maxfev=10000,
                     )  ## fit of the peak of the Horizontal detector
-                except RuntimeError:
+                except (RuntimeError, ValueError):
                     print(
-                        f"!!Fitting of Peaks in box {n} in scan {scanNumber} failed for the horizontal detector !"
+                        f"!!Fitting of Peaks in box {i} in scan {scanNumber} failed for the horizontal detector !"
                     )
                     print("!!Filling fit parameters with NaN values")
                     optimal_parametersHD = np.empty_like(initialGuessHD)
@@ -339,7 +347,11 @@ def fitEDD(
                             [
                                 np.amin(peakVerticalDetector[:, 1]),
                                 initialGuessVD[5 * n + 1]
-                                - 3 * initialGuessVD[5 * n + 2],
+                                - 3 * initialGuessVD[5 * n + 2]
+                                if initialGuessVD[5 * n + 1]
+                                - 3 * initialGuessVD[5 * n + 2]
+                                >= peakVerticalDetector[0, 0]
+                                else peakVerticalDetector[0, 0],
                                 0,
                                 0,
                                 0,
@@ -351,7 +363,11 @@ def fitEDD(
                             [
                                 np.amax(peakVerticalDetector[:, 1]),
                                 initialGuessVD[5 * n + 1]
-                                + 3 * initialGuessVD[5 * n + 2],
+                                + 3 * initialGuessVD[5 * n + 2]
+                                if initialGuessVD[5 * n + 1]
+                                + 3 * initialGuessVD[5 * n + 2]
+                                <= peakVerticalDetector[-1, 0]
+                                else peakVerticalDetector[-1, 0],
                                 len(peakVerticalDetector[:, 0]) / 2,
                                 len(peakVerticalDetector[:, 0]) / 2,
                                 1,
@@ -374,9 +390,9 @@ def fitEDD(
                         bounds=(minBoundsVD, maxBoundsVD),
                         maxfev=10000,
                     )  ## fit of the peak of the Vertical detector
-                except RuntimeError:
+                except (RuntimeError, ValueError):
                     print(
-                        f"!!Fitting of Peaks in box {n} in scan {scanNumber} failed for the vertical detector !"
+                        f"!!Fitting of Peaks in box {i} in scan {scanNumber} failed for the vertical detector !"
                     )
                     print("!!Filling fit parameters with NaN values")
                     optimal_parametersVD = np.empty_like(initialGuessVD)
