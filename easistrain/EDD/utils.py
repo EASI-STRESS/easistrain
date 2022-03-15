@@ -45,15 +45,15 @@ def calcBackground(
     peaks_left_bound = int(guessedPeaksIndex[0] - 3 * fwhmLeft)
     peaks_right_bound = int(guessedPeaksIndex[-1] + 3 * fwhmRight)
 
-    if peaks_left_bound < 0 and peaks_right_bound <= len(xData):
+    if peaks_left_bound <= 0 and peaks_right_bound < len(xData):
         # case of not enough of points at left
         xBackground = xData[peaks_right_bound:]
         yBackground = yData[peaks_right_bound:]
-    if peaks_right_bound > len(xData) and peaks_left_bound >= 0:
+    if peaks_right_bound > len(xData) and peaks_left_bound > 0:
         # case of not enough of points at right
         xBackground = xData[:peaks_left_bound]
         yBackground = yData[:peaks_left_bound]
-    if peaks_left_bound < 0 and peaks_right_bound > len(xData):
+    if peaks_left_bound <= 0 and peaks_right_bound >= len(xData):
         # case of not enough of points at left and right
         xBackground = np.append(xData[:5], xData[-5:])
         yBackground = np.append(yData[:5], yData[-5:])

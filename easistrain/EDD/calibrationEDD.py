@@ -39,7 +39,7 @@ def calibEdd(
             + ".1/measurement/"
             + nameHorizontalDetector
         ][
-            ()
+            0
         ]  ## calibration pattern of horizontal detector
         patternVerticalDetector = h5Read[
             sample
@@ -50,7 +50,7 @@ def calibEdd(
             + ".1/measurement/"
             + nameVerticalDetector
         ][
-            ()
+            0
         ]  ## calibration pattern of vertical detector
 
     h5Save = h5py.File(fileSave, "a")  ## create h5 file to save in

@@ -44,7 +44,7 @@ def angleCalibrationEDD(
             + ".1/measurement/"
             + nameHorizontalDetector
         ][
-            ()
+            0
         ]  ## pattern of horizontal detector
         patternVerticalDetector = h5Read[
             sample
@@ -55,7 +55,7 @@ def angleCalibrationEDD(
             + ".1/measurement/"
             + nameVerticalDetector
         ][
-            ()
+            0
         ]  ## pattern of vertical detector
 
     h5Save = h5py.File(fileSave, "a")  ## create/append h5 file to save in
