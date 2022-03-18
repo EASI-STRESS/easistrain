@@ -42,29 +42,33 @@ def calcBackground(
     guessedPeaksIndex: Sequence[float],
 ) -> np.ndarray:
     """Extracts the data outside of the peak bounds to fit the background"""
-    peaks_left_bound = int(guessedPeaksIndex[0] - 3 * fwhmLeft)
-    peaks_right_bound = int(guessedPeaksIndex[-1] + 3 * fwhmRight)
+    try:
+        peaks_left_bound = int(guessedPeaksIndex[0] - 3 * fwhmLeft)
+        peaks_right_bound = int(guessedPeaksIndex[-1] + 3 * fwhmRight)
+        # print(peaks_left_bound, peaks_right_bound)
+        if peaks_left_bound <= 5 and peaks_right_bound < len(xData) - 5:
+            # case of not enough of points at left
+            xBackground = xData[peaks_right_bound:]
+            yBackground = yData[peaks_right_bound:]
+        if peaks_right_bound >= len(xData) - 5 and peaks_left_bound > 5:
+            # case of not enough of points at right
+            xBackground = xData[:peaks_left_bound]
+            yBackground = yData[:peaks_left_bound]
+        if peaks_left_bound <= 5 and peaks_right_bound >= len(xData) - 5:
+            # case of not enough of points at left and right
+            xBackground = np.append(xData[:5], xData[-5:])
+            yBackground = np.append(yData[:5], yData[-5:])
+        if peaks_left_bound > 5 and peaks_right_bound < len(xData) - 5:
+            # case of enough of points at left and right
+            xBackground = np.append(xData[:peaks_left_bound], xData[peaks_right_bound:])
+            yBackground = np.append(yData[:peaks_left_bound], yData[peaks_right_bound:])
 
-    if peaks_left_bound <= 0 and peaks_right_bound < len(xData):
-        # case of not enough of points at left
-        xBackground = xData[peaks_right_bound:]
-        yBackground = yData[peaks_right_bound:]
-    if peaks_right_bound > len(xData) and peaks_left_bound > 0:
-        # case of not enough of points at right
-        xBackground = xData[:peaks_left_bound]
-        yBackground = yData[:peaks_left_bound]
-    if peaks_left_bound <= 0 and peaks_right_bound >= len(xData):
-        # case of not enough of points at left and right
-        xBackground = np.append(xData[:5], xData[-5:])
-        yBackground = np.append(yData[:5], yData[-5:])
-    if peaks_left_bound > 5 and peaks_right_bound < len(xData) - 5:
-        # case of enough of points at left and right
-        xBackground = np.append(xData[:peaks_left_bound], xData[peaks_right_bound:])
-        yBackground = np.append(yData[:peaks_left_bound], yData[peaks_right_bound:])
-
-    backgroundCoefficient = np.polyfit(
-        x=xBackground, y=yBackground, deg=1
-    )  ## fit of background with 1d polynom function
+        backgroundCoefficient = np.polyfit(
+            x=xBackground, y=yBackground, deg=1
+        )  ## fit of background with 1d polynom function
+    except (ValueError):
+        backgroundCoefficient = np.empty(2)
+        backgroundCoefficient.fill(np.NaN)
     return np.poly1d(backgroundCoefficient)(
         xData
     )  ## yBackground calculated with the 1d polynom fitted coefficient
@@ -103,32 +107,41 @@ def guessParameters(
     p0Guess = np.zeros(3 * nb_peaks, float)
     minBounds = np.empty((nb_peaks, 3))
     maxBounds = np.empty((nb_peaks, 3))
+    try:
+        for ipar in range(nb_peaks):
+            p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
+            p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
+            p0Guess[3 * ipar + 2] = fwhmGuess
 
-    for ipar in range(nb_peaks):
-        p0Guess[3 * ipar] = yData[int(peaksGuess[ipar])]
-        p0Guess[3 * ipar + 1] = xData[int(peaksGuess[ipar])]
-        p0Guess[3 * ipar + 2] = fwhmGuess
+            minBounds[ipar, 0] = np.amin(yData)  # min H
+            minBounds[ipar, 1] = (
+                p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2]
+            )  # min C
+            minBounds[ipar, 2] = 0  # min FWHM
 
-        minBounds[ipar, 0] = np.amin(yData)  # min H
-        minBounds[ipar, 1] = p0Guess[3 * ipar + 1] - 3 * p0Guess[3 * ipar + 2]  # min C
-        minBounds[ipar, 2] = 0  # min FWHM
+            maxBounds[ipar, 0] = np.amax(yData)  # max H
+            maxBounds[ipar, 1] = (
+                p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2]
+            )  # max C
+            maxBounds[ipar, 2] = 2 * p0Guess[3 * ipar + 2]  # max FWHM
 
-        maxBounds[ipar, 0] = np.amax(yData)  # max H
-        maxBounds[ipar, 1] = p0Guess[3 * ipar + 1] + 3 * p0Guess[3 * ipar + 2]  # max C
-        maxBounds[ipar, 2] = 2 * p0Guess[3 * ipar + 2]  # max FWHM
-
-    firstGuess, covGuess = scipy.optimize.curve_fit(
-        gaussEstimation,
-        xData,
-        yData,
-        p0Guess,
-        **(
-            {"bounds": (minBounds.flatten(), maxBounds.flatten()), "maxfev": 10000}
-            if withBounds
-            else {}
-        ),
-    )
-
+        firstGuess, covGuess = scipy.optimize.curve_fit(
+            gaussEstimation,
+            xData,
+            yData,
+            p0Guess,
+            **(
+                {"bounds": (minBounds.flatten(), maxBounds.flatten()), "maxfev": 10000}
+                if withBounds
+                else {}
+            ),
+        )
+    except (IndexError, RuntimeError, ValueError):
+        peaksGuess = np.empty(nb_peaks)
+        peaksGuess.fill(np.NaN)
+        firstGuess = np.empty_like(p0Guess)
+        firstGuess.fill(np.NaN)
+        print("!! guessing fit parameters failed !!")
     return firstGuess, peaksGuess
 
 
@@ -139,10 +152,10 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
     It includes the uncertainty on the calibration of the coefficients and the peak position
     """
     return np.sqrt(
-        ((ua ** 2) * (ch ** 4))
-        + ((uch ** 2)) * (((2 * a * ch) + b) ** 2)
-        + ((ub ** 2) * ch ** 2)
-        + (uc ** 2)
+        ((ua**2) * (ch**4))
+        + ((uch**2)) * (((2 * a * ch) + b) ** 2)
+        + ((ub**2) * ch**2)
+        + (uc**2)
     )
 
 
