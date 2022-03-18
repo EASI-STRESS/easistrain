@@ -57,7 +57,7 @@ def calcBackground(
         # case of not enough of points at left and right
         xBackground = np.append(xData[:5], xData[-5:])
         yBackground = np.append(yData[:5], yData[-5:])
-    if peaks_left_bound >= 0 and peaks_right_bound <= len(xData):
+    if peaks_left_bound > 5 and peaks_right_bound < len(xData) - 5:
         # case of enough of points at left and right
         xBackground = np.append(xData[:peaks_left_bound], xData[peaks_right_bound:])
         yBackground = np.append(yData[:peaks_left_bound], yData[peaks_right_bound:])
@@ -139,10 +139,10 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
     It includes the uncertainty on the calibration of the coefficients and the peak position
     """
     return np.sqrt(
-        ((ua**2) * (ch**4))
-        + ((uch**2)) * (((2 * a * ch) + b) ** 2)
-        + ((ub**2) * ch**2)
-        + (uc**2)
+        ((ua ** 2) * (ch ** 4))
+        + ((uch ** 2)) * (((2 * a * ch) + b) ** 2)
+        + ((ub ** 2) * ch ** 2)
+        + (uc ** 2)
     )
 
 
