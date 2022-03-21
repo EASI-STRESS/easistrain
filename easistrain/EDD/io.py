@@ -87,3 +87,50 @@ def peak_dataset_data(
         if len(savedPeakFitParams) >= 6
         else 0,  ## Rw factor of HD (goodness of the fit)
     ]
+
+
+def save_fit_data(
+    fitLine: h5py.Group,
+    detectorName: str,
+    channels: np.ndarray,
+    raw_data: np.ndarray,
+    background: np.ndarray,
+    fitted_data: np.ndarray,
+):
+    detectorGroup = fitLine.create_group(detectorName)
+    detectorGroup.create_dataset(
+        "channels",
+        dtype="float64",
+        data=channels,
+    )
+    detectorGroup.create_dataset(
+        "raw_data",
+        dtype="float64",
+        data=raw_data,
+    )
+    detectorGroup.create_dataset(
+        "background",
+        dtype="float64",
+        data=background,
+    )
+    detectorGroup.create_dataset(
+        "data - background",
+        dtype="float64",
+        data=raw_data - background,
+    )
+    detectorGroup.create_dataset(
+        "fitted_data",
+        dtype="float64",
+        data=fitted_data,
+    )
+    detectorGroup.create_dataset(
+        "residual",
+        dtype="float64",
+        data=np.absolute(fitted_data - raw_data),
+    )
+
+    # NeXus
+    detectorGroup.attrs["NX_class"] = as_nxchar("NXdata")
+    detectorGroup.attrs["auxiliary_signals"] = as_nxchar(["raw_data"])
+    detectorGroup.attrs["signal"] = as_nxchar("fitted_data")
+    detectorGroup.attrs["axes"] = as_nxchar("channels")
