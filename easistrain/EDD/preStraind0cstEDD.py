@@ -3,6 +3,7 @@ import numpy as np
 import h5py
 
 from easistrain.EDD.constants import pCstInkeVS, speedLightInAPerS
+from easistrain.EDD.math import compute_qs
 from easistrain.EDD.utils import run_from_cli, uChEConversion
 
 
@@ -37,51 +38,6 @@ def ustrain(energy0, energystrained, uenergy0, uenergystrained):
     return np.sqrt(
         ((uenergy0**2) / (energy0**2))
         + ((uenergystrained**2) / (energystrained**2))
-    )
-
-
-def diffVector(angles):
-    """Calcuates the direction of the q vector in the sample reference space using the goniometric angles, diffraction angle and azimuth angle"""
-    phi = np.radians(angles[0])
-    chi = np.radians(angles[1])
-    omega = np.radians(angles[2])
-    delta = np.radians(angles[3])
-    theta = np.radians(0.5 * angles[4])
-    q1 = (
-        (np.cos(theta) * np.cos(chi) * np.sin(delta) * np.sin(phi))
-        + (
-            np.cos(delta)
-            * np.cos(theta)
-            * (
-                (np.cos(phi) * np.sin(omega))
-                - (np.cos(omega) * np.sin(phi) * np.sin(chi))
-            )
-        )
-        - np.sin(theta)
-        * ((np.cos(phi) * np.cos(omega)) + (np.sin(phi) * np.sin(chi) * np.sin(omega)))
-    )
-    q2 = (
-        np.cos(delta)
-        * np.cos(theta)
-        * ((np.cos(phi) * np.cos(omega) * np.sin(chi)) + (np.sin(phi) * np.sin(omega)))
-        - (np.cos(theta) * np.cos(phi) * np.cos(chi) * np.sin(delta))
-        - (
-            np.sin(theta)
-            * (
-                (np.cos(omega) * np.sin(phi))
-                - (np.cos(phi) * np.sin(chi) * np.sin(omega))
-            )
-        )
-    )
-    q3 = (
-        (np.cos(delta) * np.cos(theta) * np.cos(chi) * np.cos(omega))
-        + (np.cos(theta) * np.sin(delta) * np.sin(chi))
-        + (np.cos(chi) * np.sin(theta) * np.sin(omega))
-    )
-    return (
-        q1,
-        q2,
-        q3,
     )
 
 
@@ -273,7 +229,7 @@ def preStraind0cstEDD(
                             ),
                         )  ## uncertainty on the strain of the VD
                     # print(allPtsInPeak[j, 3:8])
-                    qq1, qq2, qq3 = diffVector(allPtsInPeak[j, 3:8])
+                    qq1, qq2, qq3 = compute_qs(allPtsInPeak[j, 3:8])
                     pts[
                         j, 9
                     ] = qq1  ## component of the scattering vector in the x direction
