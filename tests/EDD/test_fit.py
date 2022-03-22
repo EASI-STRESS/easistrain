@@ -44,12 +44,20 @@ def generate_input_files(
     with h5py.File(test_data_path, "r") as data_file:
         with h5py.File(cfg["fileRead"], "w") as h5file:
             scan_grp = f"{sample}_{dataset}_{n_scan}.1"
-            h5file[f"{scan_grp}/measurement/{name_h}"] = data_file[
-                f"{ORIENTATION}/horizontal/data"
-            ][()]
-            h5file[f"{scan_grp}/measurement/{name_v}"] = data_file[
-                f"{ORIENTATION}/vertical/data"
-            ][()]
+            horz_dataset = data_file[f"{ORIENTATION}/horizontal/data"]
+            assert isinstance(horz_dataset, h5py.Dataset)
+            h5file.create_dataset(
+                f"{scan_grp}/measurement/{name_h}",
+                data=horz_dataset[()],
+                shape=(1, len(horz_dataset)),
+            )
+            vert_dataset = data_file[f"{ORIENTATION}/vertical/data"]
+            assert isinstance(vert_dataset, h5py.Dataset)
+            h5file.create_dataset(
+                f"{scan_grp}/measurement/{name_v}",
+                data=vert_dataset[()],
+                shape=(1, len(vert_dataset)),
+            )
             for pos_name, pos_data in data_file[f"{ORIENTATION}/positioners"].items():
                 h5file[f"{scan_grp}/instrument/positioners/{pos_name}"] = pos_data[()]
 

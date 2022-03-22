@@ -48,12 +48,12 @@ def calcBackground(
         # print(peaks_left_bound, peaks_right_bound)
         if peaks_left_bound <= 5 and peaks_right_bound < len(xData) - 5:
             # case of not enough of points at left
-            xBackground = xData[peaks_right_bound:]
-            yBackground = yData[peaks_right_bound:]
+            xBackground = np.append(xData[0], xData[peaks_right_bound:])
+            yBackground = np.append(yData[0], yData[peaks_right_bound:])
         if peaks_right_bound >= len(xData) - 5 and peaks_left_bound > 5:
             # case of not enough of points at right
-            xBackground = xData[:peaks_left_bound]
-            yBackground = yData[:peaks_left_bound]
+            xBackground = np.append(xData[:peaks_left_bound], xData[-1])
+            yBackground = np.append(yData[:peaks_left_bound], yData[-1])
         if peaks_left_bound <= 5 and peaks_right_bound >= len(xData) - 5:
             # case of not enough of points at left and right
             xBackground = np.append(xData[:5], xData[-5:])
@@ -159,7 +159,14 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
     )
 
 
-def fit_detector_data(channels: np.ndarray, raw_data: np.ndarray, nb_peaks: int):
+def fit_detector_data(
+    channels: np.ndarray,
+    raw_data: np.ndarray,
+    nb_peaks: int,
+    boxCounter,
+    scanNumber,
+    detectorName,
+):
     """
     Process detector data:
       - Find the background
@@ -167,7 +174,7 @@ def fit_detector_data(channels: np.ndarray, raw_data: np.ndarray, nb_peaks: int)
       - Calculate a background (?)
       - Fit the data without background starting from the first guess
     """
-
+    # print(raw_data, channels)
     first_guess_background: np.ndarray = silx.math.fit.strip(  # type: ignore
         data=raw_data,
         w=5,
@@ -214,14 +221,24 @@ def fit_detector_data(channels: np.ndarray, raw_data: np.ndarray, nb_peaks: int)
             len(channels) / 2,
             1,
         ]
-    optimal_parameters, covariance = scipy.optimize.curve_fit(
-        f=splitPseudoVoigt,
-        xdata=channels,
-        ydata=raw_data - calculated_background,
-        p0=initial_fit_guess,
-        bounds=(fit_min_bounds, fit_max_bounds),
-        maxfev=10000,
-    )
+    try:
+        optimal_parameters, covariance = scipy.optimize.curve_fit(
+            f=splitPseudoVoigt,
+            xdata=channels,
+            ydata=raw_data - calculated_background,
+            p0=initial_fit_guess,
+            bounds=(fit_min_bounds, fit_max_bounds),
+            maxfev=10000,
+        )
+    except (RuntimeError, ValueError):
+        print(
+            f"!!Fitting of Peaks in box {boxCounter} in scan {scanNumber} failed for the {detectorName} detector !!"
+        )
+        print("!! Filling fit parameters with NaN values")
+        optimal_parameters = np.empty_like(initial_fit_guess)
+        optimal_parameters.fill(np.NaN)
+        covariance = np.empty((5 * nb_peaks, 5 * nb_peaks))
+        covariance.fill(np.NaN)
 
     fitted_data = splitPseudoVoigt(channels, optimal_parameters) + calculated_background
 
