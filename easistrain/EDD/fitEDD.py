@@ -120,8 +120,9 @@ def fitEDD(
                     else patternVerticalDetector
                 )  # To be improved
                 channels = np.arange(fit_min, fit_max)
-                raw_data = pattern[fit_min:fit_max]
+                raw_data = pattern[k, fit_min:fit_max]
                 assert isinstance(raw_data, np.ndarray)
+                # print(np.shape(pattern),pattern)
                 (
                     background,
                     fitted_data,
@@ -131,6 +132,9 @@ def fitEDD(
                     channels=channels,
                     raw_data=raw_data,
                     nb_peaks=nb_peaks,
+                    boxCounter=i,
+                    scanNumber=scanNumber,
+                    detectorName=detector,
                 )
 
                 save_fit_data(
