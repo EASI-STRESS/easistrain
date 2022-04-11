@@ -201,7 +201,7 @@ def strainStressTensor(
                 )
                 strain_errors = point_in_peak_group.create_dataset(
                     "strain_tensor_errors",
-                    shape=(6),
+                    (6,),
                 )
                 strain_errors[:] = (
                     np.sqrt(np.diag(covarStrains))
@@ -213,7 +213,7 @@ def strainStressTensor(
                     "stress_tensor_fit", data=stress_tensor_fit
                 )
                 stress_errors = point_in_peak_group.create_dataset(
-                    "stress_tensor_errors", shape=(6)
+                    "stress_tensor_errors", (6,)
                 )
                 stress_errors[:] = (
                     np.sqrt(np.diag(covarStress))
