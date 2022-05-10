@@ -31,7 +31,7 @@ def lengthgv(tth, lss, lsd, dslit, dfoc, dpsd):
     dss = lss / np.cos(2 * tth)
     dsd = ((lss + lsd) / np.cos(2 * tth)) - dss
     dpr = (1 / np.tan(2 * tth)) * np.sqrt(
-        ((((dss + dsd) * dslit) / dsd) ** 2) + (dfoc**2) + (((dss * dpsd) / dsd) ** 2)
+        ((((dss + dsd) * dslit) / dsd) ** 2) + (dfoc ** 2) + (((dss * dpsd) / dsd) ** 2)
     )
     return dpr
 

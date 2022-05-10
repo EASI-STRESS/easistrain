@@ -152,10 +152,10 @@ def uChEConversion(a, b, c, ch, ua, ub, uc, uch):
     It includes the uncertainty on the calibration of the coefficients and the peak position
     """
     return np.sqrt(
-        ((ua**2) * (ch**4))
-        + ((uch**2)) * (((2 * a * ch) + b) ** 2)
-        + ((ub**2) * ch**2)
-        + (uc**2)
+        ((ua ** 2) * (ch ** 4))
+        + ((uch ** 2)) * (((2 * a * ch) + b) ** 2)
+        + ((ub ** 2) * ch ** 2)
+        + (uc ** 2)
     )
 
 

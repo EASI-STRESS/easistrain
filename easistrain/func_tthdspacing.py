@@ -14,7 +14,7 @@ import numpy as np
 
 
 def cubicdspacing(e, a, h, k, l):
-    d = a / (np.sqrt((h**2) + (k**2) + (l**2)))
+    d = a / (np.sqrt((h ** 2) + (k ** 2) + (l ** 2)))
     theta = np.arcsin(0.0012398 / (2 * e * d))
     return d, theta
 
@@ -28,7 +28,7 @@ def cubicdspacing(e, a, h, k, l):
 def hexdspacing(e, a, c, h, k, l):
     d = np.sqrt(
         1
-        / ((4 / 3) * (((h**2) + h * k + (k**2)) / (a**2)) + ((l**2) / (c**2)))
+        / ((4 / 3) * (((h ** 2) + h * k + (k ** 2)) / (a ** 2)) + ((l ** 2) / (c ** 2)))
     )
     theta = np.arcsin(0.0012398 / (2 * e * d))
     return d, theta

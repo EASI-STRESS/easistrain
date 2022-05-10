@@ -68,10 +68,10 @@ def create_info_group(
 
 
 def peak_dataset_data(
-    positionAngles: np.ndarray, savedPeakFitParams: np.ndarray, delta_angle: float
+    positionAngles: np.ndarray, savedPeakFitParams: np.ndarray, delta_angle: float, nacq
 ):
     return [
-        *positionAngles[0, 0:6],
+        *positionAngles[nacq, 0:6],
         delta_angle,  ## delta angle of the horizontal detector (debye scherer angle)
         0,  ## theta angle (diffraction fixed angle) of the horizontal detector (I suppose that it is zero as we work with a small angle fixed to 2.5 deg)
         savedPeakFitParams[1],  ## peak position of HD

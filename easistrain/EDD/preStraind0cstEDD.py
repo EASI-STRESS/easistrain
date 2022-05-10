@@ -12,10 +12,10 @@ def uE(dspacing, ttheta, udspacing, uttheta):
     theta = np.radians(0.5 * ttheta)
     csctheta = 1 / np.sin(theta)
     return np.sqrt(
-        ((38.4276 * (udspacing**2) * (csctheta**2)) / (dspacing**4))
+        ((38.4276 * (udspacing ** 2) * (csctheta ** 2)) / (dspacing ** 4))
         + (
-            (38.4276 * (uttheta**2) * ((1 / np.tan(theta)) ** 2) * (csctheta**2))
-            / (dspacing**2)
+            (38.4276 * (uttheta ** 2) * ((1 / np.tan(theta)) ** 2) * (csctheta ** 2))
+            / (dspacing ** 2)
         )
     )
 
@@ -25,10 +25,10 @@ def ud(energy, ttheta, uenergy, uttheta):
     theta = np.radians(0.5 * ttheta)
     csctheta = 1 / np.sin(theta)
     return np.sqrt(
-        ((38.4276 * (uenergy**2) * (csctheta**2)) / (energy**4))
+        ((38.4276 * (uenergy ** 2) * (csctheta ** 2)) / (energy ** 4))
         + (
-            (38.4276 * (uttheta**2) * ((1 / np.tan(theta)) ** 2) * (csctheta**2))
-            / (energy**2)
+            (38.4276 * (uttheta ** 2) * ((1 / np.tan(theta)) ** 2) * (csctheta ** 2))
+            / (energy ** 2)
         )
     )
 
@@ -36,8 +36,8 @@ def ud(energy, ttheta, uenergy, uttheta):
 def ustrain(energy0, energystrained, uenergy0, uenergystrained):
     """Calculates the uncertainty on the strain coming from the measured strain-free energy and the strained energy"""
     return np.sqrt(
-        ((uenergy0**2) / (energy0**2))
-        + ((uenergystrained**2) / (energystrained**2))
+        ((uenergy0 ** 2) / (energy0 ** 2))
+        + ((uenergystrained ** 2) / (energystrained ** 2))
     )
 
 

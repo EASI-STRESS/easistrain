@@ -188,12 +188,12 @@ def fitEDD(
                 peakDataset = tthPositionsGroup.create_dataset(
                     f"peak_{str(peakNumber).zfill(4)}",
                     dtype="float64",
-                    data=np.zeros((2, 13), "float64"),
+                    data=np.zeros((2 * nDetectorPoints, 13), "float64"),
                 )  ## create a dataset for each peak in tthPositionGroup
                 uncertaintyPeakDataset = tthPositionsGroup.create_dataset(
                     f"uncertaintyPeak_{str(peakNumber).zfill(4)}",
                     dtype="float64",
-                    data=np.zeros((2, 13), "float64"),
+                    data=np.zeros((2 * nDetectorPoints, 13), "float64"),
                 )  ## create a dataset for uncertainty for each peak in tthPositionGroup
             else:
                 peakDataset = tthPositionsGroup[f"peak_{str(peakNumber).zfill(4)}"]
@@ -202,17 +202,17 @@ def fitEDD(
                     f"uncertaintyPeak_{str(peakNumber).zfill(4)}"
                 ]
                 assert isinstance(uncertaintyPeakDataset, h5py.Dataset)
-            peakDataset[0] = peak_dataset_data(
-                positionAngles, savedFitParamsHD[peakNumber], -90
+            peakDataset[2 * k] = peak_dataset_data(
+                positionAngles, savedFitParamsHD[peakNumber], -90, k
             )
-            peakDataset[1] = peak_dataset_data(
-                positionAngles, savedFitParamsVD[peakNumber], 0
+            peakDataset[2 * k + 1] = peak_dataset_data(
+                positionAngles, savedFitParamsVD[peakNumber], 0, k
             )
-            uncertaintyPeakDataset[0] = peak_dataset_data(
-                positionAngles, savedUncertaintyFitParamsHD[peakNumber], -90
+            uncertaintyPeakDataset[2 * k] = peak_dataset_data(
+                positionAngles, savedUncertaintyFitParamsHD[peakNumber], -90, k
             )
-            uncertaintyPeakDataset[1] = peak_dataset_data(
-                positionAngles, savedUncertaintyFitParamsVD[peakNumber], 0
+            uncertaintyPeakDataset[2 * k + 1] = peak_dataset_data(
+                positionAngles, savedUncertaintyFitParamsVD[peakNumber], 0, k
             )
         if "infoPeak" not in tthPositionsGroup.keys():
             tthPositionsGroup.create_dataset(
