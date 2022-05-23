@@ -219,6 +219,10 @@ def angleCalibrationEDD(
         )  ## create dataset for VD raw data after subst of background
         initialGuessHD = np.zeros(5 * nbPeaksInBoxes[i])
         initialGuessVD = np.zeros(5 * nbPeaksInBoxes[i])
+        fit_min_boundsHD = np.zeros(5 * nbPeaksInBoxes[i])
+        fit_max_boundsHD = np.zeros(5 * nbPeaksInBoxes[i])
+        fit_min_boundsVD = np.zeros(5 * nbPeaksInBoxes[i])
+        fit_max_boundsVD = np.zeros(5 * nbPeaksInBoxes[i])
         for n in range(nbPeaksInBoxes[i]):
             initialGuessHD[5 * n] = peaksGuessHD[3 * n]
             initialGuessHD[5 * n + 1] = peaksGuessHD[3 * n + 1]
@@ -230,19 +234,49 @@ def angleCalibrationEDD(
             initialGuessVD[5 * n + 2] = peaksGuessVD[3 * n + 2]
             initialGuessVD[5 * n + 3] = peaksGuessVD[3 * n + 2]
             initialGuessVD[5 * n + 4] = 0.5
+            fit_min_boundsHD[5 * n : 5 * n + 5] = [
+                0,
+                np.amin(peakHorizontalDetector[:, 0]),
+                0,
+                0,
+                0,
+            ]
+            fit_max_boundsHD[5 * n : 5 * n + 5] = [
+                np.inf,
+                np.amax(peakHorizontalDetector[:, 0]),
+                len(peakHorizontalDetector[:, 0]) / 2,
+                len(peakHorizontalDetector[:, 0]) / 2,
+                1,
+            ]
+            fit_min_boundsVD[5 * n : 5 * n + 5] = [
+                0,
+                np.amin(peakVerticalDetector[:, 0]),
+                0,
+                0,
+                0,
+            ]
+            fit_max_boundsVD[5 * n : 5 * n + 5] = [
+                np.inf,
+                np.amax(peakVerticalDetector[:, 0]),
+                len(peakVerticalDetector[:, 0]) / 2,
+                len(peakVerticalDetector[:, 0]) / 2,
+                1,
+            ]
         optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
             f=splitPseudoVoigt,
             xdata=peakHorizontalDetector[:, 0],
             ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
             p0=initialGuessHD,
-            sigma=None,
+            sigma=np.sqrt(0.5 + peakHorizontalDetector[:, 1]),
+            bounds=(fit_min_boundsHD, fit_max_boundsHD),
         )  ## fit of the peak of the Horizontal detector
         optimal_parametersVD, covarianceVD = scipy.optimize.curve_fit(
             f=splitPseudoVoigt,
             xdata=peakVerticalDetector[:, 0],
             ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
             p0=initialGuessVD,
-            sigma=None,
+            sigma=np.sqrt(0.5 + peakVerticalDetector[:, 1]),
+            bounds=(fit_min_boundsHD, fit_max_boundsHD),
         )  ## fit of the peak of the Vertical detector
         fitLevel1_2[f"fitLine_{str(i)}"].create_dataset(
             "fitHorizontalDetector",

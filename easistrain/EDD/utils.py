@@ -229,6 +229,7 @@ def fit_detector_data(
             p0=initial_fit_guess,
             bounds=(fit_min_bounds, fit_max_bounds),
             maxfev=10000,
+            sigma=np.sqrt(0.5 + raw_data),
         )
     except (RuntimeError, ValueError):
         print(
