@@ -452,11 +452,13 @@ def calibEdd(
     )  ## open source calibration text file
     curveCalibrationHD[:, 0] = fitLevel1_2["fitParams/fitParamsHD"][:, 1]
     curveCalibrationHD[:, 1] = calibrantSource[: np.sum(nbPeaksInBoxes)]
+    ucurveCalibrationHD = fitLevel1_2["fitParams/uncertaintyFitParamsHD"][:, 1]
     fitLevel1_2["curveCalibration"].create_dataset(
         "curveCalibrationHD", dtype="float64", data=curveCalibrationHD
     )  ## curve energy VS channels for horizontal detector
     curveCalibrationVD[:, 0] = fitLevel1_2["fitParams/fitParamsVD"][:, 1]
     curveCalibrationVD[:, 1] = calibrantSource[: np.sum(nbPeaksInBoxes)]
+    ucurveCalibrationVD = fitLevel1_2["fitParams/uncertaintyFitParamsVD"][:, 1]
     fitLevel1_2["curveCalibration"].create_dataset(
         "curveCalibrationVD", dtype="float64", data=curveCalibrationVD
     )  ## curve energy VS channels for vertical detector
@@ -465,14 +467,16 @@ def calibEdd(
         y=curveCalibrationHD[:, 1],
         deg=2,
         full=False,
-        cov=True,
+        cov="unscaled",
+        w=1 / ucurveCalibrationHD,
     )  ## calibration coefficients of the horizontal detector
     calibCoeffsVD, covCalibCoeffsVD = np.polyfit(
         x=curveCalibrationVD[:, 0],
         y=curveCalibrationVD[:, 1],
         deg=2,
         full=False,
-        cov=True,
+        cov="unscaled",
+        w=1 / ucurveCalibrationVD,
     )  ## calibration coefficients of the vertical detector
     fitLevel1_2["curveCalibration"].create_dataset(
         "fitCurveCalibrationHD",
