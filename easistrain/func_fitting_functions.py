@@ -1,5 +1,6 @@
 import numpy as np
 
+
 ### This function is the PearsonVII function used to describe an X-ray diffraction peak
 ### P[0]: Intensity of the peak (maximum intensity of the peak)
 ### P[1]: 2Theta (2 * bragg angle)

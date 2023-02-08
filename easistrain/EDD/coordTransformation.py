@@ -36,7 +36,6 @@ def transformationMatrix(
 def coordTransformation(
     fileRead: str, fileSave: str, numberOfPeaks: int, gonioToSample: Sequence[float]
 ):
-
     with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
         scanList = list(h5Read.keys())  ## list of the scans
         lengthCounter = 0

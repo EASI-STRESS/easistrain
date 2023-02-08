@@ -26,6 +26,7 @@ def test_edd_graph(tmp_path: Path):
     graph = edd_graph(config)
     results = execute_graph(graph)
     assert len(results) == 1
+    print(results)
     for node_id, task in results.items():
         assert task.succeeded, node_id
         if node_id == "calib":

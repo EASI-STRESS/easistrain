@@ -127,7 +127,6 @@ def stress_in_meas_direction(anglesAndXEC, s11, s22, s33, s23, s13, s12):
 def strainStressTensor(
     fileRead: str, fileSave: str, numberOfPeaks: int, XEC: Sequence[float]
 ):
-
     if len(XEC) < numberOfPeaks * 2:
         raise ValueError(
             f"XEC must have a length of numberOfPeaks*2 ({numberOfPeaks*2})"

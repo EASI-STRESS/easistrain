@@ -66,7 +66,7 @@ def calcBackground(
         backgroundCoefficient = np.polyfit(
             x=xBackground, y=yBackground, deg=1
         )  ## fit of background with 1d polynom function
-    except (ValueError):
+    except ValueError:
         backgroundCoefficient = np.empty(2)
         backgroundCoefficient.fill(np.NaN)
     return np.poly1d(backgroundCoefficient)(

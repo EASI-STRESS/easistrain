@@ -3,6 +3,7 @@ from func_fitting_functions import *
 import scipy.optimize
 import h5py
 
+
 ### This function fit a hkl peak saved in a result h5file and save the results in the same h5 file
 ### The results if the fit are saved in the 'fitting' group
 ### root_data: the path of the file where the h5 file is saved

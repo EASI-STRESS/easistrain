@@ -11,6 +11,8 @@ import numpy as np
 vx = np.array([1, 0, 0])
 vy = np.array([0, 1, 0])
 vz = np.array([0, 0, 1])
+
+
 ### Rotation matrix around x, x is in the direction of the beam ###
 def matrotx(rx):
     rotx = np.array(

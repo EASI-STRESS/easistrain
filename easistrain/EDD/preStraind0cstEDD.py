@@ -51,7 +51,6 @@ def preStraind0cstEDD(
     numberOfPeaks: int,
     d0: Sequence[float],
 ):
-
     h5Save = h5py.File(fileSave, "a")  ## create/append h5 file to save in
     strainGroupWithd0 = h5Save.create_group(
         "STRAIN_with_d0"
