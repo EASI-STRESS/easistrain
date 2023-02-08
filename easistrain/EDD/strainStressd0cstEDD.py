@@ -44,7 +44,7 @@ def guess_strain(
         else 0
     )
 
-    max_strain = np.ones((6)) * (10 ** -10)
+    max_strain = np.ones((6)) * (10**-10)
 
     for j, meas_e in enumerate(
         [
@@ -97,9 +97,9 @@ def guess_stress(
 def strain_in_meas_direction(angles, e11, e22, e33, e23, e13, e12):
     q1, q2, q3 = compute_qs(angles)
     return (
-        (e11 * q1 ** 2)
-        + (e22 * q2 ** 2)
-        + (e33 * q3 ** 2)
+        (e11 * q1**2)
+        + (e22 * q2**2)
+        + (e33 * q3**2)
         + (2 * e12 * q1 * q2)
         + (2 * e13 * q1 * q3)
         + (2 * e23 * q2 * q3)
@@ -114,9 +114,9 @@ def stress_in_meas_direction(anglesAndXEC, s11, s22, s33, s23, s13, s12):
     return (S1 * (s11 + s22 + s33)) + (
         dS2
         * (
-            (s11 * q1 ** 2)
-            + (s22 * q2 ** 2)
-            + (s33 * q3 ** 2)
+            (s11 * q1**2)
+            + (s22 * q2**2)
+            + (s33 * q3**2)
             + (2 * s12 * q1 * q2)
             + (2 * s13 * q1 * q3)
             + (2 * s23 * q2 * q3)

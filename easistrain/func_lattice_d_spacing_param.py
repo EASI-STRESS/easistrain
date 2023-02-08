@@ -5,7 +5,7 @@ import h5py
 
 def lattice_param(root_data, h5file, poni_file, h, k, l):
     ai = pyFAI.load(poni_file)  # loading the poni file (integration geometry)
-    wlgth = (ai.wavelength) * 10 ** 10  # the wavelength in angstrom
+    wlgth = (ai.wavelength) * 10**10  # the wavelength in angstrom
     fh5_save = h5py.File(
         root_data + "/" + "Results" + "_" + h5file, "a"
     )  ### Create the file in which will be saved the results (integration, ...)
