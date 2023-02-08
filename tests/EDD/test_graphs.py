@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from ewokscore.utils import qualname
+from ewoksutils.import_utils import qualname
 from ewokscore import execute_graph
 
 from easistrain.EDD.calibrationEDD import calibEdd
