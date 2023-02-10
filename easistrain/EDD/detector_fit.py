@@ -3,7 +3,7 @@ from typing import Callable, Dict, Literal, Sequence, Union
 import h5py
 import numpy as np
 
-from easistrain.EDD.io import save_fit_data
+from easistrain.EDD.io import save_fit_data, save_fit_params
 from easistrain.EDD.utils import fit_detector_data
 
 Detector = Literal["horizontal", "vertical"]
@@ -11,7 +11,7 @@ Detector = Literal["horizontal", "vertical"]
 DETECTORS: Sequence[Detector] = ["horizontal", "vertical"]
 
 
-def fit_and_save_all_peaks(
+def fit_all_peaks_and_save_results(
     nbPeaksInBoxes: Sequence[int],
     rangeFit: Dict[Detector, Sequence[int]],
     patterns: Dict[Detector, np.ndarray],
@@ -63,4 +63,5 @@ def fit_and_save_all_peaks(
                 uncertaintyFitParams[detector], uncertaintyBoxFitParams
             )
 
-    return fitParams, uncertaintyFitParams
+    fit_params_group = saving_dest.create_group("fitParams")
+    return save_fit_params(fit_params_group, fitParams, uncertaintyFitParams)

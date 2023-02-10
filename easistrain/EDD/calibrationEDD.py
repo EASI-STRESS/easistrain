@@ -1,12 +1,8 @@
 import h5py
 import numpy as np
 from typing import Sequence, Union
-from easistrain.EDD.detector_fit import fit_and_save_all_peaks
-from easistrain.EDD.io import (
-    create_calib_info_group,
-    read_detector_pattern,
-    save_fit_params,
-)
+from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
+from easistrain.EDD.io import create_calib_info_group, read_detector_pattern
 
 from easistrain.EDD.utils import run_from_cli
 
@@ -48,7 +44,6 @@ def calibEdd(
     fitLevel1_2 = calibrationLevel1.create_group(
         f"fit_{dataset}_{scanNumberHorizontalDetector}_{scanNumberVerticalDetector}"
     )  ## fit subgroup in calibration group
-    fitLevel1_2.create_group("fitParams")  ## fit results group for the two detector
     fitLevel1_2.create_group(
         "curveCalibration"
     )  ## curve calibration group for the two detector
@@ -72,15 +67,10 @@ def calibEdd(
         sourceCalibrantFile,
     )
 
-    fitParams = {"horizontal": np.array(()), "vertical": np.array(())}
-    uncertaintyFitParams = {
-        "horizontal": np.array(()),
-        "vertical": np.array(()),
-    }
     curveCalibrationHD = np.zeros((np.sum(nbPeaksInBoxes), 2), float)
     curveCalibrationVD = np.zeros((np.sum(nbPeaksInBoxes), 2), float)
 
-    fitParams, uncertaintyFitParams = fit_and_save_all_peaks(
+    fit_all_peaks_and_save_results(
         nbPeaksInBoxes,
         rangeFit={"horizontal": rangeFit, "vertical": rangeFit},
         patterns={
@@ -94,8 +84,6 @@ def calibEdd(
         saving_dest=fitLevel1_2,
         group_format=lambda i: f"fitLine_{i}",
     )
-
-    save_fit_params(fitLevel1_2["fitParams"], fitParams, uncertaintyFitParams)
 
     rawDataLevel1_1.create_dataset(
         "horizontalDetector", dtype="float64", data=patternHorizontalDetector

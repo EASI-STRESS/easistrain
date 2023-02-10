@@ -5,12 +5,8 @@ import scipy.optimize
 import scipy.constants
 
 from easistrain.EDD.constants import pCstInkeVS, speedLightInAPerS
-from easistrain.EDD.detector_fit import fit_and_save_all_peaks
-from easistrain.EDD.io import (
-    create_angle_calib_info_group,
-    read_detector_pattern,
-    save_fit_params,
-)
+from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
+from easistrain.EDD.io import create_angle_calib_info_group, read_detector_pattern
 from easistrain.EDD.utils import linefunc, run_from_cli, uChEConversion
 
 
@@ -52,7 +48,6 @@ def angleCalibrationEDD(
     fitLevel1_2 = angleCalibrationLevel1.create_group(
         "_".join([str(v) for v in ["fit", dataset, scanNumber] if v is not None])
     )  ## fit subgroup in calibration group
-    fitLevel1_2.create_group("fitParams")  ## fit results group for the two detector
     fitLevel1_2.create_group(
         "curveAngleCalibration"
     )  ## curve E VS channels group for the two detector
@@ -77,7 +72,7 @@ def angleCalibrationEDD(
     curveAngleCalibrationHD = np.zeros((np.sum(nbPeaksInBoxes), 2), float)
     curveAngleCalibrationVD = np.zeros((np.sum(nbPeaksInBoxes), 2), float)
 
-    fitParams, uncertaintyFitParams = fit_and_save_all_peaks(
+    (savedFitParamsHD, savedFitParamsVD, _, __) = fit_all_peaks_and_save_results(
         nbPeaksInBoxes,
         rangeFit={"horizontal": rangeFitHD, "vertical": rangeFitVD},
         patterns={
@@ -90,10 +85,6 @@ def angleCalibrationEDD(
         },
         saving_dest=fitLevel1_2,
         group_format=lambda i: f"fitLine_{str(i).zfill(4)}",
-    )
-
-    (savedFitParamsHD, savedFitParamsVD, _, __) = save_fit_params(
-        fitLevel1_2["fitParams"], fitParams, uncertaintyFitParams
     )
 
     rawDataLevel1_1.create_dataset(

@@ -1,12 +1,11 @@
 from typing import Sequence, Optional, Union
 import numpy as np
 import h5py
-from easistrain.EDD.detector_fit import fit_and_save_all_peaks
+from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
 from easistrain.EDD.io import (
     create_fit_info_group,
     peak_dataset_data,
     read_detector_pattern,
-    save_fit_params,
     scan_group_path,
 )
 from easistrain.EDD.utils import run_from_cli
@@ -87,7 +86,13 @@ def fitEDD(
             pointInScan = fitGroup.create_group(
                 f"{str(k).zfill(4)}"
             )  ## create a group of each pattern (point of the scan)
-            fitParams, uncertaintyFitParams = fit_and_save_all_peaks(
+
+            (
+                fitParamsHD,
+                fitParamsVD,
+                uncertaintyFitParamsHD,
+                uncertaintyFitParamsVD,
+            ) = fit_all_peaks_and_save_results(
                 nbPeaksInBoxes,
                 rangeFit={"horizontal": rangeFitHD, "vertical": rangeFitVD},
                 patterns={
@@ -101,14 +106,6 @@ def fitEDD(
                 saving_dest=pointInScan,
                 group_format=lambda i: f"fitLine_{str(i).zfill(4)}",
             )
-
-            fitParamsGroup = pointInScan.create_group("fitParams")
-            (
-                savedFitParamsHD,
-                savedFitParamsVD,
-                savedUncertaintyFitParamsHD,
-                savedUncertaintyFitParamsVD,
-            ) = save_fit_params(fitParamsGroup, fitParams, uncertaintyFitParams)
 
             for peakNumber in range(np.sum(nbPeaksInBoxes)):
                 if f"peak_{str(peakNumber).zfill(4)}" not in tthPositionsGroup.keys():
@@ -130,16 +127,16 @@ def fitEDD(
                     ]
                     assert isinstance(uncertaintyPeakDataset, h5py.Dataset)
                 peakDataset[2 * k] = peak_dataset_data(
-                    positionAngles, savedFitParamsHD[peakNumber], -90, k
+                    positionAngles, fitParamsHD[peakNumber], -90, k
                 )
                 peakDataset[2 * k + 1] = peak_dataset_data(
-                    positionAngles, savedFitParamsVD[peakNumber], 0, k
+                    positionAngles, fitParamsVD[peakNumber], 0, k
                 )
                 uncertaintyPeakDataset[2 * k] = peak_dataset_data(
-                    positionAngles, savedUncertaintyFitParamsHD[peakNumber], -90, k
+                    positionAngles, uncertaintyFitParamsHD[peakNumber], -90, k
                 )
                 uncertaintyPeakDataset[2 * k + 1] = peak_dataset_data(
-                    positionAngles, savedUncertaintyFitParamsVD[peakNumber], 0, k
+                    positionAngles, uncertaintyFitParamsVD[peakNumber], 0, k
                 )
             if "infoPeak" not in tthPositionsGroup.keys():
                 tthPositionsGroup.create_dataset(
