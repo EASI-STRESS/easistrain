@@ -6,6 +6,7 @@ import scipy.optimize
 import scipy.constants
 
 from easistrain.EDD.constants import pCstInkeVS, speedLightInAPerS
+from easistrain.EDD.io import create_angle_calib_info_group, create_info_group
 from easistrain.EDD.utils import (
     calcBackground,
     guessParameters,
@@ -79,44 +80,19 @@ def angleCalibrationEDD(
         "calibratedAngle"
     )  ## diffraction angle of the two detectors group for the two detector
 
-    infoGroup = fitLevel1_2.create_group("infos")  ## infos group creation
-    infoGroup.create_dataset(
-        "fileRead", dtype=h5py.string_dtype(encoding="utf-8"), data=fileRead
-    )  ## save path of raw data file in infos group
-    infoGroup.create_dataset(
-        "fileSave", dtype=h5py.string_dtype(encoding="utf-8"), data=fileSave
-    )  ## save path of the file in which results will be saved in info group
-    infoGroup.create_dataset(
-        "sample", dtype=h5py.string_dtype(encoding="utf-8"), data=sample
-    )  ## save the name of the sample in infos group
-    infoGroup.create_dataset(
-        "dataset", dtype=h5py.string_dtype(encoding="utf-8"), data=dataset
-    )  ## save the name of dataset in infos group
-    infoGroup.create_dataset(
-        "scanNumber", dtype=h5py.string_dtype(encoding="utf-8"), data=str(scanNumber)
-    )  ## save of the number of the scan in infos group
-    infoGroup.create_dataset(
-        "nameHorizontalDetector",
-        dtype=h5py.string_dtype(encoding="utf-8"),
-        data=nameHorizontalDetector,
-    )  ## save of the name of the horizontal detector in infos group
-    infoGroup.create_dataset(
-        "nameVerticalDetector",
-        dtype=h5py.string_dtype(encoding="utf-8"),
-        data=nameVerticalDetector,
-    )  ## save of the name of the vertical detector in infos group
-    infoGroup.create_dataset(
-        "numberOfBoxes", dtype="int", data=numberOfBoxes
-    )  ## save of the number of the boxes/widows extracted from the raw data in infos group
-    infoGroup.create_dataset(
-        "nbPeaksInBoxes", dtype="int", data=nbPeaksInBoxes
-    )  ## save of the number of peaks per box/window in infos group
-    infoGroup.create_dataset(
-        "rangeFitHD", dtype="int", data=rangeFitHD
-    )  ## save of the range of the fit of each box/window of the horizontal detector in infos group
-    infoGroup.create_dataset(
-        "rangeFitVD", dtype="int", data=rangeFitVD
-    )  ## save of the range of the fit of each box/window of the vertical detector in infos group
+    infoGroup = create_angle_calib_info_group(
+        fitLevel1_2,
+        fileRead,
+        fileSave,
+        sample,
+        dataset,
+        nameHorizontalDetector,
+        nameVerticalDetector,
+        numberOfBoxes,
+        nbPeaksInBoxes,
+        rangeFitHD,
+        rangeFitVD,
+    )
 
     fitParamsHD = np.array(())
     fitParamsVD = np.array(())

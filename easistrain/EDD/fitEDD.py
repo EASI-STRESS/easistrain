@@ -2,7 +2,7 @@ from typing import Sequence
 import numpy as np
 import h5py
 from easistrain.EDD.io import (
-    create_info_group,
+    create_fit_info_group,
     peak_dataset_data,
     save_fit_data,
 )
@@ -221,7 +221,7 @@ def fitEDD(
                 data=f"{positioners}, delta, theta, position in channel, Intenstity, FWHM, shape factor, goodness factor",
             )  ## create info about dataset saved for each peak in tthPositionGroup
 
-    create_info_group(
+    create_fit_info_group(
         scanGroup,
         fileRead,
         fileSave,

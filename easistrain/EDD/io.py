@@ -14,15 +14,11 @@ def create_info_group(
     fileRead: str,
     fileSave: str,
     sample: str,
-    dataset: str,
-    scanNumber: int,
+    dataset: Union[str, int],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
     numberOfBoxes: int,
     nbPeaksInBoxes: Sequence[int],
-    rangeFitHD: Sequence[int],
-    rangeFitVD: Sequence[int],
-    positioners: Sequence[str],
 ):
     infoGroup = root.create_group("infos")  ## infos group creation
     infoGroup.create_dataset(
@@ -37,9 +33,6 @@ def create_info_group(
     infoGroup.create_dataset(
         "dataset", dtype=h5py.string_dtype(encoding="utf-8"), data=dataset
     )  ## save the name of dataset in infos group
-    infoGroup.create_dataset(
-        "scanNumber", dtype="int", data=scanNumber
-    )  ## save of the number of the scan in infos group
     infoGroup.create_dataset(
         "nameHorizontalDetector",
         dtype=h5py.string_dtype(encoding="utf-8"),
@@ -56,6 +49,124 @@ def create_info_group(
     infoGroup.create_dataset(
         "nbPeaksInBoxes", dtype="int", data=nbPeaksInBoxes
     )  ## save of the number of peaks per box/window in infos group
+    infoGroup.create_dataset(
+        "fittingFunction",
+        dtype=h5py.string_dtype(encoding="utf-8"),
+        data="asymmetric Pseudo-Voigt",
+    )  ## save of the type of function used in the fitting of the peaks
+
+    return infoGroup
+
+
+def create_calib_info_group(
+    root: h5py.Group,
+    fileRead: str,
+    fileSave: str,
+    sample: str,
+    dataset: Union[str, int],
+    nameHorizontalDetector: str,
+    nameVerticalDetector: str,
+    numberOfBoxes: int,
+    nbPeaksInBoxes: Sequence[int],
+    scanNumberHorizontalDetector: Union[str, int],
+    scanNumberVerticalDetector: Union[str, int],
+    rangeFit: Sequence[int],
+    sourceCalibrantFile: str,
+):
+    infoGroup = create_info_group(
+        root,
+        fileRead,
+        fileSave,
+        sample,
+        dataset,
+        nameHorizontalDetector,
+        nameVerticalDetector,
+        numberOfBoxes,
+        nbPeaksInBoxes,
+    )
+    infoGroup.create_dataset(
+        "scanNumberHorizontalDetector",
+        dtype=h5py.string_dtype(encoding="utf-8"),
+        data=str(scanNumberHorizontalDetector),
+    )  ## save of the number of the scan containing the calibration pattern of the horizontal detector in infos group
+    infoGroup.create_dataset(
+        "scanNumberVerticalDetector",
+        dtype=h5py.string_dtype(encoding="utf-8"),
+        data=str(scanNumberVerticalDetector),
+    )  ## save of the number of the scan containing the calibration pattern of the vertical detector in info group
+    infoGroup.create_dataset(
+        "rangeFit", dtype="int", data=rangeFit
+    )  ## save of the range of the fit of each box/window in infos group
+    infoGroup.create_dataset(
+        "sourceCalibrantFile",
+        dtype=h5py.string_dtype(encoding="utf-8"),
+        data=sourceCalibrantFile,
+    )  ## save of the path of the calibrant File in infos group
+
+    return infoGroup
+
+
+def create_angle_calib_info_group(
+    root: h5py.Group,
+    fileRead: str,
+    fileSave: str,
+    sample: str,
+    dataset: Union[str, int],
+    nameHorizontalDetector: str,
+    nameVerticalDetector: str,
+    numberOfBoxes: int,
+    nbPeaksInBoxes: Sequence[int],
+    rangeFitHD: Sequence[int],
+    rangeFitVD: Sequence[int],
+):
+    infoGroup = create_info_group(
+        root,
+        fileRead,
+        fileSave,
+        sample,
+        dataset,
+        nameHorizontalDetector,
+        nameVerticalDetector,
+        numberOfBoxes,
+        nbPeaksInBoxes,
+    )
+    infoGroup.create_dataset(
+        "rangeFitHD", dtype="int", data=rangeFitHD
+    )  ## save of the range of the fit of each box/window of the horizontal detector in infos group
+    infoGroup.create_dataset(
+        "rangeFitVD", dtype="int", data=rangeFitVD
+    )  ## save of the range of the fit of each box/window of the vertical detector in infos group
+
+
+def create_fit_info_group(
+    root: h5py.Group,
+    fileRead: str,
+    fileSave: str,
+    sample: str,
+    dataset: Union[str, int],
+    scanNumber: Union[str, int],
+    nameHorizontalDetector: str,
+    nameVerticalDetector: str,
+    numberOfBoxes: int,
+    nbPeaksInBoxes: Sequence[int],
+    rangeFitHD: Sequence[int],
+    rangeFitVD: Sequence[int],
+    positioners: Sequence[str],
+):
+    infoGroup = create_info_group(
+        root,
+        fileRead,
+        fileSave,
+        sample,
+        dataset,
+        nameHorizontalDetector,
+        nameVerticalDetector,
+        numberOfBoxes,
+        nbPeaksInBoxes,
+    )
+    infoGroup.create_dataset(
+        "scanNumber", dtype="int", data=scanNumber
+    )  ## save of the number of the scan in infos group
     infoGroup.create_dataset(
         "rangeFitHD", dtype="int", data=rangeFitHD
     )  ## save of the range of the fit of each box/window of the horizontal detector in infos group
