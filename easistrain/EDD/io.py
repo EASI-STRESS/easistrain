@@ -1,4 +1,4 @@
-from typing import Dict, Sequence, Union
+from typing import Dict, Optional, Sequence, Union
 import h5py
 import numpy as np
 
@@ -14,8 +14,8 @@ def create_info_group(
     root: h5py.Group,
     fileRead: str,
     fileSave: str,
-    sample: str,
-    dataset: Union[str, int],
+    sample: Optional[str],
+    dataset: Union[str, int, None],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
     numberOfBoxes: int,
@@ -29,10 +29,14 @@ def create_info_group(
         "fileSave", dtype=h5py.string_dtype(encoding="utf-8"), data=fileSave
     )  ## save path of the file in which results will be saved in info group
     infoGroup.create_dataset(
-        "sample", dtype=h5py.string_dtype(encoding="utf-8"), data=sample
+        "sample",
+        dtype=h5py.string_dtype(encoding="utf-8"),
+        data=sample if sample is not None else "No sample",
     )  ## save the name of the sample in infos group
     infoGroup.create_dataset(
-        "dataset", dtype=h5py.string_dtype(encoding="utf-8"), data=dataset
+        "dataset",
+        dtype=h5py.string_dtype(encoding="utf-8"),
+        data=dataset if dataset is not None else "No dataset",
     )  ## save the name of dataset in infos group
     infoGroup.create_dataset(
         "nameHorizontalDetector",
@@ -63,8 +67,8 @@ def create_calib_info_group(
     root: h5py.Group,
     fileRead: str,
     fileSave: str,
-    sample: str,
-    dataset: Union[str, int],
+    sample: Optional[str],
+    dataset: Union[str, int, None],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
     numberOfBoxes: int,
@@ -111,8 +115,8 @@ def create_angle_calib_info_group(
     root: h5py.Group,
     fileRead: str,
     fileSave: str,
-    sample: str,
-    dataset: Union[str, int],
+    sample: Optional[str],
+    dataset: Union[str, int, None],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
     numberOfBoxes: int,
@@ -145,8 +149,8 @@ def create_fit_info_group(
     root: h5py.Group,
     fileRead: str,
     fileSave: str,
-    sample: str,
-    dataset: Union[str, int],
+    sample: Optional[str],
+    dataset: Union[str, int, None],
     scanNumber: Union[str, int],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
