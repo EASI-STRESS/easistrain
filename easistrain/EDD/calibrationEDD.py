@@ -1,17 +1,14 @@
 import h5py
 import numpy as np
-import silx.math.fit
-import silx.math.fit.peaks
-import scipy.optimize
 from typing import Sequence, Union
-from easistrain.EDD.io import create_calib_info_group, read_detector_pattern
-
-from easistrain.EDD.utils import (
-    calcBackground,
-    guessParameters,
-    run_from_cli,
-    splitPseudoVoigt,
+from easistrain.EDD.io import (
+    create_calib_info_group,
+    read_detector_pattern,
+    save_fit_data,
+    save_fit_params,
 )
+
+from easistrain.EDD.utils import fit_detector_data, run_from_cli
 
 
 def calibEdd(
@@ -75,313 +72,67 @@ def calibEdd(
         sourceCalibrantFile,
     )
 
-    fitParamsHD = np.array(())
-    fitParamsVD = np.array(())
-    uncertaintyFitParamsHD = np.array(())
-    uncertaintyFitParamsVD = np.array(())
+    fitParams = {"horizontal": np.array(()), "vertical": np.array(())}
+    uncertaintyFitParams = {
+        "horizontal": np.array(()),
+        "vertical": np.array(()),
+    }
     curveCalibrationHD = np.zeros((np.sum(nbPeaksInBoxes), 2), float)
     curveCalibrationVD = np.zeros((np.sum(nbPeaksInBoxes), 2), float)
-    for i in range(numberOfBoxes):
-        peakHorizontalDetector = np.transpose(
-            (
-                np.arange(rangeFit[2 * i], rangeFit[(2 * i) + 1]),
-                patternHorizontalDetector[rangeFit[2 * i] : rangeFit[(2 * i) + 1]],
-            )
-        )  ## peak of the horizontal detector
-        peakVerticalDetector = np.transpose(
-            (
-                np.arange(rangeFit[2 * i], rangeFit[(2 * i) + 1]),
-                patternVerticalDetector[rangeFit[2 * i] : rangeFit[(2 * i) + 1]],
-            )
-        )  ## peak of the vertical detector
-        backgroundHorizontalDetector = silx.math.fit.strip(
-            data=peakHorizontalDetector[:, 1],
-            w=5,
-            niterations=5000,
-            factor=1,
-            anchors=None,
-        )  ## stripped background of the horizontal detector (obtained by stripping the yData)
-        backgroundVerticalDetector = silx.math.fit.strip(
-            data=peakVerticalDetector[:, 1],
-            w=5,
-            niterations=5000,
-            factor=1,
-            anchors=None,
-        )  ## stripped background of the vertical detector (obtained by stripping the yData)
-        # print(backgroundHorizontalDetector)
-        # print(backgroundVerticalDetector)
+    for i, nb_peaks in enumerate(nbPeaksInBoxes):
         fit_line_group = fitLevel1_2.create_group(
             f"fitLine_{i}"
         )  ## create group for each calibration peak
-        fit_line_group.create_dataset(
-            "rawHorizontalDetector", dtype="float64", data=peakHorizontalDetector
-        )  ## create dataset for raw data of each calibration peak
-        fit_line_group.create_dataset(
-            "rawVerticalDetector", dtype="float64", data=peakVerticalDetector
-        )  ## create dataset for raw data of each calibration peak
 
-        peaksGuessHD, peaksIndexHD = guessParameters(
-            peakHorizontalDetector[:, 0],
-            peakHorizontalDetector[:, 1] - backgroundHorizontalDetector,
-            nbPeaksInBoxes[i],
-            withBounds=False,
-        )  ## guess fit parameters for HD
-        # print(peaksIndexHD)
-        peaksGuessVD, peaksIndexVD = guessParameters(
-            peakVerticalDetector[:, 0],
-            peakVerticalDetector[:, 1] - backgroundVerticalDetector,
-            nbPeaksInBoxes[i],
-            withBounds=False,
-        )  ## guess fit parameters for VD
-        # print(peaksIndexVD)
-        yCalculatedBackgroundHD = calcBackground(
-            peakHorizontalDetector[:, 0],
-            peakHorizontalDetector[:, 1],
-            peaksGuessHD[-1],
-            peaksGuessHD[2],
-            peaksIndexHD,
-        )  ## calculated ybackground of the horizontal detector
-        yCalculatedBackgroundVD = calcBackground(
-            peakVerticalDetector[:, 0],
-            peakVerticalDetector[:, 1],
-            peaksGuessVD[-1],
-            peaksGuessVD[2],
-            peaksIndexVD,
-        )  ## calculated ybackground of the vertical detector
-        fit_line_group.create_dataset(
-            "backgroundHorizontalDetector",
-            dtype="float64",
-            data=np.transpose((peakHorizontalDetector[:, 0], yCalculatedBackgroundHD)),
-        )  ## create dataset for background of each calibration peak for HD
-        fit_line_group.create_dataset(
-            "backgroundVerticalDetector",
-            dtype="float64",
-            data=np.transpose((peakVerticalDetector[:, 0], yCalculatedBackgroundVD)),
-        )  ## create dataset for background of each calibration peak for VD
-        fit_line_group.create_dataset(
-            "bgdSubsDataHorizontalDetector",
-            dtype="float64",
-            data=np.transpose(
-                (
-                    peakHorizontalDetector[:, 0],
-                    peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
-                )
-            ),
-        )  ## create dataset for HD raw data after subst of background
-        fit_line_group.create_dataset(
-            "bgdSubsDataVerticalDetector",
-            dtype="float64",
-            data=np.transpose(
-                (
-                    peakVerticalDetector[:, 0],
-                    peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
-                )
-            ),
-        )  ## create dataset for VD raw data after subst of background
-        # print(peaksGuessHD)
-        # print(peaksGuessVD)
-        initialGuessHD = np.zeros(5 * nbPeaksInBoxes[i])
-        initialGuessVD = np.zeros(5 * nbPeaksInBoxes[i])
-        # print(peaksGuessHD, peaksGuessVD)
-        # print(([0,
-        #    np.amin(peakHorizontalDetector[:, 0]), 0, 0, 0],
-        #   [np.amax(peakHorizontalDetector[:, 1]),
-        #  np.amax(peakHorizontalDetector[:, 0]), len(peakHorizontalDetector[:, 0]),
-        #  len(peakHorizontalDetector[:, 0]), 1]))
-        fit_min_boundsHD = np.zeros(5 * nbPeaksInBoxes[i])
-        fit_max_boundsHD = np.zeros(5 * nbPeaksInBoxes[i])
-        fit_min_boundsVD = np.zeros(5 * nbPeaksInBoxes[i])
-        fit_max_boundsVD = np.zeros(5 * nbPeaksInBoxes[i])
-        for n in range(nbPeaksInBoxes[i]):
-            initialGuessHD[5 * n] = peaksGuessHD[3 * n]
-            initialGuessHD[5 * n + 1] = peaksGuessHD[3 * n + 1]
-            initialGuessHD[5 * n + 2] = peaksGuessHD[3 * n + 2]
-            initialGuessHD[5 * n + 3] = peaksGuessHD[3 * n + 2]
-            initialGuessHD[5 * n + 4] = 0.5
-            initialGuessVD[5 * n] = peaksGuessVD[3 * n]
-            initialGuessVD[5 * n + 1] = peaksGuessVD[3 * n + 1]
-            initialGuessVD[5 * n + 2] = peaksGuessVD[3 * n + 2]
-            initialGuessVD[5 * n + 3] = peaksGuessVD[3 * n + 2]
-            initialGuessVD[5 * n + 4] = 0.5
-            fit_min_boundsHD[5 * n : 5 * n + 5] = [
-                0,
-                np.amin(peakHorizontalDetector[:, 0]),
-                0,
-                0,
-                0,
-            ]
-            fit_max_boundsHD[5 * n : 5 * n + 5] = [
-                np.inf,
-                np.amax(peakHorizontalDetector[:, 0]),
-                len(peakHorizontalDetector[:, 0]) / 2,
-                len(peakHorizontalDetector[:, 0]) / 2,
-                1,
-            ]
-            fit_min_boundsVD[5 * n : 5 * n + 5] = [
-                0,
-                np.amin(peakVerticalDetector[:, 0]),
-                0,
-                0,
-                0,
-            ]
-            fit_max_boundsVD[5 * n : 5 * n + 5] = [
-                np.inf,
-                np.amax(peakVerticalDetector[:, 0]),
-                len(peakVerticalDetector[:, 0]) / 2,
-                len(peakVerticalDetector[:, 0]) / 2,
-                1,
-            ]
-        optimal_parametersHD, covarianceHD = scipy.optimize.curve_fit(
-            f=splitPseudoVoigt,
-            xdata=peakHorizontalDetector[:, 0],
-            ydata=peakHorizontalDetector[:, 1] - yCalculatedBackgroundHD,
-            p0=initialGuessHD,
-            sigma=np.sqrt(0.5 + peakHorizontalDetector[:, 1]),
-            bounds=(fit_min_boundsHD, fit_max_boundsHD),
-        )  ## fit of the peak of the Horizontal detector
-        optimal_parametersVD, covarianceVD = scipy.optimize.curve_fit(
-            f=splitPseudoVoigt,
-            xdata=peakVerticalDetector[:, 0],
-            ydata=peakVerticalDetector[:, 1] - yCalculatedBackgroundVD,
-            p0=initialGuessVD,
-            sigma=np.sqrt(0.5 + peakVerticalDetector[:, 1]),
-            bounds=(fit_min_boundsVD, fit_max_boundsVD),
-        )  ## fit of the peak of the Vertical detector
-        fit_line_group.create_dataset(
-            "fitHorizontalDetector",
-            dtype="float64",
-            data=np.transpose(
-                (
-                    peakHorizontalDetector[:, 0],
-                    splitPseudoVoigt(peakHorizontalDetector[:, 0], optimal_parametersHD)
-                    + yCalculatedBackgroundHD,
-                )
-            ),
-        )  ## fitted data of the horizontal detector
-        fit_line_group.create_dataset(
-            "fitVerticalDetector",
-            dtype="float64",
-            data=np.transpose(
-                (
-                    peakVerticalDetector[:, 0],
-                    splitPseudoVoigt(peakVerticalDetector[:, 0], optimal_parametersVD)
-                    + yCalculatedBackgroundVD,
-                )
-            ),
-        )  ## fitted data of the vertical detector
-        fit_line_group.create_dataset(
-            "errorHorizontalDetector",
-            dtype="float64",
-            data=np.transpose(
-                (
-                    peakHorizontalDetector[:, 0],
-                    np.absolute(
-                        splitPseudoVoigt(
-                            peakHorizontalDetector[:, 0], optimal_parametersHD
-                        )
-                        + yCalculatedBackgroundHD
-                        - peakHorizontalDetector[:, 1]
-                    ),
-                )
-            ),
-        )  ## error of the horizontal detector
-        fit_line_group.create_dataset(
-            "errorVerticalDetector",
-            dtype="float64",
-            data=np.transpose(
-                (
-                    peakVerticalDetector[:, 0],
-                    np.absolute(
-                        splitPseudoVoigt(
-                            peakVerticalDetector[:, 0], optimal_parametersVD
-                        )
-                        + yCalculatedBackgroundVD
-                        - peakVerticalDetector[:, 1]
-                    ),
-                )
-            ),
-        )  ## error of the vertical detector
-        # print(f'optimal_parametersHD = {optimal_parametersHD}')
-        # print(f'uncertauntyHD = {np.sqrt(np.diag(covarianceHD))}')
-        # print(f'optimal_parametersVD = {optimal_parametersVD}')
-        # print(f'uncertauntyVD = {np.sqrt(np.diag(covarianceVD))}')
-        for n in range(nbPeaksInBoxes[i]):
-            fitParamsHD = np.append(
-                fitParamsHD,
-                np.append(
-                    optimal_parametersHD[5 * n : 5 * n + 5],
-                    100
-                    * np.sum(
-                        np.absolute(
-                            splitPseudoVoigt(
-                                peakHorizontalDetector[:, 0], optimal_parametersHD
-                            )
-                            + backgroundHorizontalDetector
-                            - peakHorizontalDetector[:, 1]
-                        )
-                    )
-                    / np.sum(peakHorizontalDetector[:, 1]),
-                ),
-                axis=0,
-            )  ##
-            fitParamsVD = np.append(
-                fitParamsVD,
-                np.append(
-                    optimal_parametersVD[5 * n : 5 * n + 5],
-                    100
-                    * np.sum(
-                        np.absolute(
-                            splitPseudoVoigt(
-                                peakVerticalDetector[:, 0], optimal_parametersVD
-                            )
-                            + backgroundVerticalDetector
-                            - peakVerticalDetector[:, 1]
-                        )
-                    )
-                    / np.sum(peakVerticalDetector[:, 1]),
-                ),
-                axis=0,
-            )  ##
-            uncertaintyFitParamsHD = np.append(
-                uncertaintyFitParamsHD,
-                np.sqrt(np.diag(covarianceHD))[5 * n : 5 * n + 5],
-                axis=0,
-            )  ##
-            uncertaintyFitParamsVD = np.append(
-                uncertaintyFitParamsVD,
-                np.sqrt(np.diag(covarianceVD))[5 * n : 5 * n + 5],
-                axis=0,
-            )  ##
+        for detector in ["horizontal", "vertical"]:
+            fit_min, fit_max = (rangeFit[2 * i], rangeFit[2 * i + 1])
+            pattern = (
+                patternHorizontalDetector
+                if detector == "horizontal"
+                else patternVerticalDetector
+            )  # To be improved
+            scanNumber = (
+                scanNumberHorizontalDetector
+                if detector == "horizontal"
+                else scanNumberVerticalDetector
+            )
+            channels = np.arange(fit_min, fit_max)
+            raw_data = pattern[fit_min:fit_max]
+            assert isinstance(raw_data, np.ndarray)
+
+            (
+                background,
+                fitted_data,
+                boxFitParams,
+                uncertaintyBoxFitParams,
+            ) = fit_detector_data(
+                channels=channels,
+                raw_data=raw_data,
+                nb_peaks=nb_peaks,
+                boxCounter=i,
+                scanNumber=int(scanNumber),
+                detectorName=detector,
+            )
+
+            save_fit_data(
+                fit_line_group, detector, channels, raw_data, background, fitted_data
+            )
+
+            # Accumulate fit parameters of this box
+            fitParams[detector] = np.append(fitParams[detector], boxFitParams)
+            uncertaintyFitParams[detector] = np.append(
+                uncertaintyFitParams[detector], uncertaintyBoxFitParams
+            )
+
     rawDataLevel1_1.create_dataset(
         "horizontalDetector", dtype="float64", data=patternHorizontalDetector
     )  ## save raw data of the horizontal detector
     rawDataLevel1_1.create_dataset(
         "verticalDetector", dtype="float64", data=patternVerticalDetector
     )  ## save raw data of the vertical detector
-    fitLevel1_2["fitParams"].create_dataset(
-        "fitParamsHD",
-        dtype="float64",
-        data=np.reshape(fitParamsHD, (int(np.size(fitParamsHD) / 6), 6)),
-    )  ## save parameters of the fit of HD
-    fitLevel1_2["fitParams"].create_dataset(
-        "fitParamsVD",
-        dtype="float64",
-        data=np.reshape(fitParamsVD, (int(np.size(fitParamsVD) / 6), 6)),
-    )  ## save parameters of the fit of VD
-    fitLevel1_2["fitParams"].create_dataset(
-        "uncertaintyFitParamsHD",
-        dtype="float64",
-        data=np.reshape(
-            uncertaintyFitParamsHD, (int(np.size(uncertaintyFitParamsHD) / 5), 5)
-        ),
-    )  ## save uncertainty on the parameters of the fit of HD
-    fitLevel1_2["fitParams"].create_dataset(
-        "uncertaintyFitParamsVD",
-        dtype="float64",
-        data=np.reshape(
-            uncertaintyFitParamsVD, (int(np.size(uncertaintyFitParamsVD) / 5), 5)
-        ),
-    )  ## save uncertainty on the parameters of the fit of VD
+
+    save_fit_params(fitLevel1_2["fitParams"], fitParams, uncertaintyFitParams)
+
     calibrantSource = np.loadtxt(
         sourceCalibrantFile
     )  ## open source calibration text file

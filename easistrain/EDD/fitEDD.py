@@ -6,6 +6,7 @@ from easistrain.EDD.io import (
     peak_dataset_data,
     read_detector_pattern,
     save_fit_data,
+    save_fit_params,
 )
 from easistrain.EDD.utils import fit_detector_data, run_from_cli
 
@@ -132,41 +133,13 @@ def fitEDD(
                     )
             # End of fitting procedure
 
-            savedFitParamsHD = np.reshape(
-                fitParams["horizontal"], (int(np.size(fitParams["horizontal"]) / 6), 6)
-            )
-            fitParamsGroup.create_dataset(
-                "fitParamsHD",
-                dtype="float64",
-                data=savedFitParamsHD,
-            )  ## save parameters of the fit of HD
-            savedUncertaintyFitParamsHD = np.reshape(
-                uncertaintyFitParams["horizontal"],
-                (int(np.size(uncertaintyFitParams["horizontal"]) / 5), 5),
-            )
-            fitParamsGroup.create_dataset(
-                "uncertaintyFitParamsHD",
-                dtype="float64",
-                data=savedUncertaintyFitParamsHD,
-            )  ## save uncertainty on the parameters of the fit of HD
+            (
+                savedFitParamsHD,
+                savedFitParamsVD,
+                savedUncertaintyFitParamsHD,
+                savedUncertaintyFitParamsVD,
+            ) = save_fit_params(fitParamsGroup, fitParams, uncertaintyFitParams)
 
-            savedFitParamsVD = np.reshape(
-                fitParams["vertical"], (int(np.size(fitParams["vertical"]) / 6), 6)
-            )
-            fitParamsGroup.create_dataset(
-                "fitParamsVD",
-                dtype="float64",
-                data=savedFitParamsVD,
-            )  ## save parameters of the fit of VD
-            savedUncertaintyFitParamsVD = np.reshape(
-                uncertaintyFitParams["vertical"],
-                (int(np.size(uncertaintyFitParams["vertical"]) / 5), 5),
-            )
-            fitParamsGroup.create_dataset(
-                "uncertaintyFitParamsVD",
-                dtype="float64",
-                data=savedUncertaintyFitParamsVD,
-            )  ## save uncertainty on the parameters of the fit of VD
             for peakNumber in range(np.sum(nbPeaksInBoxes)):
                 if f"peak_{str(peakNumber).zfill(4)}" not in tthPositionsGroup.keys():
                     peakDataset = tthPositionsGroup.create_dataset(

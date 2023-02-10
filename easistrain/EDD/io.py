@@ -1,4 +1,4 @@
-from typing import Sequence, Union
+from typing import Dict, Sequence, Union
 import h5py
 import numpy as np
 
@@ -285,3 +285,52 @@ def read_detector_pattern(
         detector_dset = meas_group[detector_name]
         assert isinstance(detector_dset, h5py.Dataset)
         return detector_dset[()]
+
+
+def save_fit_params(
+    parent: h5py.Group,
+    fitParams: Dict[str, np.ndarray],
+    uncertaintyFitParams: Dict[str, np.ndarray],
+):
+    savedFitParamsHD = np.reshape(
+        fitParams["horizontal"], (int(np.size(fitParams["horizontal"]) / 6), 6)
+    )
+    parent.create_dataset(
+        "fitParamsHD",
+        dtype="float64",
+        data=savedFitParamsHD,
+    )  ## save parameters of the fit of HD
+    savedUncertaintyFitParamsHD = np.reshape(
+        uncertaintyFitParams["horizontal"],
+        (int(np.size(uncertaintyFitParams["horizontal"]) / 5), 5),
+    )
+    parent.create_dataset(
+        "uncertaintyFitParamsHD",
+        dtype="float64",
+        data=savedUncertaintyFitParamsHD,
+    )  ## save uncertainty on the parameters of the fit of HD
+
+    savedFitParamsVD = np.reshape(
+        fitParams["vertical"], (int(np.size(fitParams["vertical"]) / 6), 6)
+    )
+    parent.create_dataset(
+        "fitParamsVD",
+        dtype="float64",
+        data=savedFitParamsVD,
+    )  ## save parameters of the fit of VD
+    savedUncertaintyFitParamsVD = np.reshape(
+        uncertaintyFitParams["vertical"],
+        (int(np.size(uncertaintyFitParams["vertical"]) / 5), 5),
+    )
+    parent.create_dataset(
+        "uncertaintyFitParamsVD",
+        dtype="float64",
+        data=savedUncertaintyFitParamsVD,
+    )  ## save uncertainty on the parameters of the fit of VD
+
+    return (
+        savedFitParamsHD,
+        savedFitParamsVD,
+        savedUncertaintyFitParamsHD,
+        savedUncertaintyFitParamsVD,
+    )
