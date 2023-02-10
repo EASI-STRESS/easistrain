@@ -163,9 +163,9 @@ def fit_detector_data(
     channels: np.ndarray,
     raw_data: np.ndarray,
     nb_peaks: int,
-    boxCounter,
-    scanNumber,
-    detectorName,
+    boxCounter: int,
+    scanNumber: int,
+    detectorName: str,
 ):
     """
     Process detector data:

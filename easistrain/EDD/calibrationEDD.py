@@ -4,7 +4,7 @@ import silx.math.fit
 import silx.math.fit.peaks
 import scipy.optimize
 from typing import Sequence, Union
-from easistrain.EDD.io import create_calib_info_group
+from easistrain.EDD.io import create_calib_info_group, read_detector_pattern
 
 from easistrain.EDD.utils import (
     calcBackground,
@@ -30,13 +30,12 @@ def calibEdd(
 ):
     """Main function."""
 
-    with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
-        patternHorizontalDetector = h5Read[
-            f"{sample}_{dataset}_{scanNumberHorizontalDetector}.1/measurement/{nameHorizontalDetector}"
-        ][0]
-        patternVerticalDetector = h5Read[
-            f"{sample}_{dataset}_{scanNumberVerticalDetector}.1/measurement/{nameVerticalDetector}"
-        ][0]
+    patternHorizontalDetector = read_detector_pattern(
+        fileRead, sample, dataset, scanNumberHorizontalDetector, nameHorizontalDetector
+    )[0]
+    patternVerticalDetector = read_detector_pattern(
+        fileRead, sample, dataset, scanNumberVerticalDetector, nameVerticalDetector
+    )[0]
 
     h5Save = h5py.File(fileSave, "a")  ## create h5 file to save in
     if "detectorCalibration" not in h5Save.keys():

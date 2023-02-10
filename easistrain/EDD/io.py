@@ -2,6 +2,7 @@ from typing import Sequence, Union
 import h5py
 import numpy as np
 
+
 nxchar = h5py.special_dtype(vlen=str)
 
 
@@ -137,6 +138,8 @@ def create_angle_calib_info_group(
         "rangeFitVD", dtype="int", data=rangeFitVD
     )  ## save of the range of the fit of each box/window of the vertical detector in infos group
 
+    return infoGroup
+
 
 def create_fit_info_group(
     root: h5py.Group,
@@ -176,6 +179,8 @@ def create_fit_info_group(
     infoGroup.create_dataset(
         "positioners", dtype=h5py.string_dtype(encoding="utf-8"), data=str(positioners)
     )  ## save of the range of the fit of each box/window of the vertical detector in infos group
+
+    return infoGroup
 
 
 def peak_dataset_data(
@@ -245,3 +250,38 @@ def save_fit_data(
     detectorGroup.attrs["auxiliary_signals"] = as_nxchar(["raw_data"])
     detectorGroup.attrs["signal"] = as_nxchar("fitted_data")
     detectorGroup.attrs["axes"] = as_nxchar("channels")
+
+
+def scan_group_path(
+    sample: Union[str, None],
+    dataset: Union[str, int, None],
+    scanNumber: Union[str, int],
+):
+    path = ""
+
+    if sample:
+        path += f"{sample}_"
+
+    if dataset:
+        path += f"{dataset}_"
+
+    return f"{path}{scanNumber}.1"
+
+
+def read_detector_pattern(
+    input_filename: str,
+    sample: Union[str, None],
+    dataset: Union[str, int, None],
+    scanNumber: Union[str, int],
+    detector_name: str,
+):
+    with h5py.File(input_filename, "r") as h5Read:  ## Read the h5 file of raw data
+        meas_group = h5Read[
+            f"{scan_group_path(sample, dataset, scanNumber)}/measurement"
+        ]
+        if not isinstance(meas_group, h5py.Group) or detector_name not in meas_group:
+            raise TypeError("No pattern was saved in this scan")
+            return
+        detector_dset = meas_group[detector_name]
+        assert isinstance(detector_dset, h5py.Dataset)
+        return detector_dset[()]

@@ -1,4 +1,4 @@
-from typing import Sequence, Union
+from typing import Optional, Sequence, Union
 import h5py
 import numpy as np
 import silx.math.fit.peaks
@@ -6,7 +6,10 @@ import scipy.optimize
 import scipy.constants
 
 from easistrain.EDD.constants import pCstInkeVS, speedLightInAPerS
-from easistrain.EDD.io import create_angle_calib_info_group, create_info_group
+from easistrain.EDD.io import (
+    create_angle_calib_info_group,
+    read_detector_pattern,
+)
 from easistrain.EDD.utils import (
     calcBackground,
     guessParameters,
@@ -20,8 +23,8 @@ from easistrain.EDD.utils import (
 def angleCalibrationEDD(
     fileRead: str,
     fileSave: str,
-    sample: str,
-    dataset: str,
+    sample: Optional[str],
+    dataset: Optional[str],
     scanNumber: Union[str, int],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
@@ -35,29 +38,12 @@ def angleCalibrationEDD(
 ):
     """Main function."""
 
-    with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
-        patternHorizontalDetector = h5Read[
-            sample
-            + "_"
-            + str(dataset)
-            + "_"
-            + str(scanNumber)
-            + ".1/measurement/"
-            + nameHorizontalDetector
-        ][
-            0
-        ]  ## pattern of horizontal detector
-        patternVerticalDetector = h5Read[
-            sample
-            + "_"
-            + str(dataset)
-            + "_"
-            + str(scanNumber)
-            + ".1/measurement/"
-            + nameVerticalDetector
-        ][
-            0
-        ]  ## pattern of vertical detector
+    patternHorizontalDetector = read_detector_pattern(
+        fileRead, sample, dataset, scanNumber, nameHorizontalDetector
+    )[0]
+    patternVerticalDetector = read_detector_pattern(
+        fileRead, sample, dataset, scanNumber, nameVerticalDetector
+    )[0]
 
     h5Save = h5py.File(fileSave, "a")  ## create/append h5 file to save in
     if "angleCalibration" not in h5Save.keys():
@@ -67,10 +53,10 @@ def angleCalibrationEDD(
     else:
         angleCalibrationLevel1 = h5Save["angleCalibration"]
     rawDataLevel1_1 = angleCalibrationLevel1.create_group(
-        "rawData" + "_" + str(dataset) + "_" + str(scanNumber)
+        "_".join([str(v) for v in ["rawData", dataset, scanNumber] if v is not None])
     )  ## rawData subgroup in calibration group
     fitLevel1_2 = angleCalibrationLevel1.create_group(
-        "fit" + "_" + str(dataset) + "_" + str(scanNumber)
+        "_".join([str(v) for v in ["fit", dataset, scanNumber] if v is not None])
     )  ## fit subgroup in calibration group
     fitLevel1_2.create_group("fitParams")  ## fit results group for the two detector
     fitLevel1_2.create_group(
