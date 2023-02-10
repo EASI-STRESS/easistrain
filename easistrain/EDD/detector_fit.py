@@ -1,4 +1,5 @@
-from typing import Callable, Dict, Literal, Sequence, Union
+from typing import Callable, Dict, Sequence, Union
+from typing_extensions import Literal
 
 import h5py
 import numpy as np
