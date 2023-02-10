@@ -1,14 +1,14 @@
 import h5py
 import numpy as np
 from typing import Sequence, Union
+from easistrain.EDD.detector_fit import fit_and_save_all_peaks
 from easistrain.EDD.io import (
     create_calib_info_group,
     read_detector_pattern,
-    save_fit_data,
     save_fit_params,
 )
 
-from easistrain.EDD.utils import fit_detector_data, run_from_cli
+from easistrain.EDD.utils import run_from_cli
 
 
 def calibEdd(
@@ -79,50 +79,23 @@ def calibEdd(
     }
     curveCalibrationHD = np.zeros((np.sum(nbPeaksInBoxes), 2), float)
     curveCalibrationVD = np.zeros((np.sum(nbPeaksInBoxes), 2), float)
-    for i, nb_peaks in enumerate(nbPeaksInBoxes):
-        fit_line_group = fitLevel1_2.create_group(
-            f"fitLine_{i}"
-        )  ## create group for each calibration peak
 
-        for detector in ["horizontal", "vertical"]:
-            fit_min, fit_max = (rangeFit[2 * i], rangeFit[2 * i + 1])
-            pattern = (
-                patternHorizontalDetector
-                if detector == "horizontal"
-                else patternVerticalDetector
-            )  # To be improved
-            scanNumber = (
-                scanNumberHorizontalDetector
-                if detector == "horizontal"
-                else scanNumberVerticalDetector
-            )
-            channels = np.arange(fit_min, fit_max)
-            raw_data = pattern[fit_min:fit_max]
-            assert isinstance(raw_data, np.ndarray)
+    fitParams, uncertaintyFitParams = fit_and_save_all_peaks(
+        nbPeaksInBoxes,
+        rangeFit={"horizontal": rangeFit, "vertical": rangeFit},
+        patterns={
+            "horizontal": patternHorizontalDetector,
+            "vertical": patternVerticalDetector,
+        },
+        scanNumbers={
+            "horizontal": scanNumberHorizontalDetector,
+            "vertical": scanNumberVerticalDetector,
+        },
+        saving_dest=fitLevel1_2,
+        group_format=lambda i: f"fitLine_{i}",
+    )
 
-            (
-                background,
-                fitted_data,
-                boxFitParams,
-                uncertaintyBoxFitParams,
-            ) = fit_detector_data(
-                channels=channels,
-                raw_data=raw_data,
-                nb_peaks=nb_peaks,
-                boxCounter=i,
-                scanNumber=int(scanNumber),
-                detectorName=detector,
-            )
-
-            save_fit_data(
-                fit_line_group, detector, channels, raw_data, background, fitted_data
-            )
-
-            # Accumulate fit parameters of this box
-            fitParams[detector] = np.append(fitParams[detector], boxFitParams)
-            uncertaintyFitParams[detector] = np.append(
-                uncertaintyFitParams[detector], uncertaintyBoxFitParams
-            )
+    save_fit_params(fitLevel1_2["fitParams"], fitParams, uncertaintyFitParams)
 
     rawDataLevel1_1.create_dataset(
         "horizontalDetector", dtype="float64", data=patternHorizontalDetector
@@ -130,8 +103,6 @@ def calibEdd(
     rawDataLevel1_1.create_dataset(
         "verticalDetector", dtype="float64", data=patternVerticalDetector
     )  ## save raw data of the vertical detector
-
-    save_fit_params(fitLevel1_2["fitParams"], fitParams, uncertaintyFitParams)
 
     calibrantSource = np.loadtxt(
         sourceCalibrantFile

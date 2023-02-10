@@ -1,14 +1,14 @@
 from typing import Sequence
 import numpy as np
 import h5py
+from easistrain.EDD.detector_fit import fit_and_save_all_peaks
 from easistrain.EDD.io import (
     create_fit_info_group,
     peak_dataset_data,
     read_detector_pattern,
-    save_fit_data,
     save_fit_params,
 )
-from easistrain.EDD.utils import fit_detector_data, run_from_cli
+from easistrain.EDD.utils import run_from_cli
 
 
 def fitEDD(
@@ -88,50 +88,20 @@ def fitEDD(
             fitParamsGroup = pointInScan.create_group(
                 "fitParams"
             )  ## fit results group for the two detector
-            for i, nb_peaks in enumerate(nbPeaksInBoxes):
-                fitLine = pointInScan.create_group(
-                    f"fitLine_{str(i).zfill(4)}"
-                )  ## create group for each range of peak(s)
-
-                for detector in ["horizontal", "vertical"]:
-                    fit_min, fit_max = (
-                        (rangeFitHD[2 * i], rangeFitHD[2 * i + 1])
-                        if detector == "horizontal"
-                        else (rangeFitVD[2 * i], rangeFitVD[2 * i + 1])
-                    )  # To be improved
-                    pattern = (
-                        patternHorizontalDetector
-                        if detector == "horizontal"
-                        else patternVerticalDetector
-                    )  # To be improved
-                    channels = np.arange(fit_min, fit_max)
-                    raw_data = pattern[k, fit_min:fit_max]
-                    assert isinstance(raw_data, np.ndarray)
-                    # print(np.shape(pattern),pattern)
-                    (
-                        background,
-                        fitted_data,
-                        boxFitParams,
-                        uncertaintyBoxFitParams,
-                    ) = fit_detector_data(
-                        channels=channels,
-                        raw_data=raw_data,
-                        nb_peaks=nb_peaks,
-                        boxCounter=i,
-                        scanNumber=scanNumber,
-                        detectorName=detector,
-                    )
-
-                    save_fit_data(
-                        fitLine, detector, channels, raw_data, background, fitted_data
-                    )
-
-                    # Accumulate fit parameters of this box
-                    fitParams[detector] = np.append(fitParams[detector], boxFitParams)
-                    uncertaintyFitParams[detector] = np.append(
-                        uncertaintyFitParams[detector], uncertaintyBoxFitParams
-                    )
-            # End of fitting procedure
+            fitParams, uncertaintyFitParams = fit_and_save_all_peaks(
+                nbPeaksInBoxes,
+                rangeFit={"horizontal": rangeFitHD, "vertical": rangeFitVD},
+                patterns={
+                    "horizontal": patternHorizontalDetector[k],
+                    "vertical": patternVerticalDetector[k],
+                },
+                scanNumbers={
+                    "horizontal": scanNumber,
+                    "vertical": scanNumber,
+                },
+                saving_dest=pointInScan,
+                group_format=lambda i: f"fitLine_{str(i).zfill(4)}",
+            )
 
             (
                 savedFitParamsHD,
