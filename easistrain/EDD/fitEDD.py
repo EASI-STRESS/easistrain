@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Optional, Union
 import numpy as np
 import h5py
 from easistrain.EDD.detector_fit import fit_and_save_all_peaks
@@ -7,6 +7,7 @@ from easistrain.EDD.io import (
     peak_dataset_data,
     read_detector_pattern,
     save_fit_params,
+    scan_group_path,
 )
 from easistrain.EDD.utils import run_from_cli
 
@@ -14,9 +15,9 @@ from easistrain.EDD.utils import run_from_cli
 def fitEDD(
     fileRead: str,
     fileSave: str,
-    sample: str,
-    dataset: str,
-    scanNumber: int,
+    sample: Optional[str],
+    dataset: Union[str, int, None],
+    scanNumber: Union[str, int],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
     positioners: Sequence[str],
@@ -48,10 +49,16 @@ def fitEDD(
         )  ## positioners subgroup in scan group
         positionAngles = np.zeros((nDetectorPoints, 6), "float64")
         with h5py.File(fileRead, "r") as h5Read:
+            input_positioners = h5Read[
+                f"{scan_group_path(sample, dataset, scanNumber)}/instrument/positioners"
+            ]
+            assert isinstance(input_positioners, h5py.Group)
             for i, positioner in enumerate(positioners):
-                pos_data = h5Read[
-                    f"{sample}_{dataset}_{scanNumber}.1/instrument/positioners/{positioner}"
-                ][()]
+                if positioner not in input_positioners:
+                    raise KeyError(
+                        f"{positioner} was not found in input positioners! Possible values: {input_positioners.keys()}"
+                    )
+                pos_data = input_positioners[positioner][()]
                 positionersGroup.create_dataset(
                     positioner,
                     dtype="float64",
@@ -77,17 +84,9 @@ def fitEDD(
         )  ## save raw data of the vertical detector
 
         for k in range(nDetectorPoints):
-            fitParams = {"horizontal": np.array(()), "vertical": np.array(())}
-            uncertaintyFitParams = {
-                "horizontal": np.array(()),
-                "vertical": np.array(()),
-            }
             pointInScan = fitGroup.create_group(
                 f"{str(k).zfill(4)}"
             )  ## create a group of each pattern (point of the scan)
-            fitParamsGroup = pointInScan.create_group(
-                "fitParams"
-            )  ## fit results group for the two detector
             fitParams, uncertaintyFitParams = fit_and_save_all_peaks(
                 nbPeaksInBoxes,
                 rangeFit={"horizontal": rangeFitHD, "vertical": rangeFitVD},
@@ -103,6 +102,7 @@ def fitEDD(
                 group_format=lambda i: f"fitLine_{str(i).zfill(4)}",
             )
 
+            fitParamsGroup = pointInScan.create_group("fitParams")
             (
                 savedFitParamsHD,
                 savedFitParamsVD,
