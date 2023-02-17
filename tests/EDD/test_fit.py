@@ -23,7 +23,6 @@ def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
         "nameHorizontalDetector": "horz_detector",
         "nameVerticalDetector": "vert_detector",
         "positioners": positioners,
-        "numberOfBoxes": len(nb_peaks_in_boxes),
         "nbPeaksInBoxes": nb_peaks_in_boxes,
         "rangeFitHD": fit_ranges_h,
         "rangeFitVD": fit_ranges_v,

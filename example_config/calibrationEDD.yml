@@ -7,7 +7,6 @@ scanNumberHorizontalDetector: '66'
 scanNumberVerticalDetector: '65'
 nameHorizontalDetector: 'mca2_det0'
 nameVerticalDetector: 'mca2_det1'
-numberOfBoxes: 4
 nbPeaksInBoxes: [1, 2, 1, 1]
 rangeFit: [620, 780, 1020, 1120, 3500, 3800, 3850, 4090]
 sourceCalibrantFile: '/home/esrf/slim/easistrain/easistrain/EDD/BaSource'

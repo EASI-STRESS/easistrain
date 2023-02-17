@@ -7,7 +7,6 @@ scanNumber: '50'
 nameHorizontalDetector: 'mca2_det0'
 nameVerticalDetector: 'mca2_det1'
 positioners: ['ex', 'ey', 'ez', 'ephi', 'echi', 'sry']
-numberOfBoxes: 2
 nbPeaksInBoxes: [1, 2]
 rangeFitHD: [1320, 1620, 1600, 2000]
 rangeFitVD: [1300, 1650, 1620, 2000]

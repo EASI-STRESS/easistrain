@@ -5,7 +5,6 @@ dataset: '0001'
 scanNumber: '5'
 nameHorizontalDetector: 'mca2_det0'
 nameVerticalDetector: 'mca2_det1'
-numberOfBoxes: 7
 nbPeaksInBoxes: [1, 2, 3, 1, 2, 2, 1]
 rangeFitHD:
   [425, 560, 640, 810, 790, 980, 950, 1100, 1070, 1250, 1220, 1420, 1370, 1500]
