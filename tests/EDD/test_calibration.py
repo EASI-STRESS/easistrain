@@ -26,7 +26,6 @@ def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
         "scanNumberVerticalDetector": 1,
         "nameHorizontalDetector": "horz_detector",
         "nameVerticalDetector": "vert_detector",
-        "numberOfBoxes": len(nb_peaks_in_boxes),
         "nbPeaksInBoxes": nb_peaks_in_boxes,
         "rangeFit": fit_ranges,
         "sourceCalibrantFile": str(HERE.parent.parent / "Calibrants" / "BaSource"),

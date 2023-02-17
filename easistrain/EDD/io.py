@@ -18,7 +18,6 @@ def create_info_group(
     dataset: Union[str, int, None],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
-    numberOfBoxes: int,
     nbPeaksInBoxes: Sequence[int],
 ):
     infoGroup = root.create_group("infos")  ## infos group creation
@@ -49,9 +48,6 @@ def create_info_group(
         data=nameVerticalDetector,
     )  ## save of the name of the vertical detector in infos group
     infoGroup.create_dataset(
-        "numberOfBoxes", dtype="int", data=numberOfBoxes
-    )  ## save of the number of the boxes/widows extracted from the raw data in infos group
-    infoGroup.create_dataset(
         "nbPeaksInBoxes", dtype="int", data=nbPeaksInBoxes
     )  ## save of the number of peaks per box/window in infos group
     infoGroup.create_dataset(
@@ -71,7 +67,6 @@ def create_calib_info_group(
     dataset: Union[str, int, None],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
-    numberOfBoxes: int,
     nbPeaksInBoxes: Sequence[int],
     scanNumberHorizontalDetector: Union[str, int],
     scanNumberVerticalDetector: Union[str, int],
@@ -86,7 +81,6 @@ def create_calib_info_group(
         dataset,
         nameHorizontalDetector,
         nameVerticalDetector,
-        numberOfBoxes,
         nbPeaksInBoxes,
     )
     infoGroup.create_dataset(
@@ -119,7 +113,6 @@ def create_angle_calib_info_group(
     dataset: Union[str, int, None],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
-    numberOfBoxes: int,
     nbPeaksInBoxes: Sequence[int],
     rangeFitHD: Sequence[int],
     rangeFitVD: Sequence[int],
@@ -132,7 +125,6 @@ def create_angle_calib_info_group(
         dataset,
         nameHorizontalDetector,
         nameVerticalDetector,
-        numberOfBoxes,
         nbPeaksInBoxes,
     )
     infoGroup.create_dataset(
@@ -154,7 +146,6 @@ def create_fit_info_group(
     scanNumber: Union[str, int],
     nameHorizontalDetector: str,
     nameVerticalDetector: str,
-    numberOfBoxes: int,
     nbPeaksInBoxes: Sequence[int],
     rangeFitHD: Sequence[int],
     rangeFitVD: Sequence[int],
@@ -168,7 +159,6 @@ def create_fit_info_group(
         dataset,
         nameHorizontalDetector,
         nameVerticalDetector,
-        numberOfBoxes,
         nbPeaksInBoxes,
     )
     infoGroup.create_dataset(
