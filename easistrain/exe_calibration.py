@@ -1,13 +1,17 @@
-from func_get_image_matrix import *
-from func_save_edf_image import *
-from func_generate_mask import *
-import numpy as np
+import os
 import sys
+import numpy
+from .func_get_image_matrix import get_image_matrix
+from .func_save_edf_image import save_edf_image
+from .func_generate_mask import mask
 
-### This routine appy three function:
-### 1) get_image_matrix: gets the matrix of the calibration image from h5 file
-### 2) save_edf_image: saves the calibration
-### 3) mask: generates a mask for the image and saves it in the sae folder of the calibration image
+"""
+This script executes three functions:
+
+    1) get_image_matrix: gets the matrix of the calibration image from h5 file
+    2) save_edf_image: saves the calibration
+    3) mask: generates a mask for the image and saves it in the sae folder of the calibration image
+"""
 
 if (
     len(sys.argv) != 10
@@ -23,18 +27,14 @@ else:
         sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
     )  ### Usage of the get_image_matrix function (see function)
     print("#### image matrix OK")
-    print("dimension of the matirx image =" + str(np.shape(image_matrix)))
+    print("dimension of the matirx image =" + str(numpy.shape(image_matrix)))
     save_edf_image(
         sys.argv[5], sys.argv[6], sys.argv[7], image_matrix
     )  ### Usage of the function save_edf_image to save the calibration image
     print(
         "#### The calibrant image was saved in edf format in:"
         + " "
-        + sys.argv[5]
-        + "/"
-        + sys.argv[6]
-        + "."
-        + sys.argv[7]
+        + os.path.join(sys.argv[5], sys.argv[6] + "." + sys.argv[7])
     )
     mask(
         sys.argv[5],
@@ -48,12 +48,7 @@ else:
     print(
         "#### The mask for the calibrant image was saved in:"
         + " "
-        + sys.argv[5]
-        + "/"
-        + sys.argv[6]
-        + "_mask"
-        + "."
-        + sys.argv[7]
+        + os.pwth.join(sys.argv[5], sys.argv[6] + "_mask" + "." + sys.argv[7])
     )
 
 print("#### Now we will quit python and let you do the calibration")

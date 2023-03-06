@@ -1,4 +1,3 @@
-from ewokscore import Task
 from ewokscore import load_graph
 
 

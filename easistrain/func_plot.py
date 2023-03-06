@@ -6,12 +6,12 @@ Created on Thu May 20 20:08:49 2021
 """
 
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy
 
 
 def showplot(x, y, xlabel, ylabel, pt, legend, name, title):
     plt.figure(num=name, figsize=(10, 8))
-    for i in range(np.shape(x)[0]):
+    for i in range(numpy.shape(x)[0]):
         plt.plot(x[i], y[i], pt, label=legend[i])
     plt.xlabel(xlabel, family="sans-serif", fontsize=28)
     plt.ylabel(ylabel, family="sans-serif", fontsize=28)
@@ -22,7 +22,6 @@ def showplot(x, y, xlabel, ylabel, pt, legend, name, title):
     plt.title(title, fontsize=30)
     plt.savefig(name, dpi=200)
     plt.close()
-    return
 
 
 # def saveplot(x,y,path)

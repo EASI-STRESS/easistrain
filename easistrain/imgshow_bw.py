@@ -1,12 +1,13 @@
 #!/usr/bin/python3
-
+"""
+usage : python imgshow.py image_file.edf [max_int_value]
+"""
 
 import pylab
 import fabio
 import numpy
 import sys
 
-### usage : python imgshow.py image_file.edf [max_int_value]
 img = fabio.open(sys.argv[1])
 pixels = img.data
 maxpixels = numpy.amax(pixels)

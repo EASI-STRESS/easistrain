@@ -1,42 +1,48 @@
-import numpy as np
+import numpy
 
 
 def diffVector(angles, e11, e22, e33, e23, e13, e12):
-    phi = np.radians(angles[:, 0])
-    chi = np.radians(angles[:, 1])
-    omega = np.radians(angles[:, 2])
-    theta = np.radians(angles[:, 3])
-    delta = np.radians(angles[:, 4])
+    phi = numpy.radians(angles[:, 0])
+    chi = numpy.radians(angles[:, 1])
+    omega = numpy.radians(angles[:, 2])
+    theta = numpy.radians(angles[:, 3])
+    delta = numpy.radians(angles[:, 4])
     q1 = (
-        (np.cos(theta) * np.cos(chi) * np.sin(delta) * np.sin(phi))
+        (numpy.cos(theta) * numpy.cos(chi) * numpy.sin(delta) * numpy.sin(phi))
         + (
-            np.cos(delta)
-            * np.cos(theta)
+            numpy.cos(delta)
+            * numpy.cos(theta)
             * (
-                (np.cos(phi) * np.sin(omega))
-                - (np.cos(omega) * np.sin(phi) * np.sin(chi))
+                (numpy.cos(phi) * numpy.sin(omega))
+                - (numpy.cos(omega) * numpy.sin(phi) * numpy.sin(chi))
             )
         )
-        - np.sin(theta)
-        * ((np.cos(phi) * np.cos(omega)) + (np.sin(phi) * np.sin(chi) * np.sin(omega)))
+        - numpy.sin(theta)
+        * (
+            (numpy.cos(phi) * numpy.cos(omega))
+            + (numpy.sin(phi) * numpy.sin(chi) * numpy.sin(omega))
+        )
     )
     q2 = (
-        np.cos(delta)
-        * np.cos(theta)
-        * ((np.cos(phi) * np.cos(omega) * np.sin(chi)) + (np.sin(phi) * np.sin(omega)))
-        - (np.cos(theta) * np.cos(phi) * np.cos(chi) * np.sin(delta))
+        numpy.cos(delta)
+        * numpy.cos(theta)
+        * (
+            (numpy.cos(phi) * numpy.cos(omega) * numpy.sin(chi))
+            + (numpy.sin(phi) * numpy.sin(omega))
+        )
+        - (numpy.cos(theta) * numpy.cos(phi) * numpy.cos(chi) * numpy.sin(delta))
         - (
-            np.sin(theta)
+            numpy.sin(theta)
             * (
-                (np.cos(omega) * np.sin(phi))
-                - (np.cos(phi) * np.sin(chi) * np.sin(omega))
+                (numpy.cos(omega) * numpy.sin(phi))
+                - (numpy.cos(phi) * numpy.sin(chi) * numpy.sin(omega))
             )
         )
     )
     q3 = (
-        (np.cos(delta) * np.cos(theta) * np.cos(chi) * np.cos(omega))
-        + (np.cos(theta) * np.sin(delta) * np.sin(chi))
-        + (np.cos(chi) * np.sin(theta) * np.sin(omega))
+        (numpy.cos(delta) * numpy.cos(theta) * numpy.cos(chi) * numpy.cos(omega))
+        + (numpy.cos(theta) * numpy.sin(delta) * numpy.sin(chi))
+        + (numpy.cos(chi) * numpy.sin(theta) * numpy.sin(omega))
     )
     defDirMeas = (
         (e11 * q1**2)
@@ -50,41 +56,47 @@ def diffVector(angles, e11, e22, e33, e23, e13, e12):
 
 
 def deforDirMeas(angles, e11, e22, e33, e23, e13, e12):
-    phi = np.radians(angles[:, 0])
-    chi = np.radians(angles[:, 1])
-    omega = np.radians(angles[:, 2])
-    theta = np.radians(angles[:, 3])
-    delta = np.radians(angles[:, 4])
+    phi = numpy.radians(angles[:, 0])
+    chi = numpy.radians(angles[:, 1])
+    omega = numpy.radians(angles[:, 2])
+    theta = numpy.radians(angles[:, 3])
+    delta = numpy.radians(angles[:, 4])
     q1 = (
-        (np.cos(theta) * np.cos(chi) * np.sin(delta) * np.sin(phi))
+        (numpy.cos(theta) * numpy.cos(chi) * numpy.sin(delta) * numpy.sin(phi))
         + (
-            np.cos(delta)
-            * np.cos(theta)
+            numpy.cos(delta)
+            * numpy.cos(theta)
             * (
-                (np.cos(phi) * np.sin(omega))
-                - (np.cos(omega) * np.sin(phi) * np.sin(chi))
+                (numpy.cos(phi) * numpy.sin(omega))
+                - (numpy.cos(omega) * numpy.sin(phi) * numpy.sin(chi))
             )
         )
-        - np.sin(theta)
-        * ((np.cos(phi) * np.cos(omega)) + (np.sin(phi) * np.sin(chi) * np.sin(omega)))
+        - numpy.sin(theta)
+        * (
+            (numpy.cos(phi) * numpy.cos(omega))
+            + (numpy.sin(phi) * numpy.sin(chi) * numpy.sin(omega))
+        )
     )
     q2 = (
-        np.cos(delta)
-        * np.cos(theta)
-        * ((np.cos(phi) * np.cos(omega) * np.sin(chi)) + (np.sin(phi) * np.sin(omega)))
-        - (np.cos(theta) * np.cos(phi) * np.cos(chi) * np.sin(delta))
+        numpy.cos(delta)
+        * numpy.cos(theta)
+        * (
+            (numpy.cos(phi) * numpy.cos(omega) * numpy.sin(chi))
+            + (numpy.sin(phi) * numpy.sin(omega))
+        )
+        - (numpy.cos(theta) * numpy.cos(phi) * numpy.cos(chi) * numpy.sin(delta))
         - (
-            np.sin(theta)
+            numpy.sin(theta)
             * (
-                (np.cos(omega) * np.sin(phi))
-                - (np.cos(phi) * np.sin(chi) * np.sin(omega))
+                (numpy.cos(omega) * numpy.sin(phi))
+                - (numpy.cos(phi) * numpy.sin(chi) * numpy.sin(omega))
             )
         )
     )
     q3 = (
-        (np.cos(delta) * np.cos(theta) * np.cos(chi) * np.cos(omega))
-        + (np.cos(theta) * np.sin(delta) * np.sin(chi))
-        + (np.cos(chi) * np.sin(theta) * np.sin(omega))
+        (numpy.cos(delta) * numpy.cos(theta) * numpy.cos(chi) * numpy.cos(omega))
+        + (numpy.cos(theta) * numpy.sin(delta) * numpy.sin(chi))
+        + (numpy.cos(chi) * numpy.sin(theta) * numpy.sin(omega))
     )
     defDirMeas = (
         (e11 * q1**2)

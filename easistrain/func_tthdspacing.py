@@ -5,7 +5,7 @@ Created on Thu May 20 09:24:46 2021
 @author: slim
 """
 
-import numpy as np
+import numpy
 
 # This function calculte the d-spacing of a plane of a cubic structure
 # a is the lattice parameter of the structure in micron
@@ -14,8 +14,8 @@ import numpy as np
 
 
 def cubicdspacing(e, a, h, k, l):
-    d = a / (np.sqrt((h**2) + (k**2) + (l**2)))
-    theta = np.arcsin(0.0012398 / (2 * e * d))
+    d = a / (numpy.sqrt((h**2) + (k**2) + (l**2)))
+    theta = numpy.arcsin(0.0012398 / (2 * e * d))
     return d, theta
 
 
@@ -26,9 +26,9 @@ def cubicdspacing(e, a, h, k, l):
 
 
 def hexdspacing(e, a, c, h, k, l):
-    d = np.sqrt(
+    d = numpy.sqrt(
         1
         / ((4 / 3) * (((h**2) + h * k + (k**2)) / (a**2)) + ((l**2) / (c**2)))
     )
-    theta = np.arcsin(0.0012398 / (2 * e * d))
+    theta = numpy.arcsin(0.0012398 / (2 * e * d))
     return d, theta

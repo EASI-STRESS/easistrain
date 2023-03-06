@@ -2,7 +2,7 @@ from typing import Callable, Dict, Sequence, Union
 from typing_extensions import Literal
 
 import h5py
-import numpy as np
+import numpy
 
 from easistrain.EDD.io import save_fit_data, save_fit_params
 from easistrain.EDD.utils import fit_detector_data
@@ -15,15 +15,15 @@ DETECTORS: Sequence[Detector] = ["horizontal", "vertical"]
 def fit_all_peaks_and_save_results(
     nbPeaksInBoxes: Sequence[int],
     rangeFit: Dict[Detector, Sequence[int]],
-    patterns: Dict[Detector, np.ndarray],
+    patterns: Dict[Detector, numpy.ndarray],
     scanNumbers: Dict[Detector, Union[str, int]],
     saving_dest: h5py.Group,
     group_format: Callable[[int], str],
 ):
-    fitParams = {"horizontal": np.array(()), "vertical": np.array(())}
+    fitParams = {"horizontal": numpy.array(()), "vertical": numpy.array(())}
     uncertaintyFitParams = {
-        "horizontal": np.array(()),
-        "vertical": np.array(()),
+        "horizontal": numpy.array(()),
+        "vertical": numpy.array(()),
     }
     for i, nb_peaks in enumerate(nbPeaksInBoxes):
         fit_line_group = saving_dest.create_group(
@@ -36,9 +36,9 @@ def fit_all_peaks_and_save_results(
                 rangeFit[detector][2 * i + 1],
             )
             scanNumber = scanNumbers[detector]
-            channels = np.arange(fit_min, fit_max)
+            channels = numpy.arange(fit_min, fit_max)
             raw_data = patterns[detector][fit_min:fit_max]
-            assert isinstance(raw_data, np.ndarray)
+            assert isinstance(raw_data, numpy.ndarray)
 
             (
                 background,
@@ -59,8 +59,8 @@ def fit_all_peaks_and_save_results(
             )
 
             # Accumulate fit parameters of this box
-            fitParams[detector] = np.append(fitParams[detector], boxFitParams)
-            uncertaintyFitParams[detector] = np.append(
+            fitParams[detector] = numpy.append(fitParams[detector], boxFitParams)
+            uncertaintyFitParams[detector] = numpy.append(
                 uncertaintyFitParams[detector], uncertaintyBoxFitParams
             )
 
