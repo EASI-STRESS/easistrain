@@ -19,7 +19,7 @@ def run_from_cli(f: Callable):
 
     config = read_config_file(args.config_file)
     f(**config)
-    print("Program finished !")
+    print(f"Data processing step '{f.__name__}' finished !")
 
 
 def linefunc(a, xData):
