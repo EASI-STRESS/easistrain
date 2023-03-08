@@ -1,10 +1,15 @@
+import os
 from typing import Sequence
+
 import numpy
 import h5py
+
 from easistrain.EDD.utils import run_from_cli
 
 
 def regroupPoints(fileRead: Sequence[str], fileSave: str, numberOfPeaks: int):
+    if os.path.dirname(fileSave):
+        os.makedirs(os.path.dirname(fileSave), exist_ok=True)
     with h5py.File(fileSave, "a") as h5Save:  ## create/append h5 file to save in
         rowsInAll = 0
         for fileR in fileRead:

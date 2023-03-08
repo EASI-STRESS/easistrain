@@ -1,4 +1,6 @@
+import os
 from typing import Sequence
+
 import numpy
 import h5py
 
@@ -51,6 +53,8 @@ def preStraind0cstEDD(
     numberOfPeaks: int,
     d0: Sequence[float],
 ):
+    if os.path.dirname(fileSave):
+        os.makedirs(os.path.dirname(fileSave), exist_ok=True)
     with h5py.File(fileSave, "a") as h5Save:  ## create/append h5 file to save in
         strainGroupWithd0 = h5Save.create_group(
             "STRAIN_with_d0"

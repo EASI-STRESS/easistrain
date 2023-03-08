@@ -125,6 +125,9 @@ else:
 print(azim_range, rad_range)
 print(type(azim_range), type(rad_range))
 
+if os.path.dirname(root_data):
+    os.makedirs(os.path.dirname(root_data), exist_ok=True)
+
 with open(os.path.join(root_data, "exe_integration.log"), "w") as fwlog:
     fwlog.write("INTEGRATION 2D LOG FILE\n")
     fwlog.write("Date and time : " + str(datetime.now()) + "\n")
