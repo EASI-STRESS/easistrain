@@ -29,10 +29,14 @@ def angleCalibrationEDD(
 
     patternHorizontalDetector = read_detector_pattern(
         fileRead, sample, dataset, scanNumber, nameHorizontalDetector
-    )[0]
+    )
     patternVerticalDetector = read_detector_pattern(
         fileRead, sample, dataset, scanNumber, nameVerticalDetector
-    )[0]
+    )
+    if patternHorizontalDetector.ndim == 2:
+        patternHorizontalDetector = patternHorizontalDetector[0]
+    if patternVerticalDetector.ndim == 2:
+        patternVerticalDetector = patternVerticalDetector[0]
 
     with h5py.File(fileSave, "a") as h5Save:  ## create/append h5 file to save in
         if "angleCalibration" not in h5Save.keys():
