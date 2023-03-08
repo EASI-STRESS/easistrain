@@ -1,5 +1,4 @@
-from func_fitting_peaks import *
-import numpy as np
+from . import func_fitting_peaks
 import sys
 import time
 
@@ -11,7 +10,7 @@ if len(sys.argv) != 11 or sys.argv[1] == "help":
     )
 else:
     print("\n\n#*#*#*#*#*#*#*#*#* Fitting procedure started #*#*#*#*#*#*#*#*#*#*#*\n\n")
-    fit(
+    func_fitting_peaks.fit(
         sys.argv[1],
         sys.argv[2],
         sys.argv[3],
@@ -29,7 +28,7 @@ else:
     print(
         "\n\n#*#*#*#*#*#*#*#*#* Cleaning procedure started #*#*#*#*#*#*#*#*#*#*#*\n\n"
     )
-    clean_fit(
+    func_fitting_peaks.clean_fit(
         sys.argv[1],
         sys.argv[2],
         sys.argv[3],

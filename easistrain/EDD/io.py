@@ -1,13 +1,13 @@
 from typing import Dict, Optional, Sequence, Union
 import h5py
-import numpy as np
+import numpy
 
 
 nxchar = h5py.special_dtype(vlen=str)
 
 
-def as_nxchar(s: Union[str, Sequence[str]]) -> np.ndarray:
-    return np.array(s, dtype=nxchar)
+def as_nxchar(s: Union[str, Sequence[str]]) -> numpy.ndarray:
+    return numpy.array(s, dtype=nxchar)
 
 
 def create_info_group(
@@ -178,7 +178,10 @@ def create_fit_info_group(
 
 
 def peak_dataset_data(
-    positionAngles: np.ndarray, savedPeakFitParams: np.ndarray, delta_angle: float, nacq
+    positionAngles: numpy.ndarray,
+    savedPeakFitParams: numpy.ndarray,
+    delta_angle: float,
+    nacq,
 ):
     return [
         *positionAngles[nacq, 0:6],
@@ -202,10 +205,10 @@ def peak_dataset_data(
 def save_fit_data(
     fitLine: h5py.Group,
     detectorName: str,
-    channels: np.ndarray,
-    raw_data: np.ndarray,
-    background: np.ndarray,
-    fitted_data: np.ndarray,
+    channels: numpy.ndarray,
+    raw_data: numpy.ndarray,
+    background: numpy.ndarray,
+    fitted_data: numpy.ndarray,
 ):
     detectorGroup = fitLine.create_group(detectorName)
     detectorGroup.create_dataset(
@@ -236,7 +239,7 @@ def save_fit_data(
     detectorGroup.create_dataset(
         "residual",
         dtype="float64",
-        data=np.absolute(fitted_data - raw_data),
+        data=numpy.absolute(fitted_data - raw_data),
     )
 
     # NeXus
@@ -283,20 +286,20 @@ def read_detector_pattern(
 
 def save_fit_params(
     parent: h5py.Group,
-    fitParams: Dict[str, np.ndarray],
-    uncertaintyFitParams: Dict[str, np.ndarray],
+    fitParams: Dict[str, numpy.ndarray],
+    uncertaintyFitParams: Dict[str, numpy.ndarray],
 ):
-    savedFitParamsHD = np.reshape(
-        fitParams["horizontal"], (int(np.size(fitParams["horizontal"]) / 6), 6)
+    savedFitParamsHD = numpy.reshape(
+        fitParams["horizontal"], (int(numpy.size(fitParams["horizontal"]) / 6), 6)
     )
     parent.create_dataset(
         "fitParamsHD",
         dtype="float64",
         data=savedFitParamsHD,
     )  ## save parameters of the fit of HD
-    savedUncertaintyFitParamsHD = np.reshape(
+    savedUncertaintyFitParamsHD = numpy.reshape(
         uncertaintyFitParams["horizontal"],
-        (int(np.size(uncertaintyFitParams["horizontal"]) / 5), 5),
+        (int(numpy.size(uncertaintyFitParams["horizontal"]) / 5), 5),
     )
     parent.create_dataset(
         "uncertaintyFitParamsHD",
@@ -304,17 +307,17 @@ def save_fit_params(
         data=savedUncertaintyFitParamsHD,
     )  ## save uncertainty on the parameters of the fit of HD
 
-    savedFitParamsVD = np.reshape(
-        fitParams["vertical"], (int(np.size(fitParams["vertical"]) / 6), 6)
+    savedFitParamsVD = numpy.reshape(
+        fitParams["vertical"], (int(numpy.size(fitParams["vertical"]) / 6), 6)
     )
     parent.create_dataset(
         "fitParamsVD",
         dtype="float64",
         data=savedFitParamsVD,
     )  ## save parameters of the fit of VD
-    savedUncertaintyFitParamsVD = np.reshape(
+    savedUncertaintyFitParamsVD = numpy.reshape(
         uncertaintyFitParams["vertical"],
-        (int(np.size(uncertaintyFitParams["vertical"]) / 5), 5),
+        (int(numpy.size(uncertaintyFitParams["vertical"]) / 5), 5),
     )
     parent.create_dataset(
         "uncertaintyFitParamsVD",

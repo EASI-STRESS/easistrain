@@ -1,19 +1,19 @@
-import numpy as np
+import numpy
 
 
-def angles_to_rad(angles: np.ndarray):
-    rad_angles = np.radians(angles)
+def angles_to_rad(angles: numpy.ndarray):
+    rad_angles = numpy.radians(angles)
     # Convert 2*theta in theta
     rad_angles[..., 4] = 0.5 * rad_angles[..., 4]
 
     # phi, chi, omega, delta, 2*theta as columns
-    return np.transpose(rad_angles)
+    return numpy.transpose(rad_angles)
 
 
-def compute_qs(angles: np.ndarray):
+def compute_qs(angles: numpy.ndarray):
     rad_angles = angles_to_rad(angles)
-    cos_phi, cos_chi, cos_omega, cos_delta, cos_theta = np.cos(rad_angles)
-    sin_phi, sin_chi, sin_omega, sin_delta, sin_theta = np.sin(rad_angles)
+    cos_phi, cos_chi, cos_omega, cos_delta, cos_theta = numpy.cos(rad_angles)
+    sin_phi, sin_chi, sin_omega, sin_delta, sin_theta = numpy.sin(rad_angles)
     q1 = (
         (cos_theta * cos_chi * sin_delta * sin_phi)
         + (

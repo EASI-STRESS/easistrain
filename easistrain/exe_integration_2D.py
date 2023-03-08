@@ -1,9 +1,9 @@
-from func_integration_2D import *
-import numpy as np
+import os
 import sys
 import time
 import configparser
 from datetime import datetime
+from .func_integration_2D import integration_2D
 
 # time0 = time.time()
 
@@ -125,59 +125,58 @@ else:
 print(azim_range, rad_range)
 print(type(azim_range), type(rad_range))
 
-fwlog = open(root_data + "/" + "exe_integration.log", "w")
-fwlog.write("INTEGRATION 2D LOG FILE\n")
-fwlog.write("Date and time : " + str(datetime.now()) + "\n")
-fwlog.close
-falog = open(root_data + "/" + "exe_integration.log", "a")
-falog.write("#$#$#$#$#$#$#The arguments used for the integration are below: \n")
-falog.write("root_data = " + root_data + "\n")
-falog.write("h5file = " + h5file + "\n")
-falog.write("scan = " + scan + "\n")
-falog.write("(numScanStart,numScanEnd) = (" + str(numScan) + ")\n")
-falog.write("detector_name = " + detector_name + "\n")
-falog.write("poni_file = " + poni_file + "\n")
-falog.write("npt_rad = " + npt_rad + "\n")
-falog.write("npt_azim = " + npt_azim + "\n")
-falog.write("x_unit = " + x_unit + "\n")
-falog.write("im_dark = " + str(im_dark) + "\n")
-falog.write("im_mask = " + str(im_mask) + "\n")
-falog.write("(rad_rangeStart,rad_rangeEnd) = (" + str(rad_range) + "\n")
-falog.write("(azim_rangeStart,azim_rangeEnd) = (" + str(azim_range) + "\n")
-falog.write("errorModel = " + str(errorModel) + "\n")
-falog.write("imFlat = " + str(imFlat) + "\n")
-falog.write("gon1 = " + str(gon1) + "\n")
-falog.write("gon2 = " + str(gon2) + "\n")
-falog.write("gon3 = " + str(gon3) + "\n")
-falog.write("chiGon1 = " + str(chiGon1) + "\n")
-falog.write("omegaGon2 = " + str(omegaGon2) + "\n")
-falog.write("phiGon3 = " + str(phiGon3) + "\n")
-falog.write("************____________________________________**************\n")
+with open(os.path.join(root_data, "exe_integration.log"), "w") as fwlog:
+    fwlog.write("INTEGRATION 2D LOG FILE\n")
+    fwlog.write("Date and time : " + str(datetime.now()) + "\n")
 
-integration_2D(
-    root_data,
-    h5file,
-    scan,
-    numScan,
-    detector_name,
-    poni_file,
-    npt_rad,
-    npt_azim,
-    x_unit,
-    im_dark,
-    im_mask,
-    rad_range,
-    azim_range,
-    errorModel,
-    imFlat,
-    gon1,
-    gon2,
-    gon3,
-    chiGon1,
-    omegaGon2,
-    phiGon3,
-)
-time1 = time.time()
-print("total time: " + str(time1 - time0) + " seconds")
-falog.write("total time: " + str(time1 - time0) + " seconds\n")
-falog.close
+with open(os.path.join(root_data, "exe_integration.log"), "a") as falog:
+    falog.write("#$#$#$#$#$#$#The arguments used for the integration are below: \n")
+    falog.write("root_data = " + root_data + "\n")
+    falog.write("h5file = " + h5file + "\n")
+    falog.write("scan = " + scan + "\n")
+    falog.write("(numScanStart,numScanEnd) = (" + str(numScan) + ")\n")
+    falog.write("detector_name = " + detector_name + "\n")
+    falog.write("poni_file = " + poni_file + "\n")
+    falog.write("npt_rad = " + npt_rad + "\n")
+    falog.write("npt_azim = " + npt_azim + "\n")
+    falog.write("x_unit = " + x_unit + "\n")
+    falog.write("im_dark = " + str(im_dark) + "\n")
+    falog.write("im_mask = " + str(im_mask) + "\n")
+    falog.write("(rad_rangeStart,rad_rangeEnd) = (" + str(rad_range) + "\n")
+    falog.write("(azim_rangeStart,azim_rangeEnd) = (" + str(azim_range) + "\n")
+    falog.write("errorModel = " + str(errorModel) + "\n")
+    falog.write("imFlat = " + str(imFlat) + "\n")
+    falog.write("gon1 = " + str(gon1) + "\n")
+    falog.write("gon2 = " + str(gon2) + "\n")
+    falog.write("gon3 = " + str(gon3) + "\n")
+    falog.write("chiGon1 = " + str(chiGon1) + "\n")
+    falog.write("omegaGon2 = " + str(omegaGon2) + "\n")
+    falog.write("phiGon3 = " + str(phiGon3) + "\n")
+    falog.write("************____________________________________**************\n")
+
+    integration_2D(
+        root_data,
+        h5file,
+        scan,
+        numScan,
+        detector_name,
+        poni_file,
+        npt_rad,
+        npt_azim,
+        x_unit,
+        im_dark,
+        im_mask,
+        rad_range,
+        azim_range,
+        errorModel,
+        imFlat,
+        gon1,
+        gon2,
+        gon3,
+        chiGon1,
+        omegaGon2,
+        phiGon3,
+    )
+    time1 = time.time()
+    print("total time: " + str(time1 - time0) + " seconds")
+    falog.write("total time: " + str(time1 - time0) + " seconds\n")

@@ -1,5 +1,4 @@
-from func_lattice_d_spacing_param import *
-import numpy as np
+from .func_lattice_d_spacing_param import lattice_param
 import sys
 import time
 

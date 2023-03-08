@@ -5,30 +5,28 @@ Created on Wed May 26 17:29:11 2021
 @author: slim
 """
 
-import numpy as np
-from tthdspacing import *
-from conicalslit import *
-from plot import *
+import numpy
+from .func_tthdspacing import cubicdspacing
+from .func_conicalslit import slitradius, lengthgv
+from .func_plot import plt, showplot
 
 # Units of the different quantities
-### energy = keV
-### distance = micron
-### angle =rad
-###
+#  energy = keV
+#  distance = micron
+#  angle =rad
 
-energy = np.linspace(50, 150, 10000)  # energy (keV) of x-rays
-
-# The function 'bccslit' is for a BCC structure (just put the desired lattice parameter, ap)
-
-# Definition of the different quantities needed for calculation
-# ap = 0.0002855 # lattice parameter of the desired BCC structure
-# sddistance = 1000000 # slit to detector distance, sddistance
-# slitopening = 25 # the slit opening
-# beamsize = 50 # the size of the used beam
-# pixelsize = 200 # the pixel size of the used detector
+energy = numpy.linspace(50, 150, 10000)  # energy (keV) of x-rays
 
 
 def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
+    """For a BCC structure (just put the desired lattice parameter, ap)
+
+    :param ap: lattice parameter of the desired BCC structure
+    :param sddistance:slit to detector distance, sddistance
+    :param slitopening: the slit opening
+    :param beamsize: the size of the used beam
+    :param pixelsize: the pixel size of the used detector
+    """
     # Calculation of d-spacing and bragg angle theta
     d110, tth110 = cubicdspacing(energy, ap, 1, 1, 0)
     d200, tth200 = cubicdspacing(energy, ap, 2, 0, 0)
@@ -38,65 +36,65 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
     d222, tth222 = cubicdspacing(energy, ap, 2, 2, 2)
     d321, tth321 = cubicdspacing(energy, ap, 3, 2, 1)
     d400, tth400 = cubicdspacing(energy, ap, 4, 0, 0)
-    ### radius of the slit at the 110 peak ###
+    # ---- radius of the slit at the 110 peak ----
     sltr11050 = slitradius(ap, 50000, tth110)
     sltr11060 = slitradius(ap, 60000, tth110)
     sltr11070 = slitradius(ap, 70000, tth110)
     sltr11080 = slitradius(ap, 80000, tth110)
     sltr11090 = slitradius(ap, 90000, tth110)
     sltr110100 = slitradius(ap, 100000, tth110)
-    ### radius of the slit at the 200 peak ###
+    # ---- radius of the slit at the 200 peak ----
     sltr20050 = slitradius(ap, 50000, tth200)
     sltr20060 = slitradius(ap, 60000, tth200)
     sltr20070 = slitradius(ap, 70000, tth200)
     sltr20080 = slitradius(ap, 80000, tth200)
     sltr20090 = slitradius(ap, 90000, tth200)
     sltr200100 = slitradius(ap, 100000, tth200)
-    ### radius of the slit at the 211 peak ###
+    # ---- radius of the slit at the 211 peak ----
     sltr21150 = slitradius(ap, 50000, tth211)
     sltr21160 = slitradius(ap, 60000, tth211)
     sltr21170 = slitradius(ap, 70000, tth211)
     sltr21180 = slitradius(ap, 80000, tth211)
     sltr21190 = slitradius(ap, 90000, tth211)
     sltr211100 = slitradius(ap, 100000, tth211)
-    ### radius of the slit at the 220 peak ###
+    # ---- radius of the slit at the 220 peak ----
     sltr22050 = slitradius(ap, 50000, tth220)
     sltr22060 = slitradius(ap, 60000, tth220)
     sltr22070 = slitradius(ap, 70000, tth220)
     sltr22080 = slitradius(ap, 80000, tth220)
     sltr22090 = slitradius(ap, 90000, tth220)
     sltr220100 = slitradius(ap, 100000, tth220)
-    ### radius of the slit at the 310 peak ###
+    # ---- radius of the slit at the 310 peak ----
     sltr31050 = slitradius(ap, 50000, tth310)
     sltr31060 = slitradius(ap, 60000, tth310)
     sltr31070 = slitradius(ap, 70000, tth310)
     sltr31080 = slitradius(ap, 80000, tth310)
     sltr31090 = slitradius(ap, 90000, tth310)
     sltr310100 = slitradius(ap, 100000, tth310)
-    ### radius of the slit at the 222 peak ###
+    # ---- radius of the slit at the 222 peak ----
     sltr22250 = slitradius(ap, 50000, tth222)
     sltr22260 = slitradius(ap, 60000, tth222)
     sltr22270 = slitradius(ap, 70000, tth222)
     sltr22280 = slitradius(ap, 80000, tth222)
     sltr22290 = slitradius(ap, 90000, tth222)
     sltr222100 = slitradius(ap, 100000, tth222)
-    ### radius of the slit at the 321 peak ###
+    # ---- radius of the slit at the 321 peak ----
     sltr32150 = slitradius(ap, 50000, tth321)
     sltr32160 = slitradius(ap, 60000, tth321)
     sltr32170 = slitradius(ap, 70000, tth321)
     sltr32180 = slitradius(ap, 80000, tth321)
     sltr32190 = slitradius(ap, 90000, tth321)
     sltr321100 = slitradius(ap, 100000, tth321)
-    ### radius of the slit at the 400 peak ###
+    # ---- radius of the slit at the 400 peak ----
     sltr40050 = slitradius(ap, 50000, tth400)
     sltr40060 = slitradius(ap, 60000, tth400)
     sltr40070 = slitradius(ap, 70000, tth400)
     sltr40080 = slitradius(ap, 80000, tth400)
     sltr40090 = slitradius(ap, 90000, tth400)
     sltr400100 = slitradius(ap, 100000, tth400)
-    ### Plotting of the radius for the 110 peak ###
-    horaxis01 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis01 = np.array(
+    # ---- Plotting of the radius for the 110 peak ----
+    horaxis01 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis01 = numpy.array(
         [
             0.001 * sltr11050,
             0.001 * sltr11060,
@@ -106,7 +104,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr110100,
         ]
     )
-    legends01 = np.array(
+    legends01 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -126,9 +124,9 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC (110)",
         title + " (110)",
     )
-    ### Plotting of the radius for the 200 peak ###
-    horaxis02 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis02 = np.array(
+    # ---- Plotting of the radius for the 200 peak ----
+    horaxis02 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis02 = numpy.array(
         [
             0.001 * sltr20050,
             0.001 * sltr20060,
@@ -138,7 +136,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr200100,
         ]
     )
-    legends02 = np.array(
+    legends02 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -158,9 +156,9 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC (200)",
         title + " (200)",
     )
-    ### Plotting of the radius for the 211 peak ###
-    horaxis03 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis03 = np.array(
+    # ---- Plotting of the radius for the 211 peak ----
+    horaxis03 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis03 = numpy.array(
         [
             0.001 * sltr21150,
             0.001 * sltr21160,
@@ -170,7 +168,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr211100,
         ]
     )
-    legends03 = np.array(
+    legends03 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -190,9 +188,9 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC (211)",
         title + " (211)",
     )
-    ### Plotting of the radius for the 220 peak ###
-    horaxis04 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis04 = np.array(
+    # ---- Plotting of the radius for the 220 peak ----
+    horaxis04 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis04 = numpy.array(
         [
             0.001 * sltr22050,
             0.001 * sltr22060,
@@ -202,7 +200,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr220100,
         ]
     )
-    legends04 = np.array(
+    legends04 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -222,9 +220,9 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC (220)",
         title + " (220)",
     )
-    ### Plotting of the radius for the 310 peak ###
-    horaxis05 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis05 = np.array(
+    # ---- Plotting of the radius for the 310 peak ----
+    horaxis05 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis05 = numpy.array(
         [
             0.001 * sltr31050,
             0.001 * sltr31060,
@@ -234,7 +232,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr310100,
         ]
     )
-    legends05 = np.array(
+    legends05 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -254,9 +252,9 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC (310)",
         title + " (310)",
     )
-    ### Plotting of the radius for the 222 peak ###
-    horaxis06 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis06 = np.array(
+    # ---- Plotting of the radius for the 222 peak ----
+    horaxis06 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis06 = numpy.array(
         [
             0.001 * sltr22250,
             0.001 * sltr22260,
@@ -266,7 +264,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr222100,
         ]
     )
-    legends06 = np.array(
+    legends06 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -286,9 +284,9 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC (222)",
         title + " (222)",
     )
-    ### Plotting of the radius for the 321 peak ###
-    horaxis07 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis07 = np.array(
+    # ---- Plotting of the radius for the 321 peak ----
+    horaxis07 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis07 = numpy.array(
         [
             0.001 * sltr32150,
             0.001 * sltr32160,
@@ -298,7 +296,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr321100,
         ]
     )
-    legends07 = np.array(
+    legends07 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -318,9 +316,9 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC (321)",
         title + " (321)",
     )
-    ### Plotting of the radius for the 400 peak ###
-    horaxis08 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis08 = np.array(
+    # ---- Plotting of the radius for the 400 peak ----
+    horaxis08 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis08 = numpy.array(
         [
             0.001 * sltr40050,
             0.001 * sltr40060,
@@ -330,7 +328,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr400100,
         ]
     )
-    legends08 = np.array(
+    legends08 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -350,66 +348,68 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC (400)",
         title + " (400)",
     )
-    ## Gauge volume length of the 110 peak ####
+    # ---- Gauge volume length of the 110 peak ----
     gvl11050 = lengthgv(tth110, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl11060 = lengthgv(tth110, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl11070 = lengthgv(tth110, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl11080 = lengthgv(tth110, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl11090 = lengthgv(tth110, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl110100 = lengthgv(tth110, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Gauge volume length of the 200 peak ####
+    # ---- Gauge volume length of the 200 peak ----
     gvl20050 = lengthgv(tth200, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl20060 = lengthgv(tth200, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl20070 = lengthgv(tth200, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl20080 = lengthgv(tth200, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl20090 = lengthgv(tth200, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl200100 = lengthgv(tth200, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Gauge volume length of the 211 peak ####
+    # ---- Gauge volume length of the 211 peak ----
     gvl21150 = lengthgv(tth211, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl21160 = lengthgv(tth211, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl21170 = lengthgv(tth211, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl21180 = lengthgv(tth211, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl21190 = lengthgv(tth211, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl211100 = lengthgv(tth211, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Gauge volume length of the 220 peak ####
+    # ---- Gauge volume length of the 220 peak ----
     gvl22050 = lengthgv(tth220, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl22060 = lengthgv(tth220, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl22070 = lengthgv(tth220, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl22080 = lengthgv(tth220, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl22090 = lengthgv(tth220, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl220100 = lengthgv(tth220, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Gauge volume length of the 310 peak ####
+    # ---- Gauge volume length of the 310 peak ----
     gvl31050 = lengthgv(tth310, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl31060 = lengthgv(tth310, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl31070 = lengthgv(tth310, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl31080 = lengthgv(tth310, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl31090 = lengthgv(tth310, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl310100 = lengthgv(tth310, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Gauge volume length of the 222 peak ####
+    # ---- Gauge volume length of the 222 peak ----
     gvl22250 = lengthgv(tth222, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl22260 = lengthgv(tth222, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl22270 = lengthgv(tth222, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl22280 = lengthgv(tth222, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl22290 = lengthgv(tth222, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl222100 = lengthgv(tth222, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Gauge volume length of the 321 peak ####
+    # ---- Gauge volume length of the 321 peak ----
     gvl32150 = lengthgv(tth321, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl32160 = lengthgv(tth321, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl32170 = lengthgv(tth321, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl32180 = lengthgv(tth321, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl32190 = lengthgv(tth321, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl321100 = lengthgv(tth321, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Gauge volume length of the 400 peak ####
+    # ---- Gauge volume length of the 400 peak ----
     gvl40050 = lengthgv(tth400, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl40060 = lengthgv(tth400, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl40070 = lengthgv(tth400, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl40080 = lengthgv(tth400, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl40090 = lengthgv(tth400, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl400100 = lengthgv(tth400, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Plotting of the gauge volume length for the 110 peak ###
-    horaxis11 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis11 = np.array([gvl11050, gvl11060, gvl11070, gvl11080, gvl11090, gvl110100])
-    legends11 = np.array(
+    # ---- Plotting of the gauge volume length for the 110 peak ----
+    horaxis11 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis11 = numpy.array(
+        [gvl11050, gvl11060, gvl11070, gvl11080, gvl11090, gvl110100]
+    )
+    legends11 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -429,10 +429,12 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC (110)",
         title + " (110)",
     )
-    ### Plotting of the gauge volume length for the 200 peak ###
-    horaxis12 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis12 = np.array([gvl20050, gvl20060, gvl20070, gvl20080, gvl20090, gvl200100])
-    legends12 = np.array(
+    # ---- Plotting of the gauge volume length for the 200 peak ----
+    horaxis12 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis12 = numpy.array(
+        [gvl20050, gvl20060, gvl20070, gvl20080, gvl20090, gvl200100]
+    )
+    legends12 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -452,10 +454,12 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC (200)",
         title + " (200)",
     )
-    ### Plotting of the gauge volume length for the 211 peak ###
-    horaxis13 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis13 = np.array([gvl21150, gvl21160, gvl21170, gvl21180, gvl21190, gvl211100])
-    legends13 = np.array(
+    # ---- Plotting of the gauge volume length for the 211 peak ----
+    horaxis13 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis13 = numpy.array(
+        [gvl21150, gvl21160, gvl21170, gvl21180, gvl21190, gvl211100]
+    )
+    legends13 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -475,10 +479,12 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC (211)",
         title + "(211)",
     )
-    ### Plotting of the gauge volume length for the 220 peak ###
-    horaxis14 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis14 = np.array([gvl22050, gvl22060, gvl22070, gvl22080, gvl22090, gvl220100])
-    legends14 = np.array(
+    # ---- Plotting of the gauge volume length for the 220 peak ----
+    horaxis14 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis14 = numpy.array(
+        [gvl22050, gvl22060, gvl22070, gvl22080, gvl22090, gvl220100]
+    )
+    legends14 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -498,10 +504,12 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC (220)",
         title + " (220)",
     )
-    ### Plotting of the gauge volume length for the 310 peak ###
-    horaxis15 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis15 = np.array([gvl31050, gvl31060, gvl31070, gvl31080, gvl31090, gvl310100])
-    legends15 = np.array(
+    # ---- Plotting of the gauge volume length for the 310 peak ----
+    horaxis15 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis15 = numpy.array(
+        [gvl31050, gvl31060, gvl31070, gvl31080, gvl31090, gvl310100]
+    )
+    legends15 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -521,10 +529,12 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC (310)",
         title + " (310)",
     )
-    ### Plotting of the gauge volume length for the 222 peak ###
-    horaxis16 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis16 = np.array([gvl22250, gvl22260, gvl22270, gvl22280, gvl22290, gvl222100])
-    legends16 = np.array(
+    # ---- Plotting of the gauge volume length for the 222 peak ----
+    horaxis16 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis16 = numpy.array(
+        [gvl22250, gvl22260, gvl22270, gvl22280, gvl22290, gvl222100]
+    )
+    legends16 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -544,10 +554,12 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC (222)",
         title + "(222)",
     )
-    ### Plotting of the gauge volume length for the 321 peak ###
-    horaxis17 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis17 = np.array([gvl32150, gvl32160, gvl32170, gvl32180, gvl32190, gvl321100])
-    legends17 = np.array(
+    # ---- Plotting of the gauge volume length for the 321 peak ----
+    horaxis17 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis17 = numpy.array(
+        [gvl32150, gvl32160, gvl32170, gvl32180, gvl32190, gvl321100]
+    )
+    legends17 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -567,10 +579,12 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC (321)",
         title + " (321)",
     )
-    ### Plotting of the gauge volume length for the 400 peak ###
-    horaxis18 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis18 = np.array([gvl40050, gvl40060, gvl40070, gvl40080, gvl40090, gvl400100])
-    legends18 = np.array(
+    # ---- Plotting of the gauge volume length for the 400 peak ----
+    horaxis18 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis18 = numpy.array(
+        [gvl40050, gvl40060, gvl40070, gvl40080, gvl40090, gvl400100]
+    )
+    legends18 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -590,11 +604,11 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC (400)",
         title + " (400)",
     )
-    ### Plotting of the radius of all planes for one slit to sample distance
-    horaxis09 = np.array(
+    # ---- Plotting of the radius of all planes for one slit to sample distance
+    horaxis09 = numpy.array(
         [energy, energy, energy, energy, energy, energy, energy, energy]
     )
-    veraxis09 = np.array(
+    veraxis09 = numpy.array(
         [
             0.001 * sltr110100,
             0.001 * sltr200100,
@@ -606,7 +620,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr400100,
         ]
     )
-    legends09 = np.array(
+    legends09 = numpy.array(
         ["(110)", "(200)", "(211)", "(220)", "(310)", "(222)", "(321)", "(400)"]
     )
     showplot(
@@ -619,11 +633,11 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_BCC_lss100mm",
         title,
     )
-    ### Plotting of the length of the gauge volume of all planes for one slit to sample distance
-    horaxis19 = np.array(
+    # ---- Plotting of the length of the gauge volume of all planes for one slit to sample distance
+    horaxis19 = numpy.array(
         [energy, energy, energy, energy, energy, energy, energy, energy]
     )
-    veraxis19 = np.array(
+    veraxis19 = numpy.array(
         [
             gvl110100,
             gvl200100,
@@ -635,7 +649,7 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             gvl400100,
         ]
     )
-    legends19 = np.array(
+    legends19 = numpy.array(
         ["(110)", "(200)", "(211)", "(220)", "(310)", "(222)", "(321)", "(400)"]
     )
     showplot(
@@ -648,11 +662,17 @@ def bccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_BCC_lss100mm",
         title,
     )
-    return
 
 
-### fcc structure
 def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
+    """For an FCC structure
+
+    :param ap: lattice parameter of the desired BCC structure
+    :param sddistance:slit to detector distance, sddistance
+    :param slitopening: the slit opening
+    :param beamsize: the size of the used beam
+    :param pixelsize: the pixel size of the used detector
+    """
     # Calculation of d-spacing and bragg angle theta
     d111, tth111 = cubicdspacing(energy, ap, 1, 1, 1)
     d200, tth200 = cubicdspacing(energy, ap, 2, 0, 0)
@@ -663,72 +683,72 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
     d331, tth331 = cubicdspacing(energy, ap, 3, 3, 1)
     d420, tth420 = cubicdspacing(energy, ap, 4, 2, 0)
     d422, tth422 = cubicdspacing(energy, ap, 4, 2, 2)
-    ### radius of the slit at the 111 peak ###
+    # ---- radius of the slit at the 111 peak ----
     sltr11150 = slitradius(ap, 50000, tth111)
     sltr11160 = slitradius(ap, 60000, tth111)
     sltr11170 = slitradius(ap, 70000, tth111)
     sltr11180 = slitradius(ap, 80000, tth111)
     sltr11190 = slitradius(ap, 90000, tth111)
     sltr111100 = slitradius(ap, 100000, tth111)
-    ### radius of the slit at the 200 peak ###
+    # ---- radius of the slit at the 200 peak ----
     sltr20050 = slitradius(ap, 50000, tth200)
     sltr20060 = slitradius(ap, 60000, tth200)
     sltr20070 = slitradius(ap, 70000, tth200)
     sltr20080 = slitradius(ap, 80000, tth200)
     sltr20090 = slitradius(ap, 90000, tth200)
     sltr200100 = slitradius(ap, 100000, tth200)
-    ### radius of the slit at the 220 peak ###
+    # ---- radius of the slit at the 220 peak ----
     sltr22050 = slitradius(ap, 50000, tth220)
     sltr22060 = slitradius(ap, 60000, tth220)
     sltr22070 = slitradius(ap, 70000, tth220)
     sltr22080 = slitradius(ap, 80000, tth220)
     sltr22090 = slitradius(ap, 90000, tth220)
     sltr220100 = slitradius(ap, 100000, tth220)
-    ### radius of the slit at the 311 peak ###
+    # ---- radius of the slit at the 311 peak ----
     sltr31150 = slitradius(ap, 50000, tth311)
     sltr31160 = slitradius(ap, 60000, tth311)
     sltr31170 = slitradius(ap, 70000, tth311)
     sltr31180 = slitradius(ap, 80000, tth311)
     sltr31190 = slitradius(ap, 90000, tth311)
     sltr311100 = slitradius(ap, 100000, tth311)
-    ### radius of the slit at the 222 peak ###
+    # ---- radius of the slit at the 222 peak ----
     sltr22250 = slitradius(ap, 50000, tth222)
     sltr22260 = slitradius(ap, 60000, tth222)
     sltr22270 = slitradius(ap, 70000, tth222)
     sltr22280 = slitradius(ap, 80000, tth222)
     sltr22290 = slitradius(ap, 90000, tth222)
     sltr222100 = slitradius(ap, 100000, tth222)
-    ### radius of the slit at the 311 peak ###
+    # ---- radius of the slit at the 311 peak ----
     sltr40050 = slitradius(ap, 50000, tth400)
     sltr40060 = slitradius(ap, 60000, tth400)
     sltr40070 = slitradius(ap, 70000, tth400)
     sltr40080 = slitradius(ap, 80000, tth400)
     sltr40090 = slitradius(ap, 90000, tth400)
     sltr400100 = slitradius(ap, 100000, tth400)
-    ### radius of the slit at the 331 peak ###
+    # ---- radius of the slit at the 331 peak ----
     sltr33150 = slitradius(ap, 50000, tth331)
     sltr33160 = slitradius(ap, 60000, tth331)
     sltr33170 = slitradius(ap, 70000, tth331)
     sltr33180 = slitradius(ap, 80000, tth331)
     sltr33190 = slitradius(ap, 90000, tth331)
     sltr331100 = slitradius(ap, 100000, tth331)
-    ### radius of the slit at the 420 peak ###
+    # ---- radius of the slit at the 420 peak ----
     sltr42050 = slitradius(ap, 50000, tth420)
     sltr42060 = slitradius(ap, 60000, tth420)
     sltr42070 = slitradius(ap, 70000, tth420)
     sltr42080 = slitradius(ap, 80000, tth420)
     sltr42090 = slitradius(ap, 90000, tth420)
     sltr420100 = slitradius(ap, 100000, tth420)
-    ### radius of the slit at the 422 peak ###
+    # ---- radius of the slit at the 422 peak ----
     sltr42250 = slitradius(ap, 50000, tth422)
     sltr42260 = slitradius(ap, 60000, tth422)
     sltr42270 = slitradius(ap, 70000, tth422)
     sltr42280 = slitradius(ap, 80000, tth422)
     sltr42290 = slitradius(ap, 90000, tth422)
     sltr422100 = slitradius(ap, 100000, tth422)
-    ### Plotting of the radius for the 111 peak ###
-    horaxis21 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis21 = np.array(
+    # ---- Plotting of the radius for the 111 peak ----
+    horaxis21 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis21 = numpy.array(
         [
             0.001 * sltr11150,
             0.001 * sltr11160,
@@ -738,7 +758,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr111100,
         ]
     )
-    legends21 = np.array(
+    legends21 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -758,9 +778,9 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (111)",
         title + " (111)",
     )
-    ### Plotting of the radius for the 200 peak ###
-    horaxis22 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis22 = np.array(
+    # ---- Plotting of the radius for the 200 peak ----
+    horaxis22 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis22 = numpy.array(
         [
             0.001 * sltr20050,
             0.001 * sltr20060,
@@ -770,7 +790,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr200100,
         ]
     )
-    legends22 = np.array(
+    legends22 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -790,9 +810,9 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (200)",
         title + " (200)",
     )
-    ### Plotting of the radius for the 220 peak ###
-    horaxis23 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis23 = np.array(
+    # ---- Plotting of the radius for the 220 peak ----
+    horaxis23 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis23 = numpy.array(
         [
             0.001 * sltr22050,
             0.001 * sltr22060,
@@ -802,7 +822,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr220100,
         ]
     )
-    legends23 = np.array(
+    legends23 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -822,9 +842,9 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (220)",
         title + " (220)",
     )
-    ### Plotting of the radius for the 311 peak ###
-    horaxis24 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis24 = np.array(
+    # ---- Plotting of the radius for the 311 peak ----
+    horaxis24 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis24 = numpy.array(
         [
             0.001 * sltr31150,
             0.001 * sltr31160,
@@ -834,7 +854,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr311100,
         ]
     )
-    legends24 = np.array(
+    legends24 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -854,9 +874,9 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (311)",
         title + "(311)",
     )
-    ### Plotting of the radius for the 222 peak ###
-    horaxis25 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis25 = np.array(
+    # ---- Plotting of the radius for the 222 peak ----
+    horaxis25 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis25 = numpy.array(
         [
             0.001 * sltr22250,
             0.001 * sltr22260,
@@ -866,7 +886,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr222100,
         ]
     )
-    legends25 = np.array(
+    legends25 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -886,9 +906,9 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (222)",
         title + " (222)",
     )
-    ### Plotting of the radius for the 400 peak ###
-    horaxis26 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis26 = np.array(
+    # ---- Plotting of the radius for the 400 peak ----
+    horaxis26 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis26 = numpy.array(
         [
             0.001 * sltr40050,
             0.001 * sltr40060,
@@ -898,7 +918,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr400100,
         ]
     )
-    legends26 = np.array(
+    legends26 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -918,9 +938,9 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (400)",
         title + " (400)",
     )
-    ### Plotting of the radius for the 331 peak ###
-    horaxis27 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis27 = np.array(
+    # ---- Plotting of the radius for the 331 peak ----
+    horaxis27 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis27 = numpy.array(
         [
             0.001 * sltr33150,
             0.001 * sltr33160,
@@ -930,7 +950,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr331100,
         ]
     )
-    legends27 = np.array(
+    legends27 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -950,9 +970,9 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (331)",
         title + " (331)",
     )
-    ### Plotting of the radius for the 420 peak ###
-    horaxis28 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis28 = np.array(
+    # ---- Plotting of the radius for the 420 peak ----
+    horaxis28 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis28 = numpy.array(
         [
             0.001 * sltr42050,
             0.001 * sltr42060,
@@ -962,7 +982,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr420100,
         ]
     )
-    legends28 = np.array(
+    legends28 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -982,9 +1002,9 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (420)",
         title + " (420)",
     )
-    ### Plotting of the radius for the 422 peak ###
-    horaxis29 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis29 = np.array(
+    # ---- Plotting of the radius for the 422 peak ----
+    horaxis29 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis29 = numpy.array(
         [
             0.001 * sltr42250,
             0.001 * sltr42260,
@@ -994,7 +1014,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr422100,
         ]
     )
-    legends29 = np.array(
+    legends29 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1014,73 +1034,75 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC (422)",
         title + " (422)",
     )
-    ## Gauge volume length of the 111 peak ####
+    # ---- Gauge volume length of the 111 peak ----
     gvl11150 = lengthgv(tth111, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl11160 = lengthgv(tth111, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl11170 = lengthgv(tth111, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl11180 = lengthgv(tth111, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl11190 = lengthgv(tth111, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl111100 = lengthgv(tth111, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ## Gauge volume length of the 200 peak ####
+    # ---- Gauge volume length of the 200 peak ----
     gvl20050 = lengthgv(tth200, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl20060 = lengthgv(tth200, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl20070 = lengthgv(tth200, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl20080 = lengthgv(tth200, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl20090 = lengthgv(tth200, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl200100 = lengthgv(tth200, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ## Gauge volume length of the 220 peak ####
+    # ---- Gauge volume length of the 220 peak ----
     gvl22050 = lengthgv(tth220, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl22060 = lengthgv(tth220, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl22070 = lengthgv(tth220, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl22080 = lengthgv(tth220, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl22090 = lengthgv(tth220, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl220100 = lengthgv(tth220, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ## Gauge volume length of the 311 peak ####
+    # ---- Gauge volume length of the 311 peak ----
     gvl31150 = lengthgv(tth311, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl31160 = lengthgv(tth311, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl31170 = lengthgv(tth311, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl31180 = lengthgv(tth311, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl31190 = lengthgv(tth311, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl311100 = lengthgv(tth311, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ## Gauge volume length of the 222 peak ####
+    # ---- Gauge volume length of the 222 peak ----
     gvl22250 = lengthgv(tth222, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl22260 = lengthgv(tth222, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl22270 = lengthgv(tth222, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl22280 = lengthgv(tth222, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl22290 = lengthgv(tth222, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl222100 = lengthgv(tth222, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ## Gauge volume length of the 400 peak ####
+    # ---- Gauge volume length of the 400 peak ----
     gvl40050 = lengthgv(tth400, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl40060 = lengthgv(tth400, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl40070 = lengthgv(tth400, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl40080 = lengthgv(tth400, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl40090 = lengthgv(tth400, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl400100 = lengthgv(tth400, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ## Gauge volume length of the 331 peak ####
+    # ---- Gauge volume length of the 331 peak ----
     gvl33150 = lengthgv(tth331, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl33160 = lengthgv(tth331, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl33170 = lengthgv(tth331, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl33180 = lengthgv(tth331, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl33190 = lengthgv(tth331, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl331100 = lengthgv(tth331, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ## Gauge volume length of the 420 peak ####
+    # ---- Gauge volume length of the 420 peak ----
     gvl42050 = lengthgv(tth420, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl42060 = lengthgv(tth420, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl42070 = lengthgv(tth420, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl42080 = lengthgv(tth420, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl42090 = lengthgv(tth420, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl420100 = lengthgv(tth420, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ## Gauge volume length of the 422 peak ####
+    # ---- Gauge volume length of the 422 peak ----
     gvl42250 = lengthgv(tth422, 50000, sddistance, slitopening, beamsize, pixelsize)
     gvl42260 = lengthgv(tth422, 60000, sddistance, slitopening, beamsize, pixelsize)
     gvl42270 = lengthgv(tth422, 70000, sddistance, slitopening, beamsize, pixelsize)
     gvl42280 = lengthgv(tth422, 80000, sddistance, slitopening, beamsize, pixelsize)
     gvl42290 = lengthgv(tth422, 90000, sddistance, slitopening, beamsize, pixelsize)
     gvl422100 = lengthgv(tth422, 100000, sddistance, slitopening, beamsize, pixelsize)
-    ### Plotting of the gauge volume length for the 111 peak ###
-    horaxis31 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis31 = np.array([gvl11150, gvl11160, gvl11170, gvl11180, gvl11190, gvl111100])
-    legends31 = np.array(
+    # ---- Plotting of the gauge volume length for the 111 peak ----
+    horaxis31 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis31 = numpy.array(
+        [gvl11150, gvl11160, gvl11170, gvl11180, gvl11190, gvl111100]
+    )
+    legends31 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1100,10 +1122,12 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (111)",
         title + " (111)",
     )
-    ### Plotting of the gauge volume length for the 200 peak ###
-    horaxis32 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis32 = np.array([gvl20050, gvl20060, gvl20070, gvl20080, gvl20090, gvl200100])
-    legends32 = np.array(
+    # ---- Plotting of the gauge volume length for the 200 peak ----
+    horaxis32 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis32 = numpy.array(
+        [gvl20050, gvl20060, gvl20070, gvl20080, gvl20090, gvl200100]
+    )
+    legends32 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1123,10 +1147,12 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (200)",
         title + " (200)",
     )
-    ### Plotting of the gauge volume length for the 220 peak ###
-    horaxis33 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis33 = np.array([gvl22050, gvl22060, gvl22070, gvl22080, gvl22090, gvl220100])
-    legends33 = np.array(
+    # ---- Plotting of the gauge volume length for the 220 peak ----
+    horaxis33 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis33 = numpy.array(
+        [gvl22050, gvl22060, gvl22070, gvl22080, gvl22090, gvl220100]
+    )
+    legends33 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1146,10 +1172,12 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (220)",
         title + " (220)",
     )
-    ### Plotting of the gauge volume length for the 311 peak ###
-    horaxis34 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis34 = np.array([gvl31150, gvl31160, gvl31170, gvl31180, gvl31190, gvl311100])
-    legends34 = np.array(
+    # ---- Plotting of the gauge volume length for the 311 peak ----
+    horaxis34 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis34 = numpy.array(
+        [gvl31150, gvl31160, gvl31170, gvl31180, gvl31190, gvl311100]
+    )
+    legends34 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1169,10 +1197,12 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (311)",
         title + " (311)",
     )
-    ### Plotting of the gauge volume length for the 222 peak ###
-    horaxis35 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis35 = np.array([gvl22250, gvl22260, gvl22270, gvl22280, gvl22290, gvl222100])
-    legends35 = np.array(
+    # ---- Plotting of the gauge volume length for the 222 peak ----
+    horaxis35 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis35 = numpy.array(
+        [gvl22250, gvl22260, gvl22270, gvl22280, gvl22290, gvl222100]
+    )
+    legends35 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1192,10 +1222,12 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (222)",
         title + " (222)",
     )
-    ### Plotting of the gauge volume length for the 400 peak ###
-    horaxis36 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis36 = np.array([gvl40050, gvl40060, gvl40070, gvl40080, gvl40090, gvl400100])
-    legends36 = np.array(
+    # ---- Plotting of the gauge volume length for the 400 peak ----
+    horaxis36 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis36 = numpy.array(
+        [gvl40050, gvl40060, gvl40070, gvl40080, gvl40090, gvl400100]
+    )
+    legends36 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1215,10 +1247,12 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (400)",
         title + " (400)",
     )
-    ### Plotting of the gauge volume length for the 331 peak ###
-    horaxis37 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis37 = np.array([gvl33150, gvl33160, gvl33170, gvl33180, gvl33190, gvl331100])
-    legends37 = np.array(
+    # ---- Plotting of the gauge volume length for the 331 peak ----
+    horaxis37 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis37 = numpy.array(
+        [gvl33150, gvl33160, gvl33170, gvl33180, gvl33190, gvl331100]
+    )
+    legends37 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1238,10 +1272,12 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (331)",
         title + " (331)",
     )
-    ### Plotting of the gauge volume length for the 420 peak ###
-    horaxis38 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis38 = np.array([gvl42050, gvl42060, gvl42070, gvl42080, gvl42090, gvl420100])
-    legends38 = np.array(
+    # ---- Plotting of the gauge volume length for the 420 peak ----
+    horaxis38 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis38 = numpy.array(
+        [gvl42050, gvl42060, gvl42070, gvl42080, gvl42090, gvl420100]
+    )
+    legends38 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1261,10 +1297,12 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (420)",
         title + " (420)",
     )
-    ### Plotting of the gauge volume length for the 422 peak ###
-    horaxis39 = np.array([energy, energy, energy, energy, energy, energy])
-    veraxis39 = np.array([gvl42250, gvl42260, gvl42270, gvl42280, gvl42290, gvl422100])
-    legends39 = np.array(
+    # ---- Plotting of the gauge volume length for the 422 peak ----
+    horaxis39 = numpy.array([energy, energy, energy, energy, energy, energy])
+    veraxis39 = numpy.array(
+        [gvl42250, gvl42260, gvl42270, gvl42280, gvl42290, gvl422100]
+    )
+    legends39 = numpy.array(
         [
             "lss = 50 mm",
             "lss = 60 mm",
@@ -1284,11 +1322,11 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC (422)",
         title + " (422)",
     )
-    ### Plotting of the radius of all planes for one slit to sample distance
-    horaxis029 = np.array(
+    # ---- Plotting of the radius of all planes for one slit to sample distance
+    horaxis029 = numpy.array(
         [energy, energy, energy, energy, energy, energy, energy, energy, energy]
     )
-    veraxis029 = np.array(
+    veraxis029 = numpy.array(
         [
             0.001 * sltr111100,
             0.001 * sltr200100,
@@ -1301,7 +1339,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             0.001 * sltr422100,
         ]
     )
-    legends029 = np.array(
+    legends029 = numpy.array(
         [
             "(111)",
             "(200)",
@@ -1324,11 +1362,11 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "radius_FCC_lss100mm",
         title,
     )
-    ### Plotting of the gauge volume length of all planes for one slit to sample distance
-    horaxis029 = np.array(
+    # ---- Plotting of the gauge volume length of all planes for one slit to sample distance
+    horaxis029 = numpy.array(
         [energy, energy, energy, energy, energy, energy, energy, energy, energy]
     )
-    veraxis029 = np.array(
+    veraxis029 = numpy.array(
         [
             gvl111100,
             gvl200100,
@@ -1341,7 +1379,7 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
             gvl422100,
         ]
     )
-    legends029 = np.array(
+    legends029 = numpy.array(
         [
             "(111)",
             "(200)",
@@ -1364,21 +1402,20 @@ def fccslit(ap, sddistance, slitopening, beamsize, pixelsize, title):
         "gvl_FCC_lss100mm",
         title,
     )
-    return
 
 
-#### This function calculate the radius of the slit for a hkl plane
 def slitradiushkl(energy, ap, h, k, l, lss):
+    """calculate the radius of the slit for a hkl plane"""
     # Calculation of d-spacing and bragg angle theta
     d, tth = cubicdspacing(energy, ap, h, k, l)
-    ### radius of the slit at the 111 peak ###
+    # radius of the slit at the 111 peak
     sltrhkl = slitradius(ap, lss, tth)
     return sltrhkl
 
 
-#### This function plot the radius of two structures BCC and FCC
 def csFCCBCC(aBCC, aFCC, phasebcc, phasefcc, lss, title):
-    ### BCC structure ####
+    """plot the radius of two structures BCC and FCC"""
+    # ---- BCC structure ----
     dbcc110, tthbcc110 = cubicdspacing(energy, aBCC, 1, 1, 0)
     dbcc200, tthbcc200 = cubicdspacing(energy, aBCC, 2, 0, 0)
     dbcc211, tthbcc211 = cubicdspacing(energy, aBCC, 2, 1, 1)
@@ -1404,7 +1441,7 @@ def csFCCBCC(aBCC, aFCC, phasebcc, phasefcc, lss, title):
     plt.plot(energy, 0.001 * bcc222, "-", label=phasebcc + "(222)", linewidth=3)
     plt.plot(energy, 0.001 * bcc321, "-", label=phasebcc + "(321)", linewidth=3)
     plt.plot(energy, 0.001 * bcc400, "-", label=phasebcc + "(400)", linewidth=3)
-    ### FCC structure ###
+    # ---- FCC structure ----
     dfcc111, tthfcc111 = cubicdspacing(energy, aFCC, 1, 1, 1)
     dfcc200, tthfcc200 = cubicdspacing(energy, aFCC, 2, 0, 0)
     dfcc220, tthfcc220 = cubicdspacing(energy, aFCC, 2, 2, 0)
@@ -1432,7 +1469,7 @@ def csFCCBCC(aBCC, aFCC, phasebcc, phasefcc, lss, title):
     plt.plot(energy, 0.001 * fcc331, "-.", label=phasefcc + "(331)", linewidth=3)
     plt.plot(energy, 0.001 * fcc420, "-.", label=phasefcc + "(420)", linewidth=3)
     plt.plot(energy, 0.001 * fcc422, "-.", label=phasefcc + "(422)", linewidth=3)
-    ### PLOT ###
+    # ---- PLOT ----
     plt.xlabel("energy (keV)", family="sans-serif", fontsize=28)
     plt.ylabel("slit radius (mm)", family="sans-serif", fontsize=28)
     plt.xticks(fontsize=20)
@@ -1443,12 +1480,11 @@ def csFCCBCC(aBCC, aFCC, phasebcc, phasefcc, lss, title):
     plt.show()
     # plt.savefig(title,dpi=200)
     plt.close()
-    return
 
 
-#### This function plot the radius of two FCC structures
 def csFCCFCC(a1, a2, phase1, phase2, lss, title):
-    ### BCC structure ####
+    """plot the radius of two FCC structures"""
+    # ---- BCC structure ----
     d1fcc111, tth1fcc111 = cubicdspacing(energy, a1, 1, 1, 1)
     d1fcc200, tth1fcc200 = cubicdspacing(energy, a1, 2, 0, 0)
     d1fcc220, tth1fcc220 = cubicdspacing(energy, a1, 2, 2, 0)
@@ -1477,7 +1513,7 @@ def csFCCFCC(a1, a2, phase1, phase2, lss, title):
     plt.plot(energy, 0.001 * onefcc331, "-", label=phase1 + "(331)", linewidth=3)
     plt.plot(energy, 0.001 * onefcc420, "-", label=phase1 + "(420)", linewidth=3)
     plt.plot(energy, 0.001 * onefcc422, "-", label=phase1 + "(422)", linewidth=3)
-    ### FCC structure ###
+    # ---- FCC structure ----
     d2fcc111, tth2fcc111 = cubicdspacing(energy, a2, 1, 1, 1)
     d2fcc200, tth2fcc200 = cubicdspacing(energy, a2, 2, 0, 0)
     d2fcc220, tth2fcc220 = cubicdspacing(energy, a2, 2, 2, 0)
@@ -1505,7 +1541,7 @@ def csFCCFCC(a1, a2, phase1, phase2, lss, title):
     plt.plot(energy, 0.001 * twofcc331, "-.", label=phase2 + "(331)", linewidth=3)
     plt.plot(energy, 0.001 * twofcc420, "-.", label=phase2 + "(420)", linewidth=3)
     plt.plot(energy, 0.001 * twofcc422, "-.", label=phase2 + "(422)", linewidth=3)
-    ### PLOT ###
+    # ---- PLOT ----
     plt.xlabel("energy (keV)", family="sans-serif", fontsize=28)
     plt.ylabel("slit radius (mm)", family="sans-serif", fontsize=28)
     plt.xticks(fontsize=20)
@@ -1516,4 +1552,3 @@ def csFCCFCC(a1, a2, phase1, phase2, lss, title):
     plt.show()
     # plt.savefig(title,dpi=200)
     plt.close()
-    return

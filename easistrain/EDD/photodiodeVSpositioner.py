@@ -1,4 +1,4 @@
-import numpy as np
+import numpy
 import h5py
 import matplotlib.pyplot as plt
 
@@ -12,9 +12,9 @@ def plot1D(
     counterAfterSample,
     positioner,
 ):
-    xData = np.array(())
-    yData = np.array(())
-    secXData = np.array(())
+    xData = numpy.array(())
+    yData = numpy.array(())
+    secXData = numpy.array(())
     with h5py.File(
         fileRead, "r"
     ) as h5Read:  ## Read the h5 file of the energy calibration of the detectors
@@ -32,9 +32,9 @@ def plot1D(
                     f"{sample}_{str(dataset)}_{str(scanNumber)}.1/measurement/{counterBeforeSample}"
                 ][()]
             )  ## The data in the counter to put in the y axis
-            xData = np.append(xData, xDataUpdate)
-            yData = np.append(yData, yDataUpdate)
-            secXData = np.append(
+            xData = numpy.append(xData, xDataUpdate)
+            yData = numpy.append(yData, yDataUpdate)
+            secXData = numpy.append(
                 secXData, scanNumber
             )  ## The scanNumber to put in the axis of the second figure
     plt.figure(figsize=(10, 8))

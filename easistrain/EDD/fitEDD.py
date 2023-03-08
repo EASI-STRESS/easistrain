@@ -1,5 +1,5 @@
 from typing import Sequence, Optional, Union
-import numpy as np
+import numpy
 import h5py
 from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
 from easistrain.EDD.io import (
@@ -34,7 +34,8 @@ def fitEDD(
     )
 
     twoD_detector_data = (
-        np.ndim(patternHorizontalDetector) == 2 or np.ndim(patternVerticalDetector) == 2
+        numpy.ndim(patternHorizontalDetector) == 2
+        or numpy.ndim(patternVerticalDetector) == 2
     )
     nDetectorPoints = len(patternHorizontalDetector) if twoD_detector_data else 1
 
@@ -45,7 +46,7 @@ def fitEDD(
         positionersGroup = scanGroup.create_group(
             "positioners"
         )  ## positioners subgroup in scan group
-        positionAngles = np.zeros((nDetectorPoints, 6), "float64")
+        positionAngles = numpy.zeros((nDetectorPoints, 6), "float64")
         with h5py.File(fileRead, "r") as h5Read:
             input_positioners = h5Read[
                 f"{scan_group_path(sample, dataset, scanNumber)}/instrument/positioners"
@@ -106,17 +107,17 @@ def fitEDD(
                 group_format=lambda i: f"fitLine_{str(i).zfill(4)}",
             )
 
-            for peakNumber in range(np.sum(nbPeaksInBoxes)):
+            for peakNumber in range(numpy.sum(nbPeaksInBoxes)):
                 if f"peak_{str(peakNumber).zfill(4)}" not in tthPositionsGroup.keys():
                     peakDataset = tthPositionsGroup.create_dataset(
                         f"peak_{str(peakNumber).zfill(4)}",
                         dtype="float64",
-                        data=np.zeros((2 * nDetectorPoints, 13), "float64"),
+                        data=numpy.zeros((2 * nDetectorPoints, 13), "float64"),
                     )  ## create a dataset for each peak in tthPositionGroup
                     uncertaintyPeakDataset = tthPositionsGroup.create_dataset(
                         f"uncertaintyPeak_{str(peakNumber).zfill(4)}",
                         dtype="float64",
-                        data=np.zeros((2 * nDetectorPoints, 13), "float64"),
+                        data=numpy.zeros((2 * nDetectorPoints, 13), "float64"),
                     )  ## create a dataset for uncertainty for each peak in tthPositionGroup
                 else:
                     peakDataset = tthPositionsGroup[f"peak_{str(peakNumber).zfill(4)}"]

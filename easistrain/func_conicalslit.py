@@ -4,7 +4,7 @@ Created on Thu May 20 17:32:56 2021
 
 @author: slim
 """
-import numpy as np
+import numpy
 
 
 # This function determine the distance between the centre of the silt and the conical aperture
@@ -13,7 +13,7 @@ import numpy as np
 
 
 def slitradius(a, lss, tth):
-    r = lss * np.tan(2 * tth)
+    r = lss * numpy.tan(2 * tth)
     return r
 
 
@@ -28,9 +28,9 @@ def slitradius(a, lss, tth):
 # dpsd is the spatial resolution of the detector (pixel size)
 # The formula was extracted from the paper of Lienet et al [Lienert,Mat.Res.Soc.Symp.Proc,vol.590,2000]
 def lengthgv(tth, lss, lsd, dslit, dfoc, dpsd):
-    dss = lss / np.cos(2 * tth)
-    dsd = ((lss + lsd) / np.cos(2 * tth)) - dss
-    dpr = (1 / np.tan(2 * tth)) * np.sqrt(
+    dss = lss / numpy.cos(2 * tth)
+    dsd = ((lss + lsd) / numpy.cos(2 * tth)) - dss
+    dpr = (1 / numpy.tan(2 * tth)) * numpy.sqrt(
         ((((dss + dsd) * dslit) / dsd) ** 2) + (dfoc**2) + (((dss * dpsd) / dsd) ** 2)
     )
     return dpr
