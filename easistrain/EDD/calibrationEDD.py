@@ -7,7 +7,6 @@ import numpy
 from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
 from easistrain.EDD.io import create_calib_info_group, read_detector_pattern
 from easistrain.EDD.utils import run_from_cli
-from easistrain.calibrants import calibrant_filename
 
 
 def calibEdd(
@@ -21,9 +20,12 @@ def calibEdd(
     nameVerticalDetector: str,
     nbPeaksInBoxes: Sequence[int],
     rangeFit: Sequence[int],
-    sourceCalibrantFile: str,
+    peakEnergies: Sequence[int],
 ):
     """Energy calibration of the channels of an energy-dispersive detector (EDD)"""
+    nbPeaks = sum(nbPeaksInBoxes)
+    if nbPeaks != len(peakEnergies):
+        raise ValueError(f"Expected {nbPeaks} peak energies")
 
     patternHorizontalDetector = read_detector_pattern(
         fileRead, sample, dataset, scanNumberHorizontalDetector, nameHorizontalDetector
@@ -71,11 +73,11 @@ def calibEdd(
             scanNumberHorizontalDetector,
             scanNumberVerticalDetector,
             rangeFit,
-            sourceCalibrantFile,
+            peakEnergies,
         )
 
-        curveCalibrationHD = numpy.zeros((numpy.sum(nbPeaksInBoxes), 2), float)
-        curveCalibrationVD = numpy.zeros((numpy.sum(nbPeaksInBoxes), 2), float)
+        curveCalibrationHD = numpy.zeros((nbPeaks, 2), float)
+        curveCalibrationVD = numpy.zeros((nbPeaks, 2), float)
 
         fit_all_peaks_and_save_results(
             nbPeaksInBoxes,
@@ -99,17 +101,14 @@ def calibEdd(
             "verticalDetector", dtype="float64", data=patternVerticalDetector
         )  ## save raw data of the vertical detector
 
-        calibrantSource = numpy.loadtxt(
-            calibrant_filename(sourceCalibrantFile)
-        )  ## open source calibration text file
         curveCalibrationHD[:, 0] = fitLevel1_2["fitParams/fitParamsHD"][:, 1]
-        curveCalibrationHD[:, 1] = calibrantSource[: numpy.sum(nbPeaksInBoxes)]
+        curveCalibrationHD[:, 1] = peakEnergies
         ucurveCalibrationHD = fitLevel1_2["fitParams/uncertaintyFitParamsHD"][:, 1]
         fitLevel1_2["curveCalibration"].create_dataset(
             "curveCalibrationHD", dtype="float64", data=curveCalibrationHD
         )  ## curve energy VS channels for horizontal detector
         curveCalibrationVD[:, 0] = fitLevel1_2["fitParams/fitParamsVD"][:, 1]
-        curveCalibrationVD[:, 1] = calibrantSource[: numpy.sum(nbPeaksInBoxes)]
+        curveCalibrationVD[:, 1] = peakEnergies
         ucurveCalibrationVD = fitLevel1_2["fitParams/uncertaintyFitParamsVD"][:, 1]
         fitLevel1_2["curveCalibration"].create_dataset(
             "curveCalibrationVD", dtype="float64", data=curveCalibrationVD

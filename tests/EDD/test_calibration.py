@@ -12,11 +12,10 @@ def test_calib_edd(tmp_path: Path):
 
 
 def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
-    HERE = Path(__file__).parent.resolve()
-
     with h5py.File(test_data_path, "r") as test_file:
         nb_peaks_in_boxes = test_file["infos/nbPeaksInBoxes"][()]
         fit_ranges = test_file["infos/rangeFit"][()]
+        # TODO: peakEnergies should be here as well
     return {
         "fileRead": str(tmp_path / "input_file.h5"),
         "fileSave": str(tmp_path / "output_file.h5"),
@@ -28,7 +27,7 @@ def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
         "nameVerticalDetector": "vert_detector",
         "nbPeaksInBoxes": nb_peaks_in_boxes,
         "rangeFit": fit_ranges,
-        "sourceCalibrantFile": str(HERE.parent.parent / "Calibrants" / "BaSource"),
+        "peakEnergies": [53.161, 79.623, 80.998, 276.398, 302.853],
     }
 
 

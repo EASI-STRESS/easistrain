@@ -9,4 +9,4 @@ nameHorizontalDetector: 'mca2_det0'
 nameVerticalDetector: 'mca2_det1'
 nbPeaksInBoxes: [1, 2, 1, 1]
 rangeFit: [620, 780, 1020, 1120, 3500, 3800, 3850, 4090]
-sourceCalibrantFile: '/home/esrf/slim/easistrain/easistrain/EDD/BaSource'
+peakEnergies: [53.161, 79.623, 80.998, 276.398, 302.853]
