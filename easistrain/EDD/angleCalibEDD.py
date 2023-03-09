@@ -8,6 +8,7 @@ from easistrain.EDD.constants import pCstInkeVS, speedLightInAPerS
 from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
 from easistrain.EDD.io import create_angle_calib_info_group, read_detector_pattern
 from easistrain.EDD.utils import linefunc, run_from_cli, uChEConversion
+from easistrain.calibrants import calibrant_filename
 
 
 def angleCalibrationEDD(
@@ -118,7 +119,7 @@ def angleCalibrationEDD(
                 ()
             ]  ## import the uncertainty of the energy calibration coefficients of the vertical detector
         calibrantSample = numpy.loadtxt(
-            sampleCalibrantFile
+            calibrant_filename(sampleCalibrantFile)
         )  ## open source calibration text file
         conversionChannelEnergyHD = numpy.polyval(
             calibCoeffsHD, savedFitParamsHD[:, 1]

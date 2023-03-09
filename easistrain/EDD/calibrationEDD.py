@@ -3,8 +3,8 @@ import numpy
 from typing import Sequence, Union
 from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
 from easistrain.EDD.io import create_calib_info_group, read_detector_pattern
-
 from easistrain.EDD.utils import run_from_cli
+from easistrain.calibrants import calibrant_filename
 
 
 def calibEdd(
@@ -91,7 +91,7 @@ def calibEdd(
         )  ## save raw data of the vertical detector
 
         calibrantSource = numpy.loadtxt(
-            sourceCalibrantFile
+            calibrant_filename(sourceCalibrantFile)
         )  ## open source calibration text file
         curveCalibrationHD[:, 0] = fitLevel1_2["fitParams/fitParamsHD"][:, 1]
         curveCalibrationHD[:, 1] = calibrantSource[: numpy.sum(nbPeaksInBoxes)]

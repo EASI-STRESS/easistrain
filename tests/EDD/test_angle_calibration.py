@@ -5,8 +5,6 @@ from easistrain.EDD.angleCalibEDD import angleCalibrationEDD
 
 
 def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
-    HERE = Path(__file__).parent.resolve()
-
     with h5py.File(test_data_path, "r") as test_file:
         nb_peaks_in_boxes = test_file["infos/nbPeaksInBoxes"][()]
         fit_ranges_h = test_file["infos/rangeFitHD"][()]
@@ -24,7 +22,7 @@ def generate_config(tmp_path: Path, test_data_path: Union[Path, str]) -> dict:
         "rangeFitVD": fit_ranges_v,
         "pathFileDetectorCalibration": str(tmp_path / "calib.h5"),
         "scanDetectorCalibration": 5,
-        "sampleCalibrantFile": str(HERE.parent.parent / "Calibrants" / "TiC.d"),
+        "sampleCalibrantFile": "TiC.d",
     }
 
 
