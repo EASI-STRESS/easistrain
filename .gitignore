@@ -1,11 +1,17 @@
+# Hidden files
+.*
+!.gitignore
+!.gitlab-ci.yml
+!.readthedocs.yaml
+
+# Byte / compiled / optimized
 *.py[cod]
 __pycache__/
+*.so
 
+# Distribution / packaging
 /build/
+/dist/
 *.egg-info/
-.eggs/ 
-
-*.h5
-
-.vscode
-.pytest_cache
+.eggs/
+/doc/_generated
