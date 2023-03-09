@@ -1,7 +1,10 @@
+import os
 from typing import Sequence, Tuple
+
 import numpy
 import h5py
 import scipy.optimize
+
 from easistrain.EDD.math import compute_qs
 from easistrain.EDD.utils import run_from_cli
 
@@ -132,6 +135,8 @@ def strainStressTensor(
             f"XEC must have a length of numberOfPeaks*2 ({numberOfPeaks*2})"
         )
 
+    if os.path.dirname(fileSave):
+        os.makedirs(os.path.dirname(fileSave), exist_ok=True)
     with h5py.File(fileSave, "a") as h5Save:  ## create/append h5 file to save in
         with h5py.File(fileRead, "r") as h5Read:
             for peakNumber in range(numberOfPeaks):

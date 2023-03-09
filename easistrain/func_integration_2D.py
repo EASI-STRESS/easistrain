@@ -52,6 +52,8 @@ def integration_2D(
     :param azim_range: the range of azimuthal range (if we want to integrate just a portion of DS ring)
     """
     print(im_dark)
+    if root_data:
+        os.makedirs(root_data, exist_ok=True)
     with h5py.File(
         os.path.join(root_data, "Results" + "_" + h5file), "a"
     ) as fh5_save:  ### Create th file in which will be saved the results (integration, ...)

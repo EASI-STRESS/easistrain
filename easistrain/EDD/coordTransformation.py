@@ -1,4 +1,6 @@
+import os
 from typing import Sequence
+
 import h5py
 import numpy
 
@@ -64,6 +66,9 @@ def coordTransformation(
         gonioToSample[4],
         gonioToSample[5],
     )
+
+    if os.path.dirname(fileSave):
+        os.makedirs(os.path.dirname(fileSave), exist_ok=True)
     with h5py.File(fileSave, "a") as h5Save:  ## create/append h5 file to save in
         globalGroup = h5Save.create_group(
             "global",

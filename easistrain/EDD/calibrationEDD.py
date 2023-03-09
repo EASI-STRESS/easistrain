@@ -1,6 +1,9 @@
+import os
+from typing import Sequence, Union
+
 import h5py
 import numpy
-from typing import Sequence, Union
+
 from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
 from easistrain.EDD.io import create_calib_info_group, read_detector_pattern
 from easistrain.EDD.utils import run_from_cli
@@ -33,6 +36,8 @@ def calibEdd(
     if patternVerticalDetector.ndim == 2:
         patternVerticalDetector = patternVerticalDetector[0]
 
+    if os.path.dirname(fileSave):
+        os.makedirs(os.path.dirname(fileSave), exist_ok=True)
     with h5py.File(fileSave, "a") as h5Save:
         if "detectorCalibration" not in h5Save.keys():
             calibrationLevel1 = h5Save.create_group(

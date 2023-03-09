@@ -1,4 +1,6 @@
+import os
 from typing import Optional, Sequence, Union
+
 import h5py
 import numpy
 import scipy.optimize
@@ -39,6 +41,8 @@ def angleCalibrationEDD(
     if patternVerticalDetector.ndim == 2:
         patternVerticalDetector = patternVerticalDetector[0]
 
+    if os.path.dirname(fileSave):
+        os.makedirs(os.path.dirname(fileSave), exist_ok=True)
     with h5py.File(fileSave, "a") as h5Save:  ## create/append h5 file to save in
         if "angleCalibration" not in h5Save.keys():
             angleCalibrationLevel1 = h5Save.create_group(

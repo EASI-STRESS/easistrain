@@ -1,6 +1,9 @@
+import os
 from typing import Sequence, Optional, Union
+
 import numpy
 import h5py
+
 from easistrain.EDD.detector_fit import fit_all_peaks_and_save_results
 from easistrain.EDD.io import (
     create_fit_info_group,
@@ -39,6 +42,8 @@ def fitEDD(
     )
     nDetectorPoints = len(patternHorizontalDetector) if twoD_detector_data else 1
 
+    if os.path.dirname(fileSave):
+        os.makedirs(os.path.dirname(fileSave), exist_ok=True)
     with h5py.File(fileSave, "a") as h5Save:  ## Read the h5 file of raw data
         scanGroup = h5Save.create_group(
             f"{sample}_{dataset}_{scanNumber}.1"
