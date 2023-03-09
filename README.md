@@ -1,6 +1,6 @@
 # EasiStrain
 
-A Python project for strain/stress analysis.
+A Python library for strain/stress analysis from X-ray diffraction data.
 
 ## Installation
 
