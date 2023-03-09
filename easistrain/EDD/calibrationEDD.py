@@ -24,10 +24,14 @@ def calibEdd(
 
     patternHorizontalDetector = read_detector_pattern(
         fileRead, sample, dataset, scanNumberHorizontalDetector, nameHorizontalDetector
-    )[0]
+    )
     patternVerticalDetector = read_detector_pattern(
         fileRead, sample, dataset, scanNumberVerticalDetector, nameVerticalDetector
-    )[0]
+    )
+    if patternHorizontalDetector.ndim == 2:
+        patternHorizontalDetector = patternHorizontalDetector[0]
+    if patternVerticalDetector.ndim == 2:
+        patternVerticalDetector = patternVerticalDetector[0]
 
     with h5py.File(fileSave, "a") as h5Save:
         if "detectorCalibration" not in h5Save.keys():
