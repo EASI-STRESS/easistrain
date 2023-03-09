@@ -1,7 +1,7 @@
 Coordinate systems
 ==================
 
-This page defines the coordinate systems in which *easistrain* defines the scattering vector and .
+This page defines the coordinate systems in which *easistrain* defines the scattering vector.
 
 Sample reference frame
 ----------------------
@@ -22,7 +22,7 @@ Scattering vector and diffraction
 ---------------------------------
 
 The wave vector :math:`\vec{k}` of a beam indicates the beam direction. Its magnitude is defined
-to be proportional to the spatial frequence (inverse of the wavelength :math:`\lambda`)
+to be proportional to the spatial frequency (inverse of the wavelength :math:`\lambda`)
 
 .. math::
 
@@ -54,7 +54,7 @@ We define the normal vector :math:`\vec{n}_H` to a family of lattice planes :mat
 
    \| \vec{n}_H \|= \frac{1}{d_H}
 
-The scattered intensity from a crytal is maximal in the directions where the lattice planes fullfill the 
+The scattered intensity from a crystal is maximal in the directions where the lattice planes fulfill the 
 Laue conditions for diffraction
 
 .. math::
