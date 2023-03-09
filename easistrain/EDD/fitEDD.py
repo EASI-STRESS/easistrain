@@ -35,12 +35,9 @@ def fitEDD(
     patternVerticalDetector = read_detector_pattern(
         fileRead, sample, dataset, scanNumber, nameVerticalDetector
     )
-
-    twoD_detector_data = (
-        numpy.ndim(patternHorizontalDetector) == 2
-        or numpy.ndim(patternVerticalDetector) == 2
-    )
-    nDetectorPoints = len(patternHorizontalDetector) if twoD_detector_data else 1
+    patternHorizontalDetector = numpy.atleast_2d(patternHorizontalDetector)
+    patternVerticalDetector = numpy.atleast_2d(patternVerticalDetector)
+    nDetectorPoints = len(patternHorizontalDetector)
 
     if os.path.dirname(fileSave):
         os.makedirs(os.path.dirname(fileSave), exist_ok=True)
