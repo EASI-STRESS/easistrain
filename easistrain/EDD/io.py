@@ -71,7 +71,7 @@ def create_calib_info_group(
     scanNumberHorizontalDetector: Union[str, int],
     scanNumberVerticalDetector: Union[str, int],
     rangeFit: Sequence[int],
-    sourceCalibrantFile: str,
+    peakEnergies: Sequence[float],
 ):
     infoGroup = create_info_group(
         root,
@@ -85,21 +85,21 @@ def create_calib_info_group(
     )
     infoGroup.create_dataset(
         "scanNumberHorizontalDetector",
-        dtype=h5py.string_dtype(encoding="utf-8"),
-        data=str(scanNumberHorizontalDetector),
+        dtype=int,
+        data=int(scanNumberHorizontalDetector),
     )  ## save of the number of the scan containing the calibration pattern of the horizontal detector in infos group
     infoGroup.create_dataset(
         "scanNumberVerticalDetector",
-        dtype=h5py.string_dtype(encoding="utf-8"),
-        data=str(scanNumberVerticalDetector),
+        dtype=int,
+        data=int(scanNumberVerticalDetector),
     )  ## save of the number of the scan containing the calibration pattern of the vertical detector in info group
     infoGroup.create_dataset(
-        "rangeFit", dtype="int", data=rangeFit
+        "rangeFit", dtype=int, data=rangeFit
     )  ## save of the range of the fit of each box/window in infos group
     infoGroup.create_dataset(
-        "sourceCalibrantFile",
-        dtype=h5py.string_dtype(encoding="utf-8"),
-        data=sourceCalibrantFile,
+        "peakEnergies",
+        dtype=float,
+        data=peakEnergies,
     )  ## save of the path of the calibrant File in infos group
 
     return infoGroup

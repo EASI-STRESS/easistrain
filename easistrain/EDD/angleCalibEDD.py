@@ -29,6 +29,7 @@ def angleCalibrationEDD(
     sampleCalibrantFile: str,
 ):
     """Main function."""
+    nbPeaks = sum(nbPeaksInBoxes)
 
     patternHorizontalDetector = read_detector_pattern(
         fileRead, sample, dataset, scanNumber, nameHorizontalDetector
@@ -129,18 +130,23 @@ def angleCalibrationEDD(
         calibrantSample = numpy.loadtxt(
             calibrant_filename(sampleCalibrantFile)
         )  ## open source calibration text file
+        if len(calibrantSample) < nbPeaks:
+            raise ValueError(
+                f"d-spacing file {sampleCalibrantFile} should have at leasts {nbPeaks} peaks"
+            )
+
         conversionChannelEnergyHD = numpy.polyval(
             calibCoeffsHD, savedFitParamsHD[:, 1]
         )  ## conversion of the channel to energy for the horizontal detector
         conversionChannelEnergyVD = numpy.polyval(
             calibCoeffsVD, savedFitParamsVD[:, 1]
         )  ## conversion of the channel to energy for the vertical detector
-        curveAngleCalibrationHD[:, 0] = 1 / calibrantSample[: numpy.sum(nbPeaksInBoxes)]
+        curveAngleCalibrationHD[:, 0] = 1 / calibrantSample[:nbPeaks]
         curveAngleCalibrationHD[:, 1] = conversionChannelEnergyHD
         fitLevel1_2["curveAngleCalibration"].create_dataset(
             "curveAngleCalibrationHD", dtype="float64", data=curveAngleCalibrationHD
         )  ## save curve energy VS 1/d for horizontal detector (d = hkl interriticular distance of the calibrant sample)
-        curveAngleCalibrationVD[:, 0] = 1 / calibrantSample[: numpy.sum(nbPeaksInBoxes)]
+        curveAngleCalibrationVD[:, 0] = 1 / calibrantSample[:nbPeaks]
         curveAngleCalibrationVD[:, 1] = conversionChannelEnergyVD
         fitLevel1_2["curveAngleCalibration"].create_dataset(
             "curveAngleCalibrationVD", dtype="float64", data=curveAngleCalibrationVD
