@@ -4,67 +4,84 @@ Coordinate systems
 This page defines the coordinate systems in which *easistrain* defines the scattering vector.
 
 Sample reference frame
-----------------------
+++++++++++++++++++++++
 
-The cartesian coordinates :math:`Q` of the normalized scattering vector :math:`\hat{q}` in the sample reference frame :math:`(S_1, S_2, S_3)` are given by
+Right-handed Eucledian reference frame with
+
+- :math:`\hat{S}_1`: physically meaningfully direction (rolling direction, machining direction, welding direction, ...)
+- :math:`\hat{S}_2`:
+- :math:`\hat{S}_3`: sample surface normal
+
+Goniometer reference frame
+++++++++++++++++++++++++++
+
+Right-handed Eucledian reference frame with
+
+- :math:`\hat{G}_1`: beam direction
+- :math:`\hat{G}_2`: parallel to the axial direction of the goniometer (direction of gravity, not sure this is always the case)
+- :math:`\hat{G}_3`:
+
+Scattering vector
++++++++++++++++++
+
+The cartesian coordinates :math:`Q` of the normalized scattering vector :math:`\hat{q}` in the sample reference frame :math:`(\hat{S}_1, \hat{S}_2, \hat{S}_3)` are given by
 
 .. math::
 
-    Q = \begin{bmatrix}
+    Q_\text{sample} = \begin{bmatrix}
         \cos \phi \sin \psi \\
         \sin \phi \sin \psi \\
         \cos \psi
         \end{bmatrix}
 
-where :math:`\psi` the polar angle and :math:`\phi` the azimuth angle in spherical coordinates.
+- :math:`\phi`: azimuth angle of :math:`\hat{q}` in spherical coordinates
+- :math:`\psi`: polar angle of :math:`\hat{q}` in spherical coordinates
 
-Scattering vector and diffraction
----------------------------------
-
-The wave vector :math:`\vec{k}` of a beam indicates the beam direction. Its magnitude is defined
-to be proportional to the spatial frequency (inverse of the wavelength :math:`\lambda`)
+The cartesian coordinates :math:`Q` of the normalized scattering vector :math:`\hat{q}` in the goniometer reference frame :math:`(\hat{G}_1, \hat{G}_2, \hat{G}_3)` are given by
 
 .. math::
 
-    \|\vec{k}\|= \frac{2\pi}{\lambda}
+    Q_\text{gonio} = \begin{bmatrix}
+        -\sin \theta \\
+        -\cos \theta \sin \delta \\
+        \cos \theta \cos \delta
+        \end{bmatrix}
 
-The scattering vector :math:`\vec{q}` is defined as the difference between the wave vector of the
-scattered and incident beam
+- :math:`\theta`: half the angle between incident beam (along :math:`\hat{G}_1`) and scattered beam
+- :math:`\delta`: angle of scattered beam in the :math:`\hat{G}_3\times\hat{G}_2` plane looking downstream
 
-.. math::
+The *easistrain* project refers to a horizontal and vertical detector as
 
-   \vec{q} = \vec{k}_s - \vec{k}_0
-
-The scattering angle :math:`2\theta` between incident and scattered beam is
-
-.. math::
-
-    \cos 2\theta = \hat{k}_s\cdot\hat{k}_0
-
-For elastic scattering :math:`\lambda_s = \lambda_0` the length of the scattering vector
-is related to the scattering angle as follows
+- horizontal detector (:math:`\delta=0^\circ`): scattering plane is in the synchrotron plane and the detector is positioned on the left when looking downstream
 
 .. math::
 
-    \|\vec{q}\|= \frac{4\pi}{\lambda} \sin\theta
+    Q_\text{gonio,H} = \begin{bmatrix}
+        -\sin \theta_H \\
+        0 \\
+        \cos \theta_H
+        \end{bmatrix}
 
-We define the normal vector :math:`\vec{n}_H` to a family of lattice planes :math:`H = \{hkl\}` as
-
-.. math::
-
-   \| \vec{n}_H \|= \frac{1}{d_H}
-
-The scattered intensity from a crystal is maximal in the directions where the lattice planes fulfill the 
-Laue conditions for diffraction
+- vertical detector (:math:`\delta=-90^\circ`): scattering plane is perpendicular ot the synchrotron plane and the detector is positioned below the synchrotron plane
 
 .. math::
 
-    \vec{q} = 2\pi m \vec{n}_H \quad m \in \mathbb{Z}
+    Q_\text{gonio,V} = \begin{bmatrix}
+        -\sin \theta_V \\
+        \cos \theta_V \\
+        0
+        \end{bmatrix}
 
-When only considering the vector lengths you get Bragg's law
+The activate transformation of :math:`\vec{q}` from goniometer to sample frame is
 
 .. math::
 
-    2d\sin\theta = m\lambda = m\frac{hc}{E}
+    Q_\text{sample} = R_2(-\omega)\cdot R_1(\chi)\cdot R_3(-\varphi)\cdot Q_\text{gonio}
 
-where :math:`\lambda` and :math:`E` the incident beam wavelength and energy respectively.
+- :math:`\chi`: rotation around :math:`\hat{G}_1`
+- :math:`\omega`: rotation around :math:`-\hat{G}_2`
+- :math:`\varphi`: rotation around :math:`-\hat{G}_3`
+- :math:`R_i`: activate transformation matrix around axis :math:`\hat{G}_i`
+
+For example :math:`\chi=0^\circ`, :math:`\omega=90^\circ` and :math:`\chi=0^\circ`
+positions the sample surface perpendicular to the beam (:math:`\hat{G}_3 = -\hat{S}_1`).

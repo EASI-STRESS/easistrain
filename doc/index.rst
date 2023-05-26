@@ -38,5 +38,7 @@ Documentation
 .. toctree::
     :maxdepth: 2
 
+    theory
     reference_frames
+    notes
     api
