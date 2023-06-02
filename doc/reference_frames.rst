@@ -85,4 +85,4 @@ The activate transformation of :math:`\hat{q}` from goniometer to sample frame i
 - :math:`R_i`: activate transformation matrix around axis :math:`\hat{G}_i`
 
 For example :math:`\chi=0^\circ`, :math:`\omega=90^\circ` and :math:`\varphi=0^\circ`
-positions the sample surface perpendicular to the beam (:math:`\hat{G}_3 = -\hat{S}_1`).
+positions the sample surface perpendicular to the beam (:math:`\hat{S}_3 = -\hat{G}_1`).
