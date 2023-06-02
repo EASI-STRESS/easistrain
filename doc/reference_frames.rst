@@ -48,7 +48,7 @@ The cartesian coordinates :math:`Q` of the normalized scattering vector :math:`\
         \end{bmatrix}
 
 - :math:`\theta`: half the angle between incident beam (along :math:`\hat{G}_1`) and scattered beam
-- :math:`\delta`: angle of scattered beam with respect to :math:`\hat{G}_3\times-\hat{G}_2` (careful: :math:`\delta=0^\circ` is :math:`\hat{G}_3` and
+- :math:`\delta`: angle of scattered beam in the :math:`\hat{G}_3\times-\hat{G}_2` plane (careful: :math:`\delta=0^\circ` is :math:`\hat{G}_3` and
 :math:`\delta=90^\circ` is :math:`-\hat{G}_2`)
 
 The *easistrain* project refers to a horizontal and vertical detector as
@@ -84,5 +84,5 @@ The activate transformation of :math:`\hat{q}` from goniometer to sample frame i
 - :math:`\varphi`: rotation around :math:`-\hat{G}_3`
 - :math:`R_i`: activate transformation matrix around axis :math:`\hat{G}_i`
 
-For example :math:`\chi=0^\circ`, :math:`\omega=90^\circ` and :math:`\chi=0^\circ`
+For example :math:`\chi=0^\circ`, :math:`\omega=90^\circ` and :math:`\varphi=0^\circ`
 positions the sample surface perpendicular to the beam (:math:`\hat{G}_3 = -\hat{S}_1`).
