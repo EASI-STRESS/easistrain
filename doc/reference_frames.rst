@@ -62,17 +62,17 @@ The *easistrain* project refers to a horizontal and vertical detector as
         \cos \theta_H
         \end{bmatrix}
 
-- vertical detector (:math:`\delta=-90^\circ`): scattering plane is perpendicular ot the synchrotron plane and the detector is positioned below the synchrotron plane
+- vertical detector (:math:`\delta=90^\circ`): scattering plane is perpendicular ot the synchrotron plane and the detector is positioned above the synchrotron plane
 
 .. math::
 
     Q_\text{gonio,V} = \begin{bmatrix}
         -\sin \theta_V \\
-        \cos \theta_V \\
+        -\cos \theta_V \\
         0
         \end{bmatrix}
 
-The activate transformation of :math:`\vec{q}` from goniometer to sample frame is
+The activate transformation of :math:`\hat{q}` from goniometer to sample frame is
 
 .. math::
 
