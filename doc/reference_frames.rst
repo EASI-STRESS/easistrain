@@ -72,7 +72,7 @@ The *easistrain* project refers to a horizontal and vertical detector as
         0
         \end{bmatrix}
 
-The activate transformation of :math:`\vec{q}` from goniometer to sample frame is
+The activate transformation of :math:`\hat{q}` from goniometer to sample frame is
 
 .. math::
 
