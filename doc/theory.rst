@@ -51,3 +51,26 @@ When only considering the vector lengths you get Bragg's law
     2d\sin\theta = m\lambda = m\frac{hc}{E}
 
 where :math:`\lambda` and :math:`E` the incident beam wavelength and energy respectively.
+
+Strain tensor
+-------------
+
+The strain tensor in the direction of the scattering vector is
+
+.. math::
+
+    \epsilon^{hkl}(\phi, \psi) = \ln\left(\frac{d^{hkl}(\phi, \psi)}{d^{hkl}_0(\phi, \psi)}\right)
+
+where :math:`\phi` and :math:`\psi` are the azimuth and polar angle of the scattering vector :math:`\vec{q}^{hkl}` in the sample reference frame.
+
+For angular dispersive diffraction (fix energy)
+
+.. math::
+
+    \epsilon^{hkl}(\phi, \psi) = \ln\left(\frac{\sin\theta^{hkl}_0(\phi, \psi)}{\sin\theta^{hkl}(\phi, \psi)}\right)
+
+For energy dispersive diffraction (fix angle)
+
+.. math::
+
+    \epsilon^{hkl}(\phi, \psi) = \ln\left(\frac{E^{hkl}_0(\phi, \psi)}{E^{hkl}(\phi, \psi)}\right)
