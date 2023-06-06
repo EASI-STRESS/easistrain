@@ -40,11 +40,12 @@ def qsample(angles: numpy.ndarray) -> numpy.ndarray:
     """
     phi, chi, omega, delta, ttheta = angles
     # Transformation from goniometer to sample frame
-    M = roty(-omega).dot(rotx(chi).dot(rotz(-phi)))
+    # M = (roty(-omega).dot(rotx(chi)).dot(rotz(-phi))).T
+    M = rotz(phi).dot(rotx(-chi)).dot(roty(omega))
     # Coordinates in goniometer frame (spherical to cartesian)
     Q = qgonio(delta, ttheta)
-    # Coordinates in ample frame
-    return M.T.dot(Q)
+    # Coordinates in sample frame
+    return M.dot(Q)
 
 
 def qgonio(delta: float, ttheta: float) -> List[float]:
