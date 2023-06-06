@@ -73,16 +73,20 @@ The *easistrain* project refers to a horizontal and vertical detector as
         \cos \theta
         \end{bmatrix}
 
-The activate transformation of :math:`\hat{q}` from goniometer to sample frame is
+The activate transformations of :math:`\hat{q}` between cartesian coordinates in goniometer to sample frame are given by
 
 .. math::
 
-    Q_\text{sample} = R_2(-\omega)\cdot R_1(\chi)\cdot R_3(-\varphi)\cdot Q_\text{gonio}
+    Q_\text{gonio} = R_2(-\omega)\cdot R_1(\chi)\cdot R_3(-\varphi)\cdot Q_\text{sample}
 
-- :math:`\chi`: rotation around :math:`\hat{G}_1`
-- :math:`\omega`: rotation around :math:`-\hat{G}_2`
-- :math:`\varphi`: rotation around :math:`-\hat{G}_3`
-- :math:`R_i`: activate transformation matrix around axis :math:`\hat{G}_i`
+.. math::
+
+    Q_\text{sample} = R_3(\varphi) \cdot R_1(-\chi)\cdot R_2(\omega)\cdot Q_\text{gonio}
+
+- :math:`\chi`: passive rotation of the sample axes around :math:`\hat{G}_1`
+- :math:`\omega`: passive rotation of the sample axes around :math:`-\hat{G}_2`
+- :math:`\varphi`: passive rotation of the sample axes around :math:`-\hat{G}_3`
+- :math:`R_i`: activate transformation matrix around axis :math:`i`
 
 For example :math:`\chi=0^\circ`, :math:`\omega=90^\circ` and :math:`\varphi=0^\circ`
 positions the sample surface perpendicular to the beam (:math:`\hat{S}_3 = -\hat{G}_1`).
