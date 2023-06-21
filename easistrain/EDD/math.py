@@ -33,23 +33,24 @@ def compute_qs(angles: numpy.ndarray):
 
 
 def qsample(angles: numpy.ndarray) -> numpy.ndarray:
-    """Normalized scattering vector in the sample frame from
-    spherical coordinates in goniometer frame and goniometer rotations.
+    """Normalized scattering vector in the sample frame.
+    As input we expect the spherical coordinates of the normalized scattering vector
+    in the laboratory frame and the orientation of the sample in the laboratory frame.
 
     Non-optimized implementation of `compute_qs`.
     """
     phi, chi, omega, delta, ttheta = angles
-    # Transformation from goniometer to sample frame
+    # Transformation from laboratory to sample frame
     # M = (roty(-omega).dot(rotx(chi)).dot(rotz(-phi))).T
     M = rotz(phi).dot(rotx(-chi)).dot(roty(omega))
-    # Coordinates in goniometer frame (spherical to cartesian)
-    Q = qgonio(delta, ttheta)
+    # Coordinates in laboratory frame (spherical to cartesian)
+    Q = qlab(delta, ttheta)
     # Coordinates in sample frame
     return M.dot(Q)
 
 
-def qgonio(delta: float, ttheta: float) -> List[float]:
-    """Normalized scattering vector in the goniometer frame: spherical coordinates to cartesian coordinates"""
+def qlab(delta: float, ttheta: float) -> List[float]:
+    """Normalized scattering vector in the laboratory frame: spherical coordinates to cartesian coordinates"""
     rad_delta = numpy.radians(delta)
     rad_theta = numpy.radians(ttheta / 2)
     return [
@@ -60,6 +61,7 @@ def qgonio(delta: float, ttheta: float) -> List[float]:
 
 
 def rotx(rx: float) -> numpy.ndarray:
+    """Active transformation: rotation around X"""
     a = numpy.radians(rx)
     cosa = numpy.cos(a)
     sina = numpy.sin(a)
@@ -73,6 +75,7 @@ def rotx(rx: float) -> numpy.ndarray:
 
 
 def roty(ry: float) -> numpy.ndarray:
+    """Active transformation: rotation around Y"""
     a = numpy.radians(ry)
     cosa = numpy.cos(a)
     sina = numpy.sin(a)
@@ -86,6 +89,7 @@ def roty(ry: float) -> numpy.ndarray:
 
 
 def rotz(rz: float) -> numpy.ndarray:
+    """Active transformation: rotation around Z"""
     a = numpy.radians(rz)
     cosa = numpy.cos(a)
     sina = numpy.sin(a)

@@ -11,15 +11,17 @@ Right-handed Eucledian reference frame :math:`(\hat{S}_1, \hat{S}_2, \hat{S}_3)`
 - :math:`\hat{S}_1`: physically meaningfully direction (rolling direction, machining direction, welding direction, ...)
 - :math:`\hat{S}_3`: sample surface normal
 
-Goniometer reference frame
+Laboratory reference frame
 ++++++++++++++++++++++++++
 
-Right-handed Eucledian reference frame :math:`(\hat{G}_1, \hat{G}_2, \hat{G}_3)` with
+Right-handed Eucledian reference frame :math:`(\hat{L}_1, \hat{L}_2, \hat{L}_3)` with
 
-- :math:`\hat{G}_1`: beam direction
-- :math:`\hat{G}_3`: inverse direction of gravity
+- :math:`\hat{L}_1`: beam direction
+- :math:`\hat{L}_3`: inverse direction of gravity
 
-Note that :math:`\hat{G}_2` points to the left when looking downstream and :math:`\hat{G}_3` points upwards.
+Note that :math:`\hat{L}_2` points to the left when looking downstream and :math:`\hat{L}_3` points upwards.
+
+In the code this reference frame is also referred to as the goniometer reference frame.
 
 Scattering vector
 +++++++++++++++++
@@ -37,19 +39,19 @@ The cartesian coordinates :math:`Q` of the normalized scattering vector :math:`\
 - :math:`\phi`: azimuth angle of :math:`\hat{q}` in spherical coordinates
 - :math:`\psi`: polar angle of :math:`\hat{q}` in spherical coordinates
 
-The cartesian coordinates :math:`Q` of the normalized scattering vector :math:`\hat{q}` in the goniometer reference frame :math:`(\hat{G}_1, \hat{G}_2, \hat{G}_3)` are given by
+The cartesian coordinates :math:`Q` of the normalized scattering vector :math:`\hat{q}` in the laboratory reference frame :math:`(\hat{L}_1, \hat{L}_2, \hat{L}_3)` are given by
 
 .. math::
 
-    Q_\text{gonio} = \begin{bmatrix}
+    Q_\text{lab} = \begin{bmatrix}
         -\sin \theta \\
         -\cos \theta \sin \delta \\
         \cos \theta \cos \delta
         \end{bmatrix}
 
-- :math:`\theta`: half the angle between incident beam (along :math:`\hat{G}_1`) and scattered beam
-- :math:`\delta`: angle of scattered beam in the :math:`\hat{G}_3\times-\hat{G}_2` plane (careful: :math:`\delta=0^\circ` is :math:`\hat{G}_3` and
-:math:`\delta=90^\circ` is :math:`-\hat{G}_2`)
+- :math:`\theta`: half the angle between incident beam (along :math:`\hat{L}_1`) and scattered beam
+- :math:`\delta`: angle of scattered beam in the :math:`\hat{L}_3\times-\hat{L}_2` plane (careful: :math:`\delta=0^\circ` is :math:`\hat{L}_3` and
+:math:`\delta=90^\circ` is :math:`-\hat{L}_2`)
 
 The *easistrain* project refers to a horizontal and vertical detector as
 
@@ -57,7 +59,7 @@ The *easistrain* project refers to a horizontal and vertical detector as
 
 .. math::
 
-    Q_\text{gonio,H} = \begin{bmatrix}
+    Q_\text{lab,H} = \begin{bmatrix}
         -\sin \theta_H \\
         \cos \theta_H \\
         0
@@ -67,26 +69,26 @@ The *easistrain* project refers to a horizontal and vertical detector as
 
 .. math::
 
-    Q_\text{gonio,V} = \begin{bmatrix}
+    Q_\text{lab,V} = \begin{bmatrix}
         -\sin \theta \\
         0 \\
         \cos \theta
         \end{bmatrix}
 
-The activate transformations of :math:`\hat{q}` between cartesian coordinates in goniometer to sample frame are given by
+The activate transformations of :math:`\hat{q}` between cartesian coordinates in laboratory to sample frame are given by
 
 .. math::
 
-    Q_\text{gonio} = R_2(-\omega)\cdot R_1(\chi)\cdot R_3(-\varphi)\cdot Q_\text{sample}
+    Q_\text{lab} = R_2(-\omega) \cdot R_1(\chi) \cdot R_3(-\varphi) \cdot Q_\text{sample}
 
 .. math::
 
-    Q_\text{sample} = R_3(\varphi) \cdot R_1(-\chi)\cdot R_2(\omega)\cdot Q_\text{gonio}
+    Q_\text{sample} = R_3(\varphi) \cdot R_1(-\chi) \cdot R_2(\omega) \cdot Q_\text{lab}
 
-- :math:`\chi`: passive rotation of the sample axes around :math:`\hat{G}_1`
-- :math:`\omega`: passive rotation of the sample axes around :math:`-\hat{G}_2`
-- :math:`\varphi`: passive rotation of the sample axes around :math:`-\hat{G}_3`
+- :math:`\chi`: activate rotation of the sample around :math:`\hat{L}_1`
+- :math:`\omega`: activate rotation of the sample around :math:`-\hat{L}_2`
+- :math:`\varphi`: activate rotation of the sample around :math:`-\hat{L}_3`
 - :math:`R_i`: activate transformation matrix around axis :math:`i`
 
 For example :math:`\chi=0^\circ`, :math:`\omega=90^\circ` and :math:`\varphi=0^\circ`
-positions the sample surface perpendicular to the beam (:math:`\hat{S}_3 = -\hat{G}_1`).
+positions the sample surface perpendicular to the beam (:math:`\hat{S}_3 = -\hat{L}_1`).
