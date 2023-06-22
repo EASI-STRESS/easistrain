@@ -1,5 +1,5 @@
 import os
-from typing import Sequence, Optional, Union
+from typing import Sequence, Optional, Tuple, Union
 
 import numpy
 import h5py
@@ -9,7 +9,7 @@ from easistrain.EDD.io import (
     create_fit_info_group,
     peak_dataset_data,
     read_detector_pattern,
-    scan_group_path,
+    read_positioner_data,
 )
 from easistrain.EDD.utils import run_from_cli
 
@@ -26,15 +26,25 @@ def fitEDD(
     nbPeaksInBoxes: Sequence[int],
     rangeFitHD: Sequence[int],
     rangeFitVD: Sequence[int],
+    detectorSliceIndex: Union[int, Tuple[()], None] = tuple(),
 ):
     print(f"Fitting scan n.{scanNumber}")
+    # detectorSliceIndex can be None if present in the config file but not set
+    if detectorSliceIndex is None:
+        detectorSliceIndex = tuple()
 
     patternHorizontalDetector = read_detector_pattern(
-        fileRead, sample, dataset, scanNumber, nameHorizontalDetector
+        fileRead,
+        sample,
+        dataset,
+        scanNumber,
+        nameHorizontalDetector,
+        detectorSliceIndex,
     )
     patternVerticalDetector = read_detector_pattern(
-        fileRead, sample, dataset, scanNumber, nameVerticalDetector
+        fileRead, sample, dataset, scanNumber, nameVerticalDetector, detectorSliceIndex
     )
+
     patternHorizontalDetector = numpy.atleast_2d(patternHorizontalDetector)
     patternVerticalDetector = numpy.atleast_2d(patternVerticalDetector)
     nDetectorPoints = len(patternHorizontalDetector)
@@ -49,26 +59,20 @@ def fitEDD(
             "positioners"
         )  ## positioners subgroup in scan group
         positionAngles = numpy.zeros((nDetectorPoints, 6), "float64")
-        with h5py.File(fileRead, "r") as h5Read:
-            input_positioners = h5Read[
-                f"{scan_group_path(sample, dataset, scanNumber)}/instrument/positioners"
-            ]
-            assert isinstance(input_positioners, h5py.Group)
-            for i, positioner in enumerate(positioners):
-                if positioner not in input_positioners:
-                    raise KeyError(
-                        f"{positioner} was not found in input positioners! Possible values: {input_positioners.keys()}"
-                    )
-                pos_data = input_positioners[positioner][()]
-                positionersGroup.create_dataset(
-                    positioner,
-                    dtype="float64",
-                    data=pos_data,
-                )  ## saving all the requested positioners
-                if i < 6:
-                    positionAngles[:, i] = pos_data
-                else:
-                    print("Too many positioners given ! Only 6 are handled for now.")
+
+        for i, positioner in enumerate(positioners):
+            pos_data = read_positioner_data(
+                fileRead, sample, dataset, scanNumber, positioner, detectorSliceIndex
+            )
+            positionersGroup.create_dataset(
+                positioner,
+                dtype="float64",
+                data=pos_data,
+            )
+            try:
+                positionAngles[:, i] = pos_data
+            except IndexError:
+                print("Too many positioners given ! Only 6 are handled for now.")
 
         rawDataLevel1_1 = scanGroup.create_group(
             "rawData" + "_" + str(dataset) + "_" + str(scanNumber)
