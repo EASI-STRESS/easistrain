@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Sequence, Union
+from typing import Dict, Optional, Sequence, Tuple, Union
 import h5py
 import numpy
 
@@ -271,6 +271,7 @@ def read_detector_pattern(
     dataset: Union[str, int, None],
     scanNumber: Union[str, int],
     detector_name: str,
+    detectorSliceIndex: Union[int, Tuple[()]] = tuple(),
 ):
     with h5py.File(input_filename, "r") as h5Read:  ## Read the h5 file of raw data
         meas_group = h5Read[
@@ -281,7 +282,34 @@ def read_detector_pattern(
             return
         detector_dset = meas_group[detector_name]
         assert isinstance(detector_dset, h5py.Dataset)
-        return detector_dset[()]
+        return detector_dset[detectorSliceIndex]
+
+
+def read_positioner_data(
+    input_filename: str,
+    sample: Union[str, None],
+    dataset: Union[str, int, None],
+    scanNumber: Union[str, int],
+    positioner_name: str,
+    detectorSliceIndex: Union[int, Tuple[()]] = tuple(),
+):
+    with h5py.File(input_filename, "r") as h5Read:
+        input_positioners = h5Read[
+            f"{scan_group_path(sample, dataset, scanNumber)}/instrument/positioners"
+        ]
+        assert isinstance(input_positioners, h5py.Group)
+        if positioner_name not in input_positioners:
+            raise KeyError(
+                f"{positioner_name} was not found in input positioners! Possible values: {input_positioners.keys()}"
+            )
+        pos_dataset = input_positioners[positioner_name]
+        assert isinstance(pos_dataset, h5py.Dataset)
+
+        # Scalar
+        if not pos_dataset.shape:
+            return pos_dataset[()]
+
+        return pos_dataset[detectorSliceIndex]
 
 
 def save_fit_params(

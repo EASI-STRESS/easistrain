@@ -10,3 +10,4 @@ positioners: ['ex', 'ey', 'ez', 'ephi', 'echi', 'sry']
 nbPeaksInBoxes: [1, 2]
 rangeFitHD: [1320, 1620, 1600, 2000]
 rangeFitVD: [1300, 1650, 1620, 2000]
+detectorSliceIndex:
