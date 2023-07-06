@@ -28,3 +28,7 @@ def main():
     if not os.path.isfile(args.parameters):
         raise RuntimeError(f"Parameters file '{args.parameters}' does not exist")
     execute_graph1(args.workflow, args.parameters)
+
+
+if __name__ == "__main__":
+    main()
