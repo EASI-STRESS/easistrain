@@ -1,0 +1,45 @@
+fileRead: '/data/id15/inhouse6/easistress/ihme10/raw/TiC/ihme10_TiC.h5'
+fileSave: '/tmp/easistrain_results/angleCalibEDD.h5'
+sample: 'TiC'
+dataset: '0001'
+scanNumber: 3
+nameHorizontalDetector: 'mca2_det0'
+nameVerticalDetector: 'mca2_det1'
+nbPeaksInBoxes: [1, 1, 1, 2, 1, 2, 1]
+rangeFitHD:
+  [
+    670,
+    820,
+    800,
+    950,
+    1100,
+    1350,
+    1350,
+    1650,
+    1620,
+    1820,
+    1800,
+    2100,
+    2025,
+    2200,
+  ]
+rangeFitVD:
+  [
+    670,
+    840,
+    820,
+    980,
+    1100,
+    1400,
+    1350,
+    1700,
+    1650,
+    1870,
+    1850,
+    2120,
+    2070,
+    2270,
+  ]
+pathFileDetectorCalibration: '/tmp/easistrain_results/calibEDD.h5'
+scanDetectorCalibration: 'fit_0001_2_1'
+sampleCalibrantFile: 'TiC.d'

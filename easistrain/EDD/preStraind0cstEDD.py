@@ -43,6 +43,18 @@ def ustrain(energy0, energystrained, uenergy0, uenergystrained):
     )
 
 
+def _energy_wavelength(x):
+    """keV to anstrom and vice versa"""
+    return pCstInkeVS * speedLightInAPerS / x
+
+
+def _channels_to_dspacing(channels, energy_calib_coeff, two_theta):
+    energies = numpy.polyval(energy_calib_coeff, channels)
+    wavelength = _energy_wavelength(energies)
+    dspacing = wavelength / (2 * numpy.sin(numpy.deg2rad(two_theta / 2)))
+    return dspacing
+
+
 def preStraind0cstEDD(
     fileRead: str,
     fileSave: str,
@@ -50,6 +62,8 @@ def preStraind0cstEDD(
     scanDetectorCalibration: str,
     pathFileAngleCalibration: str,
     scanAngleCalibration: str,
+    pathFileReferenceFitEDD: str,
+    scanReferenceFitEDD: str,
     numberOfPeaks: int,
     d0: Sequence[float],
 ):
@@ -98,6 +112,19 @@ def preStraind0cstEDD(
             ][
                 ()
             ]  ## import the calibrated angle of the vertical detector
+
+        if pathFileReferenceFitEDD:
+            with h5py.File(pathFileReferenceFitEDD, "r") as h5RefFitRead:
+                RefChanHD = h5RefFitRead[
+                    f"/{scanReferenceFitEDD}/fit/0000/fitParams/fitParamsHD"
+                ][:, 1]
+                RefChanVD = h5RefFitRead[
+                    f"/{scanReferenceFitEDD}/fit/0000/fitParams/fitParamsVD"
+                ][:, 1]
+                d0HD = _channels_to_dspacing(RefChanHD, calibCoeffsHD, AngleHD)
+                d0VD = _channels_to_dspacing(RefChanVD, calibCoeffsVD, AngleVD)
+                d0 = (d0HD + d0VD) / 2
+                numberOfPeaks = len(d0)
 
         with h5py.File(fileRead, "r") as h5Read:  ## Read the h5 file of raw data
             for peakNumber in range(numberOfPeaks):

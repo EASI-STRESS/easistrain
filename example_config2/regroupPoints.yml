@@ -1,0 +1,7 @@
+fileRead:
+  [
+    '/tmp/easistrain_results/coordTransform_OR1.h5',
+    '/tmp/easistrain_results/coordTransform_OR2.h5',
+  ]
+fileSave: '/tmp/easistrain_results/regroup_pts.h5'
+numberOfPeaks: 5

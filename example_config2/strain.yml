@@ -1,0 +1,16 @@
+fileRead: '/tmp/easistrain_results/preStrain.h5'
+fileSave: '/tmp/easistrain_results/strain.h5'
+numberOfPeaks: 5
+XEC:
+  [
+    -1.450777e-6,
+    6.632124352e-6,
+    -1.450777e-6,
+    6.632124352e-6,
+    -1.450777e-6,
+    6.632124352e-6,
+    -1.450777e-6,
+    6.632124352e-6,
+    -1.450777e-6,
+    6.632124352e-6,
+  ]
