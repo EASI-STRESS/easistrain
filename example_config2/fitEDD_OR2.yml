@@ -1,0 +1,11 @@
+fileRead: '/data/id15/inhouse6/easistress/ihme10/raw/BAIII/ihme10_BAIII_AB_4_1.h5'
+fileSave: '/tmp/easistrain_results/fitEDD_OR2.h5'
+sample: 'BAIII_AB_4_1'
+dataset: '0002'
+scanNumber: 32
+nameHorizontalDetector: 'mca2_det0'
+nameVerticalDetector: 'mca2_det1'
+positioners: ['ex', 'ey', 'ez', 'ephi', 'echi', 'sy']
+nbPeaksInBoxes: [1, 2, 2]
+rangeFitHD: [1250, 1620, 1550, 1950, 2175, 2440]
+rangeFitVD: [1250, 1680, 1600, 2050, 2230, 2550]

@@ -1,0 +1,12 @@
+fileRead: '/tmp/easistrain_results/regroup_pts.h5'
+fileSave: '/tmp/easistrain_results/preStrain.h5'
+pathFileDetectorCalibration: '/tmp/easistrain_results/calibEDD.h5'
+scanDetectorCalibration: 'fit_0001_2_1'
+pathFileAngleCalibration: '/tmp/easistrain_results/angleCalibEDD.h5'
+scanAngleCalibration: 'fit_0001_3'
+pathFileReferenceFitEDD: ''
+scanReferenceFitEDD: ''
+#pathFileReferenceFitEDD: '/tmp/easistrain_results/fitEDD_OR1.h5'
+#scanReferenceFitEDD: 'BAIII_AB_4_1_0001_42.1'
+numberOfPeaks: 5
+d0: [1.267594775, 1.080594133, 1.034951928, 0.822132144, 0.801651573]

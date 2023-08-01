@@ -17,6 +17,8 @@ def generate_config(tmp_path: Path, test_data_path: Path) -> dict:
         "scanDetectorCalibration": "scan",
         "pathFileAngleCalibration": str(tmp_path / "angle_calib.h5"),
         "scanAngleCalibration": "scan",
+        "pathFileReferenceFitEDD": "",
+        "scanReferenceFitEDD": "",
         "numberOfPeaks": n_peaks,
         "d0": d0,
     }
