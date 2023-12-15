@@ -26,7 +26,7 @@ def fitEDD(
     nbPeaksInBoxes: Sequence[int],
     rangeFitHD: Sequence[int],
     rangeFitVD: Sequence[int],
-    detectorSliceIndex: Union[int, Tuple[()], None] = tuple(),
+    detectorSliceIndex: Union[int, Tuple[()], str, None] = tuple(),
 ):
     print(f"Fitting scan n.{scanNumber}")
     # detectorSliceIndex can be None if present in the config file but not set

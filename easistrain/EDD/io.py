@@ -271,7 +271,7 @@ def read_detector_pattern(
     dataset: Union[str, int, None],
     scanNumber: Union[str, int],
     detector_name: str,
-    detectorSliceIndex: Union[int, Tuple[()]] = tuple(),
+    detectorSliceIndex: Union[int, Tuple[()], str] = tuple(),
 ):
     with h5py.File(input_filename, "r") as h5Read:  ## Read the h5 file of raw data
         meas_group = h5Read[
@@ -282,6 +282,8 @@ def read_detector_pattern(
             return
         detector_dset = meas_group[detector_name]
         assert isinstance(detector_dset, h5py.Dataset)
+        if detectorSliceIndex == 'sum':
+            return detector_dset[()].sum(axis=0)
         return detector_dset[detectorSliceIndex]
 
 
