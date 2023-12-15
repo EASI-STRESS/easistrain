@@ -282,7 +282,7 @@ def read_detector_pattern(
             return
         detector_dset = meas_group[detector_name]
         assert isinstance(detector_dset, h5py.Dataset)
-        if detectorSliceIndex == 'sum':
+        if detectorSliceIndex == "sum":
             return detector_dset[()].sum(axis=0)
         return detector_dset[detectorSliceIndex]
 
