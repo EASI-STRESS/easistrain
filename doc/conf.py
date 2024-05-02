@@ -11,7 +11,11 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.viewcode",
     "sphinx_autodoc_typehints",
+    "recommonmark",
 ]
+
+
+source_suffix = [".rst", ".md"]
 templates_path = ["_templates"]
 exclude_patterns = []
 

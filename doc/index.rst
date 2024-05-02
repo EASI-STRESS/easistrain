@@ -38,6 +38,7 @@ Documentation
 .. toctree::
     :maxdepth: 2
 
+    id15_NXstress
     theory
     reference_frames
     notes
