@@ -332,8 +332,8 @@ class NXstressFromRaw:
         background_parameters_group.attrs["NX_class"] = "NXdata"
         background_parameters_group.attrs["auxiliary_signals"] = ["A1"]
         background_parameters_group.attrs["signal"] = "A0"
-        background_parameters_group.create_dataset("A0", data=np.NaN)
-        background_parameters_group.create_dataset("A1", data=np.NaN)
+        background_parameters_group.create_dataset("A0", data=np.nan)
+        background_parameters_group.create_dataset("A1", data=np.nan)
         background_parameters_group.create_dataset("title", data="linear")
 
         description_group = fit_group.create_group("description")
