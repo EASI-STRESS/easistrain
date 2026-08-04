@@ -1,5 +1,4 @@
-"""rm -rf doc/_generated/; sphinx-build doc build/sphinx/html -E -a
-"""
+"""rm -rf doc/_generated/; sphinx-build doc build/sphinx/html -E -a"""
 
 project = "easistrain"
 release = "0.1"

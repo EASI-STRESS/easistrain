@@ -4,8 +4,8 @@ Created on Thu May 20 17:32:56 2021
 
 @author: slim
 """
-import numpy
 
+import numpy
 
 # This function determine the distance between the centre of the silt and the conical aperture
 # lss is the distance between the slit and the sample
