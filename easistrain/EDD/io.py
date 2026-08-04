@@ -2,7 +2,6 @@ from typing import Dict, Optional, Sequence, Tuple, Union
 import h5py
 import numpy
 
-
 nxchar = h5py.special_dtype(vlen=str)
 
 

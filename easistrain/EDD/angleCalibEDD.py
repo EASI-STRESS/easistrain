@@ -82,7 +82,7 @@ def angleCalibrationEDD(
         curveAngleCalibrationHD = numpy.zeros((numpy.sum(nbPeaksInBoxes), 2), float)
         curveAngleCalibrationVD = numpy.zeros((numpy.sum(nbPeaksInBoxes), 2), float)
 
-        (savedFitParamsHD, savedFitParamsVD, _, __) = fit_all_peaks_and_save_results(
+        savedFitParamsHD, savedFitParamsVD, _, __ = fit_all_peaks_and_save_results(
             nbPeaksInBoxes,
             rangeFit={"horizontal": rangeFitHD, "vertical": rangeFitVD},
             patterns={
