@@ -212,13 +212,19 @@ class NXstressFromRaw:
         with h5py.File(file_path, "r") as file:
             mca_det0_polar = self.find_dataset(file, "calibratedAngleHD")
             mca_det1_polar = self.find_dataset(file, "calibratedAngleVD")
-            return np.float64(mca_det0_polar), np.float64(mca_det1_polar)
+            return (
+                np.float64(np.asarray(mca_det0_polar).item()),
+                np.float64(np.asarray(mca_det1_polar).item()),
+            )
 
     def extract_energy_calib(self, file_path):
         with h5py.File(file_path, "r") as file:
             mca_det0_calib = self.find_dataset(file, "calibCoeffsHD")
             mca_det1_calib = self.find_dataset(file, "calibCoeffsVD")
-            return mca_det0_calib, mca_det1_calib
+            return (
+                np.asarray(mca_det0_calib, dtype=np.float64),
+                np.asarray(mca_det1_calib, dtype=np.float64),
+            )
 
     def find_dataset(self, group, dataset_name):
         """
